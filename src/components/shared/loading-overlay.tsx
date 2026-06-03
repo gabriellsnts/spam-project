@@ -67,12 +67,12 @@ export function LoadingOverlay() {
           <div
             className={`absolute -inset-10 opacity-10 bg-gradient-to-tr ${
               domainInfo.id === "maintenance"
-                ? "from-amber-500/30"
+                ? "from-red-500/30"
                 : domainInfo.id === "demand"
-                ? "from-sky-500/30"
+                ? "from-emerald-500/30"
                 : domainInfo.id === "churn"
                 ? "from-violet-500/30"
-                : "from-emerald-500/30"
+                : "from-blue-500/30"
             } to-transparent blur-2xl rounded-full`}
           />
         )}
@@ -81,13 +81,13 @@ export function LoadingOverlay() {
           <div className="relative mb-6">
             <Loader2 className={`h-12 w-12 animate-spin ${
               domainInfo?.id === "maintenance"
-                ? "text-amber-500"
+                ? "text-red-500"
                 : domainInfo?.id === "demand"
-                ? "text-sky-500"
+                ? "text-emerald-500"
                 : domainInfo?.id === "churn"
                 ? "text-violet-500"
                 : domainInfo?.id === "credit-risk"
-                ? "text-emerald-500"
+                ? "text-blue-500"
                 : "text-green-500"
             }`} />
           </div>
@@ -105,12 +105,12 @@ export function LoadingOverlay() {
             <div
               className={`h-full transition-all duration-75 ease-out rounded-full ${
                 domainInfo?.id === "maintenance"
-                  ? "bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]"
+                  ? "bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]"
                   : domainInfo?.id === "demand"
-                  ? "bg-sky-500 shadow-[0_0_10px_rgba(14,165,233,0.5)]"
+                  ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"
                   : domainInfo?.id === "churn"
                   ? "bg-violet-500 shadow-[0_0_10px_rgba(139,92,246,0.5)]"
-                  : "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"
+                  : "bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]"
               }`}
               style={{ width: `${progress}%` }}
             />

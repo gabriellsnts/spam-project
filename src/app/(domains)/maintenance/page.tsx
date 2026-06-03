@@ -44,9 +44,9 @@ export default function MaintenancePage() {
     <div className="space-y-6">
       {/* Module Title Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-card border border-border shadow-md relative overflow-hidden transition-colors duration-300">
-        <div className="absolute top-0 right-0 h-40 w-40 bg-amber-500/5 blur-3xl rounded-full" />
+        <div className="absolute top-0 right-0 h-40 w-40 bg-red-500/5 blur-3xl rounded-full" />
         <div className="space-y-1 relative z-10">
-          <div className="flex items-center gap-2 text-amber-500 font-bold text-xs uppercase tracking-widest">
+          <div className="flex items-center gap-2 text-red-500 font-bold text-xs uppercase tracking-widest">
             <Radio className="h-4 w-4 animate-pulse" />
             Módulo de Manutenção Preditiva (Ativo)
           </div>
@@ -69,7 +69,7 @@ export default function MaintenancePage() {
           ) : (
             <Button
               onClick={triggerAnomalySimulation}
-              className="bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold gap-1.5"
+              className="bg-red-600 hover:bg-red-500 text-white text-xs font-bold gap-1.5"
             >
               <AlertTriangle className="h-4 w-4" />
               Simular Anomalia (Vibração)
@@ -113,7 +113,7 @@ export default function MaintenancePage() {
               Alertas Ativos
             </CardDescription>
             <CardTitle className={`text-2xl font-black transition-colors ${
-              simulationActive ? "text-rose-500 animate-pulse" : "text-amber-500"
+              simulationActive ? "text-rose-500 animate-pulse" : "text-red-500"
             }`}>
               {simulationActive ? "2" : "1"}
             </CardTitle>

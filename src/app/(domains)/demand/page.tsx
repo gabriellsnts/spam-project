@@ -64,9 +64,9 @@ export default function DemandPage() {
     <div className="space-y-6">
       {/* Module Title Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-card border border-border shadow-md relative overflow-hidden transition-colors duration-300">
-        <div className="absolute top-0 right-0 h-40 w-40 bg-sky-500/5 blur-3xl rounded-full" />
+        <div className="absolute top-0 right-0 h-40 w-40 bg-emerald-500/5 blur-3xl rounded-full" />
         <div className="space-y-1 relative z-10">
-          <div className="flex items-center gap-2 text-sky-500 font-bold text-xs uppercase tracking-widest">
+          <div className="flex items-center gap-2 text-emerald-500 font-bold text-xs uppercase tracking-widest">
             <TrendingUp className="h-4 w-4" />
             Módulo de Previsão de Demanda (Ativo)
           </div>
@@ -89,7 +89,7 @@ export default function DemandPage() {
           ) : (
             <Button
               onClick={triggerSeasonalSimulation}
-              className="bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold gap-1.5"
+              className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold gap-1.5"
             >
               <Calendar className="h-4 w-4" />
               Simular Pico de Demanda
@@ -117,7 +117,7 @@ export default function DemandPage() {
             <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
               Crescimento Projetado
             </CardDescription>
-            <CardTitle className={`text-2xl font-black ${seasonalActive ? "text-sky-500" : "text-foreground"}`}>
+            <CardTitle className={`text-2xl font-black ${seasonalActive ? "text-emerald-500" : "text-foreground"}`}>
               {metrics.projectedGrowth}
             </CardTitle>
           </CardHeader>
@@ -191,7 +191,7 @@ export default function DemandPage() {
                       : "M350 110 L 375 115 L 400 100 L 425 105 L 450 95 L 475 90 L 500 95"
                   }
                   fill="none"
-                  stroke="#0ea5e9"
+                  stroke="#10b981"
                   strokeWidth="2.5"
                   strokeDasharray="4"
                   className="transition-all duration-1000"
@@ -204,14 +204,14 @@ export default function DemandPage() {
                       ? "M350 110 L 375 70 L 400 40 L 425 20 L 450 30 L 475 10 L 500 20 L 500 200 L 350 200 Z"
                       : "M350 110 L 375 115 L 400 100 L 425 105 L 450 95 L 475 90 L 500 95 L 500 200 L 350 200 Z"
                   }
-                  fill="url(#gradient-sky)"
+                  fill="url(#gradient-emerald)"
                   className="opacity-15 transition-all duration-1000"
                 />
 
                 <defs>
-                  <linearGradient id="gradient-sky" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#0ea5e9" />
-                    <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0" />
+                  <linearGradient id="gradient-emerald" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#10b981" />
+                    <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
                   </linearGradient>
                 </defs>
               </svg>

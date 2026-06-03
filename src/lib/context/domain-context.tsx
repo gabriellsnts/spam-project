@@ -28,20 +28,20 @@ export const DOMAINS: Record<DomainType, DomainMetadata> = {
     id: "maintenance",
     name: "Manutenção de Equipamentos",
     description: "Análise preditiva de falhas em máquinas, ciclos de vida útil e cronograma de manutenção preventiva baseada em sensores.",
-    color: "amber",
-    accentClass: "text-amber-500 bg-amber-500/10 border-amber-500/30",
-    bgGradient: "from-amber-600/20 via-zinc-900 to-zinc-950",
-    borderGlow: "group-hover:border-amber-500/50 group-hover:shadow-[0_0_20px_rgba(245,158,11,0.15)]",
+    color: "red",
+    accentClass: "text-red-500 bg-red-500/10 border-red-500/30",
+    bgGradient: "from-red-600/20 via-zinc-900 to-zinc-950",
+    borderGlow: "group-hover:border-red-500/50 group-hover:shadow-[0_0_20px_rgba(239,68,68,0.15)]",
     iconName: "Wrench",
   },
   "demand": {
     id: "demand",
     name: "Previsão de Demanda",
     description: "Modelagem de séries temporais para projeção de vendas, estoques e sazonalidades com inteligência estatística.",
-    color: "sky",
-    accentClass: "text-sky-500 bg-sky-500/10 border-sky-500/30",
-    bgGradient: "from-sky-600/20 via-zinc-900 to-zinc-950",
-    borderGlow: "group-hover:border-sky-500/50 group-hover:shadow-[0_0_20px_rgba(14,165,233,0.15)]",
+    color: "emerald",
+    accentClass: "text-emerald-500 bg-emerald-500/10 border-emerald-500/30",
+    bgGradient: "from-emerald-600/20 via-zinc-900 to-zinc-950",
+    borderGlow: "group-hover:border-emerald-500/50 group-hover:shadow-[0_0_20px_rgba(16,185,129,0.15)]",
     iconName: "TrendingUp",
   },
   "churn": {
@@ -58,10 +58,10 @@ export const DOMAINS: Record<DomainType, DomainMetadata> = {
     id: "credit-risk",
     name: "Risco de Crédito",
     description: "Avaliação de risco de crédito de clientes, score de adimplência e análise de probabilidade de inadimplência.",
-    color: "emerald",
-    accentClass: "text-emerald-500 bg-emerald-500/10 border-emerald-500/30",
-    bgGradient: "from-emerald-600/20 via-zinc-900 to-zinc-950",
-    borderGlow: "group-hover:border-emerald-500/50 group-hover:shadow-[0_0_20px_rgba(16,185,129,0.15)]",
+    color: "blue",
+    accentClass: "text-blue-500 bg-blue-500/10 border-blue-500/30",
+    bgGradient: "from-blue-600/20 via-zinc-900 to-zinc-950",
+    borderGlow: "group-hover:border-blue-500/50 group-hover:shadow-[0_0_20px_rgba(59,130,246,0.15)]",
     iconName: "ShieldAlert",
   },
 };
@@ -135,7 +135,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const userProfile = "Gestor de Operações";
+  const userProfile = "Luiz Admin";
 
   // Sincronizar o domínio ativo baseado na URL na inicialização ou reload
   useEffect(() => {
@@ -248,4 +248,67 @@ export function useDomain() {
     throw new Error("useDomain deve ser usado dentro de um DomainProvider");
   }
   return context;
+}
+
+export function useDomainColors(domain: DomainType | null) {
+  if (!domain) {
+    return {
+      text: "text-zinc-500",
+      bg: "bg-zinc-500/10",
+      border: "border-zinc-500/20",
+      glow: "shadow-[0_0_15px_rgba(113,113,122,0.1)]",
+      accent: "text-zinc-500 border-zinc-800 bg-zinc-900/20 shadow-[0_0_15px_rgba(113,113,122,0.05)]",
+      glowClass: "glow-zinc",
+      pulseClass: "bg-zinc-650"
+    };
+  }
+
+  const colors: Record<DomainType, {
+    text: string;
+    bg: string;
+    border: string;
+    glow: string;
+    accent: string;
+    glowClass: string;
+    pulseClass: string;
+  }> = {
+    "maintenance": {
+      text: "text-red-500",
+      bg: "bg-red-500/10",
+      border: "border-red-500/20",
+      glow: "shadow-[0_0_15px_rgba(239,68,68,0.15)]",
+      accent: "text-red-500 border-red-500/20 bg-red-500/5 shadow-[0_0_15px_rgba(239,68,68,0.1)]",
+      glowClass: "glow-red",
+      pulseClass: "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]"
+    },
+    "demand": {
+      text: "text-emerald-500",
+      bg: "bg-emerald-500/10",
+      border: "border-emerald-500/20",
+      glow: "shadow-[0_0_15px_rgba(16,185,129,0.15)]",
+      accent: "text-emerald-500 border-emerald-500/20 bg-emerald-500/5 shadow-[0_0_15px_rgba(16,185,129,0.1)]",
+      glowClass: "glow-emerald",
+      pulseClass: "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"
+    },
+    "churn": {
+      text: "text-violet-500",
+      bg: "bg-violet-500/10",
+      border: "border-violet-500/20",
+      glow: "shadow-[0_0_15px_rgba(139,92,246,0.15)]",
+      accent: "text-violet-500 border-violet-500/20 bg-violet-500/5 shadow-[0_0_15px_rgba(139,92,246,0.1)]",
+      glowClass: "glow-violet",
+      pulseClass: "bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.8)]"
+    },
+    "credit-risk": {
+      text: "text-blue-500",
+      bg: "bg-blue-500/10",
+      border: "border-blue-500/20",
+      glow: "shadow-[0_0_15px_rgba(59,130,246,0.15)]",
+      accent: "text-blue-500 border-blue-500/20 bg-blue-500/5 shadow-[0_0_15px_rgba(59,130,246,0.1)]",
+      glowClass: "glow-blue",
+      pulseClass: "bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]"
+    }
+  };
+
+  return colors[domain];
 }

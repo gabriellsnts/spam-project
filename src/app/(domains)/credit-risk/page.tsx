@@ -92,9 +92,9 @@ export default function CreditRiskPage() {
     <div className="space-y-6">
       {/* Module Title Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-card border border-border shadow-md relative overflow-hidden transition-colors duration-300">
-        <div className="absolute top-0 right-0 h-40 w-40 bg-emerald-500/5 blur-3xl rounded-full" />
+        <div className="absolute top-0 right-0 h-40 w-40 bg-blue-500/5 blur-3xl rounded-full" />
         <div className="space-y-1 relative z-10">
-          <div className="flex items-center gap-2 text-emerald-500 font-bold text-xs uppercase tracking-widest">
+          <div className="flex items-center gap-2 text-blue-500 font-bold text-xs uppercase tracking-widest">
             <Coins className="h-4 w-4" />
             Módulo de Risco de Crédito (Ativo)
           </div>
@@ -110,14 +110,14 @@ export default function CreditRiskPage() {
           {stressActive ? (
             <Button
               onClick={resetSimulation}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold"
+              className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold"
             >
               Resetar Análise
             </Button>
           ) : (
             <Button
               onClick={triggerStressSimulation}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold gap-1.5"
+              className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold gap-1.5"
             >
               <TrendingUp className="h-4 w-4" />
               Simular Teste de Estresse
@@ -147,7 +147,7 @@ export default function CreditRiskPage() {
             <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
               Score Médio de Crédito
             </CardDescription>
-            <CardTitle className={`text-2xl font-black ${stressActive ? "text-amber-500" : "text-emerald-500"}`}>
+            <CardTitle className={`text-2xl font-black ${stressActive ? "text-amber-500" : "text-blue-500"}`}>
               {metrics.avgScore} pt
             </CardTitle>
           </CardHeader>
