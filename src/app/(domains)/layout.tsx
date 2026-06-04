@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Header } from "@/components/shared/header";
+import { Sidebar } from "@/components/shared/sidebar";
 
 export default function DomainsLayout({
   children,
@@ -16,9 +17,13 @@ export default function DomainsLayout({
       
       <Header />
       
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 py-8 md:px-6 md:py-10 animate-in fade-in duration-500 relative z-10">
-        {children}
-      </main>
+      <div className="flex flex-1 relative z-10">
+        <Sidebar />
+        
+        <main className="flex-1 w-full max-w-7xl mx-auto px-4 py-8 md:px-6 md:py-10 animate-in fade-in duration-500">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }
