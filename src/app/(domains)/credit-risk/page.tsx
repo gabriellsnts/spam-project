@@ -5,6 +5,7 @@ import { useDomain } from "@/lib/context/domain-context";
 import { TrendingUp, AlertTriangle, Coins, Percent, FileCheck } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { CSVUploader } from "@/components/shared/csv-uploader";
 
 export default function CreditRiskPage() {
   const { addLog } = useDomain();
@@ -278,6 +279,9 @@ export default function CreditRiskPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Ingestão de Dados Históricos */}
+      <CSVUploader />
     </div>
   );
 }

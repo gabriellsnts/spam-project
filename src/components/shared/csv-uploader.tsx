@@ -1,0 +1,492 @@
+"use client";
+
+import React, { useState, useRef, DragEvent } from "react";
+import { useDomain, DOMAINS } from "@/lib/context/domain-context";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { UploadCloud, CheckCircle2, AlertCircle, Loader2, FileSpreadsheet, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+// Colunas recomendadas/esperadas para cada domínio como orientação ao Engenheiro de Dados
+const EXPECTED_COLUMNS: Record<string, string[]> = {
+  "maintenance": ["timestamp", "sensor_id", "temperatura", "vibracao", "oee"],
+  "demand": ["data", "produto_id", "estoque_atual", "demanda_mensal", "lead_time"],
+  "churn": ["cliente_id", "nome", "score_risco", "ltv", "fator_risco", "acao_recomendada"],
+  "credit-risk": ["proposta_id", "cliente", "valor", "score", "probabilidade_retorno", "acao"]
+};
+
+export function CSVUploader() {
+  const { activeDomain, addLog } = useDomain();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Estados principais
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [progress, setProgress] = useState(0);
+  const [loadingStep, setLoadingStep] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [fileDetails, setFileDetails] = useState<{
+    name: string;
+    size: string;
+    encoding: string;
+    delimiter: string;
+    rows: number;
+    headers: string[];
+  } | null>(null);
+
+  if (!activeDomain) return null;
+
+  const expectedCols = EXPECTED_COLUMNS[activeDomain] || [];
+  const domainInfo = DOMAINS[activeDomain];
+
+  // Helper para obter tokens estéticos específicos do domínio
+  const getDomainTheme = (domain: string) => {
+    switch (domain) {
+      case "maintenance":
+        return {
+          accent: "text-amber-500",
+          border: "border-amber-500/20 hover:border-amber-500/50",
+          borderActive: "border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.2)] bg-amber-500/[0.03]",
+          bg: "bg-amber-500/5",
+          progress: "bg-amber-500",
+          glow: "glow-amber",
+          button: "bg-amber-600 hover:bg-amber-500 text-white"
+        };
+      case "demand":
+        return {
+          accent: "text-sky-500",
+          border: "border-sky-500/20 hover:border-sky-500/50",
+          borderActive: "border-sky-500 shadow-[0_0_20px_rgba(14,165,233,0.2)] bg-sky-500/[0.03]",
+          bg: "bg-sky-500/5",
+          progress: "bg-sky-500",
+          glow: "glow-sky",
+          button: "bg-sky-600 hover:bg-sky-500 text-white"
+        };
+      case "churn":
+        return {
+          accent: "text-violet-500",
+          border: "border-violet-500/20 hover:border-violet-500/50",
+          borderActive: "border-violet-500 shadow-[0_0_20px_rgba(139,92,246,0.2)] bg-violet-500/[0.03]",
+          bg: "bg-violet-500/5",
+          progress: "bg-violet-500",
+          glow: "glow-violet",
+          button: "bg-violet-600 hover:bg-violet-500 text-white"
+        };
+      case "credit-risk":
+        return {
+          accent: "text-emerald-500",
+          border: "border-emerald-500/20 hover:border-emerald-500/50",
+          borderActive: "border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.2)] bg-emerald-500/[0.03]",
+          bg: "bg-emerald-500/5",
+          progress: "bg-emerald-500",
+          glow: "glow-emerald",
+          button: "bg-emerald-600 hover:bg-emerald-500 text-white"
+        };
+      default:
+        return {
+          accent: "text-green-500",
+          border: "border-green-500/20 hover:border-green-500/50",
+          borderActive: "border-green-500 shadow-[0_0_20px_rgba(34,197,94,0.2)] bg-green-500/[0.03]",
+          bg: "bg-green-500/5",
+          progress: "bg-green-500",
+          glow: "glow-emerald",
+          button: "bg-green-600 hover:bg-green-500 text-white"
+        };
+    }
+  };
+
+  const theme = getDomainTheme(activeDomain);
+
+  // Formatar tamanho legível
+  const formatBytes = (bytes: number) => {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
+
+  // Heurística de decodificação para suportar UTF-8 e ISO-8859-1 (CA04)
+  const detectAndDecodeFile = (arrayBuffer: ArrayBuffer): { text: string; encoding: string } => {
+    const view = new Uint8Array(arrayBuffer);
+    let isUTF8 = true;
+    let i = 0;
+    while (i < view.length) {
+      if (view[i] <= 0x7F) {
+        i++;
+      } else if (view[i] >= 0xC2 && view[i] <= 0xDF) {
+        if (i + 1 >= view.length || view[i + 1] < 0x80 || view[i + 1] > 0xBF) {
+          isUTF8 = false;
+          break;
+        }
+        i += 2;
+      } else if (view[i] >= 0xE0 && view[i] <= 0xEF) {
+        if (i + 2 >= view.length || view[i + 1] < 0x80 || view[i + 1] > 0xBF || view[i + 2] < 0x80 || view[i + 2] > 0xBF) {
+          isUTF8 = false;
+          break;
+        }
+        i += 3;
+      } else {
+        isUTF8 = false;
+        break;
+      }
+    }
+
+    const encoding = isUTF8 ? "utf-8" : "iso-8859-1";
+    const decoder = new TextDecoder(encoding);
+    const text = decoder.decode(view);
+    return { text, encoding: encoding.toUpperCase() };
+  };
+
+  // Validação interna da estrutura e delimitador do CSV (CA02)
+  const validateCSV = (text: string) => {
+    if (!text || text.trim() === "") {
+      throw new Error("O arquivo fornecido está totalmente vazio.");
+    }
+
+    const lines = text.split("\n").map(line => line.trim()).filter(line => line.length > 0);
+    if (lines.length === 0) {
+      throw new Error("Nenhum registro legível de dados foi encontrado.");
+    }
+
+    const firstLine = lines[0];
+    let delimiter = "";
+    if (firstLine.includes(",")) {
+      delimiter = ",";
+    } else if (firstLine.includes(";")) {
+      delimiter = ";";
+    } else if (firstLine.includes("\t")) {
+      delimiter = "\t";
+    } else {
+      throw new Error(
+        "Estrutura inválida. Separador de campos não detectado. O arquivo deve utilizar vírgulas (,), ponto e vírgulas (;) ou tabulações como delimitador."
+      );
+    }
+
+    const headers = firstLine.split(delimiter).map(h => h.trim().replace(/^["']|["']$/g, ""));
+    const rowCount = lines.length - 1;
+
+    if (headers.length < 2) {
+      throw new Error("O arquivo deve conter pelo menos duas colunas de dados identificáveis.");
+    }
+
+    return { delimiter, headers, rowCount };
+  };
+
+  // Processamento do arquivo selecionado/dropado
+  const processFile = (file: File) => {
+    setUploadStatus("idle");
+    setErrorMessage("");
+    setFileDetails(null);
+
+    // Validação imediata da extensão (CA01, CA05)
+    if (!file.name.toLowerCase().endsWith(".csv")) {
+      setUploadStatus("error");
+      setErrorMessage("Extensão de arquivo inválida. Apenas documentos com a extensão .csv são suportados para importação.");
+      return;
+    }
+
+    // Validação técnica de limite de tamanho de 5MB (CA06)
+    const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
+    if (file.size > MAX_SIZE) {
+      setUploadStatus("error");
+      setErrorMessage(`O arquivo excede o limite máximo permitido de 5 MB (tamanho do arquivo: ${formatBytes(file.size)}).`);
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      try {
+        const buffer = e.target?.result as ArrayBuffer;
+        if (!buffer) {
+          throw new Error("Falha ao ler o buffer do arquivo.");
+        }
+
+        // Decodificação segura UTF-8 e ISO-8859-1 (CA04)
+        const { text, encoding } = detectAndDecodeFile(buffer);
+
+        // Validação estrutural de delimitadores (CA02)
+        const { delimiter, headers, rowCount } = validateCSV(text);
+
+        // Feedback de progresso de processamento simulado (CA03)
+        setUploadStatus("loading");
+        setProgress(0);
+        setLoadingStep("Lendo cabeçalhos e decodificando conteúdo...");
+
+        // Fase 1: Leitura e detecção
+        setTimeout(() => {
+          setProgress(35);
+          setLoadingStep(`Codificação ${encoding} identificada. Validando estrutura com delimitador '${delimiter}'...`);
+
+          // Fase 2: Validação e preparação
+          setTimeout(() => {
+            setProgress(70);
+            setLoadingStep(`Tabela de dados validada. Sincronizando ${rowCount} registros com o motor preditivo...`);
+
+            // Fase 3: Conclusão
+            setTimeout(() => {
+              setProgress(100);
+              setUploadStatus("success");
+              setFileDetails({
+                name: file.name,
+                size: formatBytes(file.size),
+                encoding,
+                delimiter,
+                rows: rowCount,
+                headers
+              });
+
+              // Auditoria de Logs em tempo real
+              addLog(
+                `[CSV Ingest] Arquivo '${file.name}' (${formatBytes(file.size)}) importado no módulo ${domainInfo.name}. Codificação: ${encoding}, Delimitador: '${delimiter}', Registros: ${rowCount}, Colunas: [${headers.join(", ")}].`
+              );
+            }, 800);
+          }, 800);
+        }, 700);
+
+      } catch (err: any) {
+        setUploadStatus("error");
+        setErrorMessage(err.message || "Erro desconhecido ao processar o arquivo CSV.");
+      }
+    };
+
+    reader.onerror = () => {
+      setUploadStatus("error");
+      setErrorMessage("Erro de leitura do sistema operacional ao abrir o documento.");
+    };
+
+    reader.readAsArrayBuffer(file);
+  };
+
+  // Handlers para clique e navegação de arquivo
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      processFile(e.target.files[0]);
+    }
+  };
+
+  // Handlers para Arrastar e Soltar (CA05)
+  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      processFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const triggerFileSelect = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleReset = () => {
+    setUploadStatus("idle");
+    setProgress(0);
+    setErrorMessage("");
+    setFileDetails(null);
+  };
+
+  return (
+    <Card className={cn("bg-card border-border transition-all duration-300 relative overflow-hidden", theme.glow)}>
+      <div className={cn("absolute top-0 right-0 h-32 w-32 opacity-[0.03] rounded-full blur-2xl", theme.bg)} />
+      
+      <CardHeader className="pb-4">
+        <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
+          <FileSpreadsheet className="h-4.5 w-4.5 text-muted-foreground/60" />
+          Ingestão de Dados Históricos (Engenheiro de Dados)
+        </CardTitle>
+        <CardDescription className="text-[11px] text-muted-foreground">
+          Importe bases de dados históricas no formato exclusivo CSV para recalibração local dos algoritmos do módulo.
+        </CardDescription>
+      </CardHeader>
+
+      <CardContent>
+        {/* Input Oculto com accept específico (CA01) */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          accept=".csv"
+          className="hidden"
+          id="csv-file-input"
+        />
+
+        {/* 1. Interface em estado IDLE (Pronto para Upload) */}
+        {uploadStatus === "idle" && (
+          <div className="space-y-4">
+            <div
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={triggerFileSelect}
+              className={cn(
+                "border border-dashed rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 gap-3 group relative select-none",
+                isDragging ? theme.borderActive : theme.border
+              )}
+            >
+              <div className={cn(
+                "p-3 rounded-full bg-muted/40 border border-border/80 text-muted-foreground transition-all duration-300 group-hover:scale-110",
+                isDragging ? theme.accent : ""
+              )}>
+                <UploadCloud className="h-6 w-6" />
+              </div>
+
+              <div className="text-center space-y-1">
+                <p className="text-xs font-semibold text-foreground">
+                  Arrastar e soltar arquivo histórico
+                </p>
+                <p className="text-[10px] text-muted-foreground">
+                  ou clique para navegar no computador (máx. 5MB)
+                </p>
+              </div>
+
+              {/* Tag informativa de formato aceito */}
+              <div className="px-2 py-0.5 rounded bg-background border border-border text-[9px] font-bold text-muted-foreground uppercase font-mono tracking-wider">
+                Exclusivo CSV (.csv)
+              </div>
+            </div>
+
+            {/* Guia de Colunas Esperadas */}
+            <div className="p-3.5 rounded-xl bg-muted/30 border border-border/80 text-[11px] space-y-2">
+              <div className="font-bold text-foreground/80 flex items-center gap-1.5">
+                <span className={cn("h-1.5 w-1.5 rounded-full bg-current", theme.accent)} />
+                Estrutura de Colunas Esperada:
+              </div>
+              <p className="text-muted-foreground text-[10px] leading-relaxed">
+                Para o correto alinhamento do motor analítico neste módulo, certifique-se de que o CSV contemple os cabeçalhos abaixo (delimitados por <code className="font-mono text-foreground font-semibold px-0.5 bg-muted">,</code> ou <code className="font-mono text-foreground font-semibold px-0.5 bg-muted">;</code>):
+              </p>
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {expectedCols.map((col) => (
+                  <span key={col} className="px-2 py-0.5 rounded bg-background border border-border/60 font-mono text-[9px] text-foreground/80">
+                    {col}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 2. Interface em estado LOADING (Processando - CA03) */}
+        {uploadStatus === "loading" && (
+          <div className="border border-border/80 rounded-xl p-8 flex flex-col items-center justify-center gap-4 bg-muted/10 animate-in fade-in duration-300">
+            <Loader2 className={cn("h-8 w-8 animate-spin", theme.accent)} />
+            
+            <div className="text-center space-y-2 w-full max-w-xs">
+              <h4 className="text-xs font-bold text-foreground">Sincronizando dados históricos...</h4>
+              <p className="text-[10px] text-muted-foreground leading-relaxed h-8 flex items-center justify-center text-center">
+                {loadingStep}
+              </p>
+              
+              {/* Barra de Progresso Progressiva */}
+              <div className="w-full bg-muted h-2 rounded-full overflow-hidden border border-border mt-2">
+                <div
+                  className={cn("h-full transition-all duration-300", theme.progress)}
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              
+              <div className="text-[10px] font-mono text-muted-foreground font-semibold text-right">
+                {progress}%
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 3. Interface em estado SUCCESS (Concluído) */}
+        {uploadStatus === "success" && fileDetails && (
+          <div className="border border-emerald-500/20 bg-emerald-500/[0.02] rounded-xl p-6 flex flex-col sm:flex-row items-start gap-4 animate-in zoom-in-95 duration-300">
+            <div className="p-2 rounded-full bg-emerald-500/10 text-emerald-500 shrink-0">
+              <CheckCircle2 className="h-5 w-5" />
+            </div>
+
+            <div className="space-y-4 flex-1 w-full">
+              <div className="space-y-1">
+                <h4 className="text-xs font-bold text-foreground">Importação concluída com sucesso!</h4>
+                <p className="text-[10px] text-muted-foreground">
+                  A base histórica foi validada, decodificada e já está pronta para processamento pelo motor analítico.
+                </p>
+              </div>
+
+              {/* Informações detalhadas do arquivo */}
+              <div className="grid grid-cols-2 gap-3 p-3 bg-card border border-border/80 rounded-lg text-[10px] font-mono">
+                <div>
+                  <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Arquivo</span>
+                  <span className="text-foreground font-semibold truncate block max-w-[150px]" title={fileDetails.name}>
+                    {fileDetails.name}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Tamanho</span>
+                  <span className="text-foreground font-semibold">{fileDetails.size}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Codificação</span>
+                  <span className="text-foreground font-semibold">{fileDetails.encoding}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Delimitador</span>
+                  <span className="text-foreground font-semibold font-sans">
+                    {fileDetails.delimiter === "\t" ? "Tabulação (Tab)" : `'${fileDetails.delimiter}'`}
+                  </span>
+                </div>
+                <div className="col-span-2 border-t border-border/80 pt-2 mt-1">
+                  <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Registros Ingeridos</span>
+                  <span className="text-emerald-500 font-bold text-xs">{fileDetails.rows} linhas detectadas</span>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-1">
+                <Button
+                  onClick={handleReset}
+                  variant="outline"
+                  className="text-[10px] font-bold h-8 px-3.5 border-border hover:bg-muted"
+                >
+                  <Trash2 className="h-3.5 w-3.5 mr-1" />
+                  Limpar e Reiniciar
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 4. Interface em estado ERROR (Erro de Validação) */}
+        {uploadStatus === "error" && (
+          <div className="border border-rose-500/20 bg-rose-500/[0.02] rounded-xl p-5 flex items-start gap-3.5 animate-in shake duration-300">
+            <div className="p-2 rounded-full bg-rose-500/10 text-rose-500 shrink-0">
+              <AlertCircle className="h-5 w-5" />
+            </div>
+
+            <div className="space-y-3.5 flex-1 w-full">
+              <div className="space-y-1">
+                <h4 className="text-xs font-bold text-foreground">Falha na validação do arquivo</h4>
+                <p className="text-[10px] text-rose-500 leading-relaxed font-semibold">
+                  {errorMessage}
+                </p>
+              </div>
+
+              <div className="flex justify-end pt-1">
+                <Button
+                  onClick={handleReset}
+                  className={cn("text-[10px] font-bold h-8 px-3.5", theme.button)}
+                >
+                  Tentar Novamente
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
