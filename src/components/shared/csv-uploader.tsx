@@ -4,8 +4,9 @@ import React, { useState, useRef, DragEvent } from "react";
 import { useDomain, DOMAINS } from "@/lib/context/domain-context";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { UploadCloud, CheckCircle2, AlertCircle, Loader2, FileSpreadsheet, Trash2 } from "lucide-react";
+import { UploadCloud, CheckCircle2, AlertCircle, Loader2, FileSpreadsheet, Trash2, Info, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 // Colunas recomendadas/esperadas para cada domínio como orientação ao Engenheiro de Dados
 const EXPECTED_COLUMNS: Record<string, string[]> = {
@@ -13,6 +14,44 @@ const EXPECTED_COLUMNS: Record<string, string[]> = {
   "demand": ["data", "produto_id", "estoque_atual", "demanda_mensal", "lead_time"],
   "churn": ["cliente_id", "nome", "score_risco", "ltv", "fator_risco", "acao_recomendada"],
   "credit-risk": ["proposta_id", "cliente", "valor", "score", "probabilidade_retorno", "acao"]
+};
+
+interface ColumnSchema {
+  name: string;
+  type: "numeric" | "text";
+}
+
+const DOMAIN_SCHEMAS: Record<string, ColumnSchema[]> = {
+  "maintenance": [
+    { name: "timestamp", type: "text" },
+    { name: "sensor_id", type: "text" },
+    { name: "temperatura", type: "numeric" },
+    { name: "vibracao", type: "numeric" },
+    { name: "oee", type: "numeric" }
+  ],
+  "demand": [
+    { name: "data", type: "text" },
+    { name: "produto_id", type: "text" },
+    { name: "estoque_atual", type: "numeric" },
+    { name: "demanda_mensal", type: "numeric" },
+    { name: "lead_time", type: "numeric" }
+  ],
+  "churn": [
+    { name: "cliente_id", type: "text" },
+    { name: "nome", type: "text" },
+    { name: "score_risco", type: "numeric" },
+    { name: "ltv", type: "numeric" },
+    { name: "fator_risco", type: "text" },
+    { name: "acao_recomendada", type: "text" }
+  ],
+  "credit-risk": [
+    { name: "proposta_id", type: "text" },
+    { name: "cliente", type: "text" },
+    { name: "valor", type: "numeric" },
+    { name: "score", type: "numeric" },
+    { name: "probabilidade_retorno", type: "numeric" },
+    { name: "acao", type: "text" }
+  ]
 };
 
 export function CSVUploader() {
@@ -34,6 +73,15 @@ export function CSVUploader() {
     rows: number;
     headers: string[];
   } | null>(null);
+
+  const [validationReport, setValidationReport] = useState<{
+    isValid: boolean;
+    missingColumns: string[];
+    typeErrors: { column: string; expected: string; detected: string }[];
+    columnTypes: { column: string; expected: string; detected: string; status: "match" | "mismatch" }[];
+  } | null>(null);
+
+  const [isReportOpen, setIsReportOpen] = useState(false);
 
   if (!activeDomain) return null;
 
@@ -210,6 +258,85 @@ export function CSVUploader() {
         // Validação estrutural de delimitadores (CA02)
         const { delimiter, headers, rowCount } = validateCSV(text);
 
+        // Lógica de validação (RF07)
+        const schema = DOMAIN_SCHEMAS[activeDomain] || [];
+        const missingColumns: string[] = [];
+        const typeErrors: { column: string; expected: string; detected: string }[] = [];
+        const columnTypes: { column: string; expected: string; detected: string; status: "match" | "mismatch" }[] = [];
+
+        const lines = text.split("\n").map(line => line.trim()).filter(line => line.length > 0);
+        const rawRows = lines.slice(1);
+        const allParsedRows = rawRows.map(line => {
+          const cells = line.split(delimiter).map(cell => cell.trim().replace(/^["']|["']$/g, ""));
+          while (cells.length < headers.length) {
+            cells.push("");
+          }
+          return cells.slice(0, headers.length);
+        });
+
+        // 1. Validar colunas obrigatórias
+        schema.forEach(expectedField => {
+          const index = headers.findIndex(h => h.toLowerCase() === expectedField.name.toLowerCase());
+          if (index === -1) {
+            missingColumns.push(expectedField.name);
+            columnTypes.push({
+              column: expectedField.name,
+              expected: expectedField.type === "numeric" ? "Numérico" : "Texto",
+              detected: "Ausente",
+              status: "mismatch"
+            });
+          } else {
+            // 2. Se presente, validar a tipagem
+            let detectedType: "numeric" | "text" = "numeric";
+            let hasAnyValidValue = false;
+
+            for (let r = 0; r < allParsedRows.length; r++) {
+              const val = allParsedRows[r][index];
+              if (val !== undefined && val !== null && val !== "") {
+                const lowerVal = val.toLowerCase();
+                if (lowerVal !== "null" && lowerVal !== "undefined" && lowerVal !== "nan") {
+                  hasAnyValidValue = true;
+                  const sanitized = val.replace(",", ".");
+                  if (isNaN(Number(sanitized))) {
+                    detectedType = "text";
+                    break;
+                  }
+                }
+              }
+            }
+
+            if (!hasAnyValidValue) {
+              detectedType = expectedField.type;
+            }
+
+            const isMismatch = expectedField.type === "numeric" && detectedType === "text";
+
+            columnTypes.push({
+              column: headers[index],
+              expected: expectedField.type === "numeric" ? "Numérico" : "Texto",
+              detected: detectedType === "numeric" ? "Numérico" : "Texto",
+              status: isMismatch ? "mismatch" : "match"
+            });
+
+            if (isMismatch) {
+              typeErrors.push({
+                column: headers[index],
+                expected: "Numérico",
+                detected: "Texto"
+              });
+            }
+          }
+        });
+
+        const isValid = missingColumns.length === 0 && typeErrors.length === 0;
+
+        // Auditoria técnica de erros se a validação falhar (CA05)
+        if (!isValid) {
+          addLog(
+            `[CSV Validation Alert] Falha na validação do arquivo '${file.name}' em ${new Date().toLocaleString()}. Colunas ausentes: [${missingColumns.join(", ") || "Nenhuma"}]. Incompatibilidades de tipo: [${typeErrors.map(e => `${e.column} (Esperado: ${e.expected}, Obtido: ${e.detected})`).join(", ") || "Nenhuma"}].`
+          );
+        }
+
         // Feedback de progresso de processamento simulado (CA03)
         setUploadStatus("loading");
         setProgress(0);
@@ -228,16 +355,7 @@ export function CSVUploader() {
             // Fase 3: Conclusão do processamento e preparação da pré-visualização
             setTimeout(() => {
               // Parse das primeiras 5 linhas de dados (excluindo cabeçalho)
-              const lines = text.split("\n").map(line => line.trim()).filter(line => line.length > 0);
-              const rawRows = lines.slice(1, 6);
-              const parsedRows = rawRows.map(line => {
-                const cells = line.split(delimiter).map(cell => cell.trim().replace(/^["']|["']$/g, ""));
-                // Preenche colunas ausentes
-                while (cells.length < headers.length) {
-                  cells.push("");
-                }
-                return cells.slice(0, headers.length);
-              });
+              const parsedRows = allParsedRows.slice(0, 5);
 
               setProgress(100);
               setUploadStatus("preview");
@@ -250,6 +368,12 @@ export function CSVUploader() {
                 headers
               });
               setPreviewRows(parsedRows);
+              setValidationReport({
+                isValid,
+                missingColumns,
+                typeErrors,
+                columnTypes
+              });
             }, 800);
           }, 800);
         }, 700);
@@ -306,6 +430,8 @@ export function CSVUploader() {
     setErrorMessage("");
     setFileDetails(null);
     setPreviewRows([]);
+    setValidationReport(null);
+    setIsReportOpen(false);
   };
 
   const handleConfirm = () => {
@@ -320,6 +446,20 @@ export function CSVUploader() {
     if (val === undefined || val === null) return true;
     const lower = val.trim().toLowerCase();
     return lower === "" || lower === "null" || lower === "undefined" || lower === "nan";
+  };
+
+  const handleDownloadTemplate = () => {
+    const delimiter = fileDetails?.delimiter || ";";
+    const csvContent = expectedCols.join(delimiter);
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `modelo-exemplo-${activeDomain}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -455,6 +595,49 @@ export function CSVUploader() {
               </div>
             </div>
 
+            {/* Alerta de Validação com Opções de Baixar Modelo e Ver Relatório (CA02, CA06) */}
+            {validationReport && !validationReport.isValid && (
+              <div className="p-4 bg-rose-500/10 border border-rose-500/25 rounded-xl text-[11px] text-rose-500 space-y-2.5 animate-in fade-in duration-300">
+                <div className="font-bold flex items-center gap-1.5 text-xs">
+                  <AlertCircle className="h-4.5 w-4.5 shrink-0" />
+                  Inconsistências Detectadas na Validação de Esquema
+                </div>
+                <p className="text-[10px] leading-relaxed text-rose-500/90 font-medium">
+                  O validador automático encontrou inconsistências na estrutura do arquivo. O início do treinamento está bloqueado até que as seguintes pendências sejam resolvidas:
+                </p>
+                <div className="space-y-1.5 pl-1 font-sans text-[10px]">
+                  {validationReport.missingColumns.length > 0 && (
+                    <div>
+                      <strong>• Colunas obrigatórias ausentes:</strong> {validationReport.missingColumns.join(", ")}
+                    </div>
+                  )}
+                  {validationReport.typeErrors.length > 0 && (
+                    <div>
+                      <strong>• Incompatibilidade de tipos de dados:</strong> {validationReport.typeErrors.map(e => `A coluna '${e.column}' deveria ser do tipo ${e.expected}`).join(", ")}
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2 pt-1.5 border-t border-rose-500/15">
+                  <Button
+                    onClick={() => setIsReportOpen(true)}
+                    variant="outline"
+                    className="text-[9px] font-bold h-7 px-2.5 border-rose-500/20 bg-rose-500/5 hover:bg-rose-500/10 text-rose-500"
+                  >
+                    <Info className="h-3.5 w-3.5 mr-1 shrink-0" />
+                    Ver Relatório de Conformidade
+                  </Button>
+                  <Button
+                    onClick={handleDownloadTemplate}
+                    variant="outline"
+                    className="text-[9px] font-bold h-7 px-2.5 border-rose-500/20 bg-rose-500/5 hover:bg-rose-500/10 text-rose-500"
+                  >
+                    <Download className="h-3.5 w-3.5 mr-1 shrink-0" />
+                    Baixar Modelo de Exemplo
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {/* Tabela de Visualização com Scroll Horizontal (CA04) */}
             <div className="overflow-x-auto w-full max-w-full border border-border/80 rounded-xl bg-card shadow-inner scrollbar-thin scrollbar-thumb-muted-foreground/20">
               <table className="w-full text-left border-collapse">
@@ -512,7 +695,7 @@ export function CSVUploader() {
               </table>
             </div>
 
-            {/* Controles de Confirmação/Descarte (CA03) */}
+            {/* Controles de Confirmação/Descarte com Bloqueio de Treino (CA03) */}
             <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-2">
               <span className="text-[9px] text-muted-foreground italic font-medium">
                 Exibindo as primeiras {previewRows.length} de {fileDetails.rows} linhas detectadas.
@@ -528,7 +711,13 @@ export function CSVUploader() {
                 </Button>
                 <Button
                   onClick={handleConfirm}
-                  className={cn("text-[10px] font-bold h-8 px-3.5 flex-1 sm:flex-initial", theme.button)}
+                  disabled={validationReport ? !validationReport.isValid : false}
+                  className={cn(
+                    "text-[10px] font-bold h-8 px-3.5 flex-1 sm:flex-initial",
+                    (validationReport ? !validationReport.isValid : false)
+                      ? "bg-muted text-muted-foreground border-border cursor-not-allowed hover:bg-muted"
+                      : theme.button
+                  )}
                 >
                   <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
                   Confirmar e Avançar
@@ -622,6 +811,81 @@ export function CSVUploader() {
           </div>
         )}
       </CardContent>
+
+      {/* Pop-up do Relatório de Conformidade (CA04) */}
+      <Dialog open={isReportOpen} onOpenChange={setIsReportOpen}>
+        <DialogContent className="max-w-md bg-card border border-border rounded-xl p-5 shadow-2xl">
+          <DialogHeader className="pb-3 border-b border-border/80">
+            <DialogTitle className="text-sm font-bold text-foreground flex items-center gap-1.5 font-sans">
+              <FileSpreadsheet className="h-4.5 w-4.5 text-muted-foreground shrink-0" />
+              Relatório de Conformidade de Esquema
+            </DialogTitle>
+            <DialogDescription className="text-[10px] text-muted-foreground mt-0.5">
+              Comparação detalhada entre a estrutura detectada no arquivo importado e o esquema esperado pelo domínio.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-4 space-y-3">
+            <div className="overflow-hidden border border-border/80 rounded-lg bg-background">
+              <table className="w-full text-left border-collapse text-[10px]">
+                <thead>
+                  <tr className="bg-muted/40 border-b border-border font-sans font-bold text-muted-foreground uppercase text-[8px]">
+                    <th className="p-2 border-r border-border/40">Coluna</th>
+                    <th className="p-2 border-r border-border/40">Esperado</th>
+                    <th className="p-2 border-r border-border/40">Detectado</th>
+                    <th className="p-2">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="font-mono">
+                  {validationReport?.columnTypes.map((col, idx) => (
+                    <tr key={idx} className="border-b border-border/50 last:border-0 hover:bg-muted/10">
+                      <td className="p-2 border-r border-border/40 text-foreground font-semibold font-sans">{col.column}</td>
+                      <td className="p-2 border-r border-border/40 text-muted-foreground">{col.expected}</td>
+                      <td className={cn(
+                        "p-2 border-r border-border/40",
+                        col.detected === "Ausente" ? "text-rose-500 font-bold" : "text-muted-foreground"
+                      )}>{col.detected}</td>
+                      <td className="p-2">
+                        <span className={cn(
+                          "px-1.5 py-0.5 rounded text-[8px] font-bold uppercase",
+                          col.status === "match" 
+                            ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20" 
+                            : "bg-rose-500/10 text-rose-500 border border-rose-500/20 animate-pulse"
+                        )}>
+                          {col.status === "match" ? "Conforme" : "Erro"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {validationReport && !validationReport.isValid && (
+              <div className="p-2.5 rounded-lg bg-rose-500/10 text-[9px] text-rose-500/90 leading-relaxed font-sans border border-rose-500/20">
+                <strong>Nota Técnica:</strong> A divergência na estrutura impede a aprovação pelo validador. Por favor, ajuste os dados conforme os tipos indicados na coluna <em>Esperado</em>.
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2 border-t border-border/80">
+            <Button
+              onClick={handleDownloadTemplate}
+              variant="outline"
+              className="text-[10px] font-bold h-8 px-3.5 border-border hover:bg-muted"
+            >
+              <Download className="h-3.5 w-3.5 mr-1" />
+              Modelo de Exemplo
+            </Button>
+            <Button
+              onClick={() => setIsReportOpen(false)}
+              className={cn("text-[10px] font-bold h-8 px-3.5", theme.button)}
+            >
+              Fechar Relatório
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
