@@ -5,6 +5,7 @@ import { useDomain } from "@/lib/context/domain-context";
 import { Wrench, Settings, AlertTriangle, BarChart3, Radio } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { CSVUploader } from "@/components/shared/csv-uploader";
 
 export default function MaintenancePage() {
   const { addLog } = useDomain();
@@ -272,6 +273,9 @@ export default function MaintenancePage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Ingestão de Dados Históricos */}
+      <CSVUploader />
     </div>
   );
 }
