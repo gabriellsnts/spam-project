@@ -21,10 +21,11 @@ export function CSVUploader() {
 
   // Estados principais
   const [isDragging, setIsDragging] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [uploadStatus, setUploadStatus] = useState<"idle" | "loading" | "preview" | "success" | "error">("idle");
   const [progress, setProgress] = useState(0);
   const [loadingStep, setLoadingStep] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [previewRows, setPreviewRows] = useState<string[][]>([]);
   const [fileDetails, setFileDetails] = useState<{
     name: string;
     size: string;
@@ -222,12 +223,24 @@ export function CSVUploader() {
           // Fase 2: Validação e preparação
           setTimeout(() => {
             setProgress(70);
-            setLoadingStep(`Tabela de dados validada. Sincronizando ${rowCount} registros com o motor preditivo...`);
+            setLoadingStep(`Tabela de dados validada. Gerando pré-visualização de registros...`);
 
-            // Fase 3: Conclusão
+            // Fase 3: Conclusão do processamento e preparação da pré-visualização
             setTimeout(() => {
+              // Parse das primeiras 5 linhas de dados (excluindo cabeçalho)
+              const lines = text.split("\n").map(line => line.trim()).filter(line => line.length > 0);
+              const rawRows = lines.slice(1, 6);
+              const parsedRows = rawRows.map(line => {
+                const cells = line.split(delimiter).map(cell => cell.trim().replace(/^["']|["']$/g, ""));
+                // Preenche colunas ausentes
+                while (cells.length < headers.length) {
+                  cells.push("");
+                }
+                return cells.slice(0, headers.length);
+              });
+
               setProgress(100);
-              setUploadStatus("success");
+              setUploadStatus("preview");
               setFileDetails({
                 name: file.name,
                 size: formatBytes(file.size),
@@ -236,18 +249,15 @@ export function CSVUploader() {
                 rows: rowCount,
                 headers
               });
-
-              // Auditoria de Logs em tempo real
-              addLog(
-                `[CSV Ingest] Arquivo '${file.name}' (${formatBytes(file.size)}) importado no módulo ${domainInfo.name}. Codificação: ${encoding}, Delimitador: '${delimiter}', Registros: ${rowCount}, Colunas: [${headers.join(", ")}].`
-              );
+              setPreviewRows(parsedRows);
             }, 800);
           }, 800);
         }, 700);
 
-      } catch (err: any) {
+      } catch (err) {
         setUploadStatus("error");
-        setErrorMessage(err.message || "Erro desconhecido ao processar o arquivo CSV.");
+        const msg = err instanceof Error ? err.message : "Erro desconhecido ao processar o arquivo CSV.";
+        setErrorMessage(msg);
       }
     };
 
@@ -295,6 +305,21 @@ export function CSVUploader() {
     setProgress(0);
     setErrorMessage("");
     setFileDetails(null);
+    setPreviewRows([]);
+  };
+
+  const handleConfirm = () => {
+    if (!fileDetails) return;
+    setUploadStatus("success");
+    addLog(
+      `[CSV Ingest] Arquivo '${fileDetails.name}' (${fileDetails.size}) importado no módulo ${domainInfo.name}. Codificação: ${fileDetails.encoding}, Delimitador: '${fileDetails.delimiter}', Registros: ${fileDetails.rows}, Colunas: [${fileDetails.headers.join(", ")}].`
+    );
+  };
+
+  const isCellEmptyOrError = (val: string) => {
+    if (val === undefined || val === null) return true;
+    const lower = val.trim().toLowerCase();
+    return lower === "" || lower === "null" || lower === "undefined" || lower === "nan";
   };
 
   return (
@@ -403,7 +428,117 @@ export function CSVUploader() {
           </div>
         )}
 
-        {/* 3. Interface em estado SUCCESS (Concluído) */}
+        {/* 3. Interface em estado PREVIEW (Visualização dos Dados - RF06) */}
+        {uploadStatus === "preview" && fileDetails && (
+          <div className="border border-border/85 rounded-xl p-5 flex flex-col gap-4 animate-in zoom-in-95 duration-300">
+            <div className="space-y-1">
+              <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <span className={cn("h-2 w-2 rounded-full bg-current animate-pulse", theme.accent)} />
+                Pré-visualização dos Dados Importados
+              </h4>
+              <p className="text-[10px] text-muted-foreground">
+                Confira a amostragem das primeiras 5 linhas de dados para atestar o correto mapeamento das colunas e a ausência de problemas de codificação.
+              </p>
+            </div>
+
+            {/* Cabeçalho de Contexto do Arquivo (CA06) */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-3 bg-muted/40 border border-border/60 rounded-xl text-[10px] font-mono gap-2">
+              <div className="space-y-0.5">
+                <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Arquivo</span>
+                <span className="text-foreground font-bold truncate max-w-[250px] block" title={fileDetails.name}>
+                  {fileDetails.name}
+                </span>
+              </div>
+              <div className="space-y-0.5 sm:text-right">
+                <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Tamanho Total</span>
+                <span className="text-foreground font-semibold">{fileDetails.size}</span>
+              </div>
+            </div>
+
+            {/* Tabela de Visualização com Scroll Horizontal (CA04) */}
+            <div className="overflow-x-auto w-full max-w-full border border-border/80 rounded-xl bg-card shadow-inner scrollbar-thin scrollbar-thumb-muted-foreground/20">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-muted/50 border-b border-border">
+                    {fileDetails.headers.map((header) => (
+                      <th
+                        key={header}
+                        className="p-2.5 text-[9px] font-bold text-muted-foreground uppercase font-sans border-r border-border/40 min-w-[120px]"
+                      >
+                        {header}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {previewRows.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={fileDetails.headers.length}
+                        className="p-4 text-[10px] text-center text-muted-foreground italic border-b border-border/60"
+                      >
+                        Nenhum registro de dados disponível para visualização.
+                      </td>
+                    </tr>
+                  ) : (
+                    previewRows.map((row, rIdx) => (
+                      <tr key={rIdx} className="hover:bg-muted/20 transition-colors duration-150">
+                        {row.map((cell, cIdx) => {
+                          const isError = isCellEmptyOrError(cell);
+                          return (
+                            <td
+                              key={cIdx}
+                              className={cn(
+                                "p-2.5 border-r border-b border-border/60 text-[10px] min-w-[120px] max-w-[200px] truncate font-mono",
+                                isError ? "bg-rose-500/10 text-rose-500 font-semibold italic border-rose-500/20" : "text-foreground/80"
+                              )}
+                              title={cell}
+                            >
+                              {isError ? (
+                                <span className="flex items-center gap-1">
+                                  <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-ping shrink-0" />
+                                  [vazio/erro]
+                                </span>
+                              ) : (
+                                cell
+                              )}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Controles de Confirmação/Descarte (CA03) */}
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-2">
+              <span className="text-[9px] text-muted-foreground italic font-medium">
+                Exibindo as primeiras {previewRows.length} de {fileDetails.rows} linhas detectadas.
+              </span>
+              <div className="flex gap-2 w-full sm:w-auto justify-end">
+                <Button
+                  onClick={handleReset}
+                  variant="outline"
+                  className="text-[10px] font-bold h-8 px-3.5 border-border hover:bg-muted flex-1 sm:flex-initial"
+                >
+                  <Trash2 className="h-3.5 w-3.5 mr-1" />
+                  Descartar Importação
+                </Button>
+                <Button
+                  onClick={handleConfirm}
+                  className={cn("text-[10px] font-bold h-8 px-3.5 flex-1 sm:flex-initial", theme.button)}
+                >
+                  <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+                  Confirmar e Avançar
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 4. Interface em estado SUCCESS (Concluído) */}
         {uploadStatus === "success" && fileDetails && (
           <div className="border border-emerald-500/20 bg-emerald-500/[0.02] rounded-xl p-6 flex flex-col sm:flex-row items-start gap-4 animate-in zoom-in-95 duration-300">
             <div className="p-2 rounded-full bg-emerald-500/10 text-emerald-500 shrink-0">
@@ -460,7 +595,7 @@ export function CSVUploader() {
           </div>
         )}
 
-        {/* 4. Interface em estado ERROR (Erro de Validação) */}
+        {/* 5. Interface em estado ERROR (Erro de Validação) */}
         {uploadStatus === "error" && (
           <div className="border border-rose-500/20 bg-rose-500/[0.02] rounded-xl p-5 flex items-start gap-3.5 animate-in shake duration-300">
             <div className="p-2 rounded-full bg-rose-500/10 text-rose-500 shrink-0">
