@@ -847,6 +847,35 @@ export function CSVImport() {
                   </div>
                 </div>
 
+                {/* Seção Visual de Resumo do Pré-processamento (RF08 / CA03) */}
+                <div className="p-4 bg-emerald-500/10 dark:bg-emerald-500/5 border border-emerald-500/20 rounded-xl space-y-3 animate-in fade-in duration-300">
+                  <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                    <Sliders className="h-4 w-4 shrink-0" />
+                    <span>Resumo de Otimização e Tratamento de Dados</span>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[10.5px] text-foreground/80 font-medium">
+                    {columnsInfo.map((col) => (
+                      <div key={col.name} className="flex items-center justify-between bg-muted/40 p-2 rounded-lg border border-border/50 font-mono">
+                        <span className="truncate mr-2">
+                          Coluna <strong className="font-bold text-foreground">{col.name}</strong>
+                        </span>
+                        <span className="shrink-0 text-right">
+                          <strong className={col.missingCount > 0 ? "text-amber-500 font-bold" : "text-emerald-500"}>
+                            {col.missingCount}
+                          </strong>{" "}
+                          valores corrigidos pela {col.type === "numeric" ? "mediana" : "moda"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="text-xs text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1.5 pt-1.5 border-t border-emerald-500/15">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                    A base de dados está otimizada para o início imediato do treinamento técnico da IA.
+                  </div>
+                </div>
+
                 {/* Tabela com Amostra */}
                 <div className="border border-border/80 rounded-xl overflow-hidden bg-card shadow-inner">
                   <div className="overflow-x-auto scrollbar-thin">
