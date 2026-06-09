@@ -374,6 +374,9 @@ export function CSVUploader() {
                 typeErrors,
                 columnTypes
               });
+              if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+              }
             }, 800);
           }, 800);
         }, 700);
@@ -432,6 +435,9 @@ export function CSVUploader() {
     setPreviewRows([]);
     setValidationReport(null);
     setIsReportOpen(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const handleConfirm = () => {
