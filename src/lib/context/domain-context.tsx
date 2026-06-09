@@ -223,11 +223,11 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     const USERS_DB: Record<string, { profileName: string; passwordHash: string }> = {
       admin: {
         profileName: "Administrador",
-        passwordHash: "2407891877f24823292418e202598379469796e6257e8d35661f00880155b9e0", // admin123
+        passwordHash: "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9", // admin123
       },
       gestor: {
         profileName: "Gestor de Operações",
-        passwordHash: "5be7970d4bde55cd91a1a742c366ff852a420b9df4cc0ec12b32938565b91b9a", // spam2026
+        passwordHash: "db05065fff4dff901e0cf548ee0a478770a3074516026ff01021a3c0a7a917a4", // spam2026
       },
     };
 
