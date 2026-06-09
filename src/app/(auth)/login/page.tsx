@@ -159,7 +159,7 @@ export default function LoginPage() {
                   <ShieldAlert className="h-10 w-10 text-red-500 animate-bounce" />
                   <p className="text-xs text-zinc-400 leading-relaxed max-w-xs">
                     Excedeu o número máximo de <strong>5 tentativas consecutivas</strong> de login malsucedidas. 
-                    Por segurança, a conta do usuário <strong>"{username}"</strong> foi suspensa temporariamente.
+                    Por segurança, a conta do usuário <strong>&quot;{username}&quot;</strong> foi suspensa temporariamente.
                   </p>
                   <p className="text-xs font-semibold text-zinc-300 border-t border-zinc-800 pt-2 w-full">
                     Entre em contato com o administrador para reativação da sua conta.
