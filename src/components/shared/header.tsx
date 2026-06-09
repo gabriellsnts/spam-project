@@ -35,6 +35,8 @@ export function Header() {
     userProfile,
     theme,
     toggleTheme,
+    currentUser,
+    logout,
   } = useDomain();
 
   const [logsOpen, setLogsOpen] = useState(false);
@@ -167,11 +169,54 @@ export function Header() {
             )}
           </Button>
 
-          {/* User Profile */}
-          <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-md bg-muted/40 border border-border text-xs text-muted-foreground">
-            <User className="h-3.5 w-3.5 text-muted-foreground/60" />
-            <span>{userProfile}</span>
-          </div>
+          {/* User Profile Dropdown Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-md bg-muted/40 border border-border text-xs text-muted-foreground hover:text-foreground hover:bg-muted/60 transition h-8"
+              >
+                <User className="h-3.5 w-3.5 text-muted-foreground/60" />
+                <span>{userProfile}</span>
+                <ChevronDown className="h-3 w-3 opacity-60" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 bg-popover border-border text-popover-foreground">
+              <DropdownMenuLabel className="text-muted-foreground text-[10px] tracking-wider uppercase font-bold">
+                Conta do Usuário
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem disabled className="text-xs">
+                <div className="flex flex-col">
+                  <span className="font-semibold text-foreground">{currentUser?.profileName}</span>
+                  <span className="text-[10px] text-zinc-500 font-mono">@{currentUser?.username}</span>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              
+              {/* Simular Inatividade para homologação */}
+              <DropdownMenuItem
+                onClick={() => {
+                  localStorage.setItem("spam-inactivity-test-time", "10000");
+                  alert("Simulação de inatividade de 10 segundos ativada! Não interaja com a página por 10 segundos para ser desconectado.");
+                  window.dispatchEvent(new Event("mousemove"));
+                }}
+                className="text-xs gap-2 cursor-pointer text-amber-500 hover:text-amber-400"
+              >
+                <Activity className="h-3.5 w-3.5 animate-pulse" />
+                <span>Simular Inatividade (10s)</span>
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => logout()}
+                className="text-xs gap-2 cursor-pointer text-red-500 hover:text-red-400 font-bold"
+              >
+                <User className="h-3.5 w-3.5" />
+                <span>Encerrar Sessão (Sair)</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {/* Quick Switch Dropdown (CA06 menu de atalho rápido) */}
           <DropdownMenu>
@@ -244,6 +289,14 @@ export function Header() {
                   <Home className="h-3.5 w-3.5" />
                   <span>Painel Inicial (Reset)</span>
                 </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => logout()}
+                className="flex items-center gap-2 text-xs cursor-pointer text-red-500 font-semibold"
+              >
+                <User className="h-3.5 w-3.5 text-red-500" />
+                <span>Sair da Conta (Logout)</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
