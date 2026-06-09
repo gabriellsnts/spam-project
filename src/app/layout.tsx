@@ -4,6 +4,7 @@ import "./globals.css";
 import { DomainProvider } from "@/lib/context/domain-context";
 import { LoadingOverlay } from "@/components/shared/loading-overlay";
 import { ConfirmSwitchDialog } from "@/components/shared/confirm-switch-dialog";
+import { AuthGuard } from "@/components/shared/auth-guard";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,7 +22,9 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className={inter.className}>
         <DomainProvider>
-          {children}
+          <AuthGuard>
+            {children}
+          </AuthGuard>
           <LoadingOverlay />
           <ConfirmSwitchDialog />
         </DomainProvider>
