@@ -6,9 +6,40 @@ import { Wrench, Settings, AlertTriangle, BarChart3, Radio } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CSVUploader } from "@/components/shared/csv-uploader";
+import { DescriptiveStats } from "@/components/shared/descriptive-stats";
 
 export default function MaintenancePage() {
   const { addLog, isTraining } = useDomain();
+  const [csvFileDetails, setCsvFileDetails] = useState<{
+    name: string;
+    size: string;
+    encoding: string;
+    delimiter: string;
+    rows: number;
+    headers: string[];
+  } | null>(null);
+  const [csvAllRows, setCsvAllRows] = useState<string[][] | null>(null);
+
+  const handleCSVConfirm = (
+    fileDetails: {
+      name: string;
+      size: string;
+      encoding: string;
+      delimiter: string;
+      rows: number;
+      headers: string[];
+    },
+    allRows: string[][]
+  ) => {
+    setCsvFileDetails(fileDetails);
+    setCsvAllRows(allRows);
+  };
+
+  const handleCSVReset = () => {
+    setCsvFileDetails(null);
+    setCsvAllRows(null);
+  };
+
   const [machines, setMachines] = useState([
     { id: "M01", name: "Torno CNC 01", status: "ok", temp: 58, vibration: 1.2, oee: 88 },
     { id: "M02", name: "Braço Robotizado A", status: "ok", temp: 62, vibration: 2.1, oee: 84 },
@@ -277,7 +308,17 @@ export default function MaintenancePage() {
       </div>
 
       {/* Ingestão de Dados Históricos */}
-      <CSVUploader />
+      <div className="space-y-6">
+        <CSVUploader onConfirm={handleCSVConfirm} onReset={handleCSVReset} />
+        
+        {csvFileDetails && csvAllRows && (
+          <DescriptiveStats
+            fileDetails={csvFileDetails}
+            allRows={csvAllRows}
+            activeDomain="maintenance"
+          />
+        )}
+      </div>
     </div>
   );
 }

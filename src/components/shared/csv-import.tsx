@@ -420,6 +420,9 @@ export function CSVImport() {
               setUploadStatus("success");
               addLocalLog("Pré-processamento estocástico concluído com sucesso.");
               addLog(`Dados pré-processados da base '${file.name}'. Total de células corrigidas: ${grandTotalImputed}.`);
+              if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+              }
             }, 500);
           }, 600);
         }, 500);
