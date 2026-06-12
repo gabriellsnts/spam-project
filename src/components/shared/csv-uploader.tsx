@@ -16,12 +16,12 @@ const EXPECTED_COLUMNS: Record<string, string[]> = {
   "credit-risk": ["proposta_id", "cliente", "valor", "score", "probabilidade_retorno", "acao"]
 };
 
-interface ColumnSchema {
+export interface ColumnSchema {
   name: string;
   type: "numeric" | "text";
 }
 
-const DOMAIN_SCHEMAS: Record<string, ColumnSchema[]> = {
+export const DOMAIN_SCHEMAS: Record<string, ColumnSchema[]> = {
   "maintenance": [
     { name: "timestamp", type: "text" },
     { name: "sensor_id", type: "text" },
@@ -54,12 +54,28 @@ const DOMAIN_SCHEMAS: Record<string, ColumnSchema[]> = {
   ]
 };
 
-export function CSVUploader() {
+interface CSVUploaderProps {
+  onConfirm?: (
+    fileDetails: {
+      name: string;
+      size: string;
+      encoding: string;
+      delimiter: string;
+      rows: number;
+      headers: string[];
+    },
+    allRows: string[][]
+  ) => void;
+  onReset?: () => void;
+}
+
+export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
   const { activeDomain, addLog } = useDomain();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Estados principais
   const [isDragging, setIsDragging] = useState(false);
+  const [allRows, setAllRows] = useState<string[][]>([]);
   const [uploadStatus, setUploadStatus] = useState<"idle" | "loading" | "preview" | "success" | "error">("idle");
   const [progress, setProgress] = useState(0);
   const [loadingStep, setLoadingStep] = useState("");
@@ -367,6 +383,7 @@ export function CSVUploader() {
                 rows: rowCount,
                 headers
               });
+              setAllRows(allParsedRows);
               setPreviewRows(parsedRows);
               setValidationReport({
                 isValid,
@@ -435,8 +452,12 @@ export function CSVUploader() {
     setPreviewRows([]);
     setValidationReport(null);
     setIsReportOpen(false);
+    setAllRows([]);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
+    }
+    if (onReset) {
+      onReset();
     }
   };
 
@@ -446,6 +467,9 @@ export function CSVUploader() {
     addLog(
       `[CSV Ingest] Arquivo '${fileDetails.name}' (${fileDetails.size}) importado no módulo ${domainInfo.name}. Codificação: ${fileDetails.encoding}, Delimitador: '${fileDetails.delimiter}', Registros: ${fileDetails.rows}, Colunas: [${fileDetails.headers.join(", ")}].`
     );
+    if (onConfirm) {
+      onConfirm(fileDetails, allRows);
+    }
   };
 
   const isCellEmptyOrError = (val: string) => {
