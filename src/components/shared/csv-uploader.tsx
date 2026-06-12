@@ -55,7 +55,22 @@ const DOMAIN_SCHEMAS: Record<string, ColumnSchema[]> = {
 };
 
 export function CSVUploader() {
-  const { activeDomain, addLog } = useDomain();
+  const { 
+    activeDomain, 
+    addLog,
+    isTraining,
+    trainingProgress,
+    trainingStep,
+    trainingETA,
+    trainingError,
+    trainingErrorDetails,
+    showTrainingDetails,
+    simulatedFail,
+    setSimulatedFail,
+    startTraining,
+    resetTraining,
+    toggleTrainingDetails,
+  } = useDomain();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Estados principais
@@ -68,6 +83,7 @@ export function CSVUploader() {
   const [fileDetails, setFileDetails] = useState<{
     name: string;
     size: string;
+    sizeBytes: number;
     encoding: string;
     delimiter: string;
     rows: number;
@@ -362,6 +378,7 @@ export function CSVUploader() {
               setFileDetails({
                 name: file.name,
                 size: formatBytes(file.size),
+                sizeBytes: file.size,
                 encoding,
                 delimiter,
                 rows: rowCount,
@@ -488,7 +505,7 @@ export function CSVUploader() {
         />
 
         {/* 1. Interface em estado IDLE (Pronto para Upload) */}
-        {uploadStatus === "idle" && (
+        {uploadStatus === "idle" && !isTraining && trainingProgress === 0 && (
           <div className="space-y-4">
             <div
               onDragOver={handleDragOver}
@@ -543,7 +560,7 @@ export function CSVUploader() {
         )}
 
         {/* 2. Interface em estado LOADING (Processando - CA03) */}
-        {uploadStatus === "loading" && (
+        {uploadStatus === "loading" && !isTraining && (
           <div className="border border-border/80 rounded-xl p-8 flex flex-col items-center justify-center gap-4 bg-muted/10 animate-in fade-in duration-300">
             <Loader2 className={cn("h-8 w-8 animate-spin", theme.accent)} />
             
@@ -569,7 +586,7 @@ export function CSVUploader() {
         )}
 
         {/* 3. Interface em estado PREVIEW (Visualização dos Dados - RF06) */}
-        {uploadStatus === "preview" && fileDetails && (
+        {uploadStatus === "preview" && !isTraining && trainingProgress === 0 && fileDetails && (
           <div className="border border-border/85 rounded-xl p-5 flex flex-col gap-4 animate-in zoom-in-95 duration-300">
             <div className="space-y-1">
               <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
@@ -728,7 +745,7 @@ export function CSVUploader() {
         )}
 
         {/* 4. Interface em estado SUCCESS (Concluído) */}
-        {uploadStatus === "success" && fileDetails && (
+        {uploadStatus === "success" && !isTraining && trainingProgress === 0 && fileDetails && (
           <div className="border border-emerald-500/20 bg-emerald-500/[0.02] rounded-xl p-6 flex flex-col sm:flex-row items-start gap-4 animate-in zoom-in-95 duration-300">
             <div className="p-2 rounded-full bg-emerald-500/10 text-emerald-500 shrink-0">
               <CheckCircle2 className="h-5 w-5" />
@@ -770,22 +787,43 @@ export function CSVUploader() {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-1">
-                <Button
-                  onClick={handleReset}
-                  variant="outline"
-                  className="text-[10px] font-bold h-8 px-3.5 border-border hover:bg-muted"
-                >
-                  <Trash2 className="h-3.5 w-3.5 mr-1" />
-                  Limpar e Reiniciar
-                </Button>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pt-3 border-t border-border/60">
+                {/* Simular erro checkbox */}
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={simulatedFail}
+                    onChange={(e) => setSimulatedFail(e.target.checked)}
+                    className="rounded border-border text-rose-600 bg-background focus:ring-0 h-3.5 w-3.5 transition"
+                  />
+                  <span className="text-[10px] text-muted-foreground hover:text-foreground font-medium">
+                    Simular erro crítico (OOM) aos 45% (fins de teste)
+                  </span>
+                </label>
+
+                <div className="flex gap-2 w-full sm:w-auto justify-end">
+                  <Button
+                    onClick={handleReset}
+                    variant="outline"
+                    className="text-[10px] font-bold h-8 px-3.5 border-border hover:bg-muted"
+                  >
+                    <Trash2 className="h-3.5 w-3.5 mr-1" />
+                    Limpar
+                  </Button>
+                  <Button
+                    onClick={() => startTraining(fileDetails.sizeBytes)}
+                    className={cn("text-[10px] font-bold h-8 px-3.5", theme.button)}
+                  >
+                    Iniciar Treinamento do Modelo
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
         )}
 
         {/* 5. Interface em estado ERROR (Erro de Validação) */}
-        {uploadStatus === "error" && (
+        {uploadStatus === "error" && !isTraining && trainingProgress === 0 && (
           <div className="border border-rose-500/20 bg-rose-500/[0.02] rounded-xl p-5 flex items-start gap-3.5 animate-in shake duration-300">
             <div className="p-2 rounded-full bg-rose-500/10 text-rose-500 shrink-0">
               <AlertCircle className="h-5 w-5" />
@@ -807,6 +845,176 @@ export function CSVUploader() {
                   Tentar Novamente
                 </Button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* 6. Interface em estado de TREINAMENTO (Ativo ou Finalizado - CA01) */}
+        {(isTraining || trainingProgress > 0) && fileDetails && (
+          <div className={cn(
+            "border rounded-xl p-6 flex flex-col gap-5 transition-all duration-300 animate-in zoom-in-95",
+            trainingError 
+              ? "border-rose-500/20 bg-rose-500/[0.02]" 
+              : trainingProgress === 100 
+                ? "border-emerald-500/20 bg-emerald-500/[0.02]"
+                : "border-border/80 bg-muted/10"
+          )}>
+            <div className="flex items-start gap-4">
+              {/* Central loader icon (CA01) */}
+              <div className="shrink-0 mt-0.5">
+                {trainingError ? (
+                  <div className="p-3 rounded-full bg-rose-500/10 text-rose-500 shrink-0 animate-bounce">
+                    <AlertCircle className="h-6 w-6" />
+                  </div>
+                ) : trainingProgress === 100 ? (
+                  <div className="p-3 rounded-full bg-emerald-500/10 text-emerald-500 shrink-0">
+                    <CheckCircle2 className="h-6 w-6" />
+                  </div>
+                ) : (
+                  <div className="p-3 rounded-full bg-muted border border-border/80 text-muted-foreground relative">
+                    <Loader2 className={cn("h-6 w-6 animate-spin", theme.accent)} />
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-1 flex-1">
+                <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
+                  {trainingError ? (
+                    <span className="text-rose-500">Treinamento Interrompido por Falha Crítica</span>
+                  ) : trainingProgress === 100 ? (
+                    <span className="text-emerald-500">Treinamento Concluído com Sucesso Absoluto!</span>
+                  ) : (
+                    <span>Treinamento do Modelo em Andamento...</span>
+                  )}
+                </h4>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  {trainingError 
+                    ? "O motor analítico encontrou uma exceção não tratada durante o processamento de gradientes."
+                    : trainingProgress === 100
+                      ? "Os parâmetros do algoritmo foram recalibrados com sucesso e o modelo está pronto para produção."
+                      : `Processando base de dados histórica '${fileDetails.name}' com ${fileDetails.rows} registros.`}
+                </p>
+              </div>
+            </div>
+
+            {/* Dynamic Stage Text (CA02) */}
+            <div className="space-y-2">
+              <div className="flex justify-between items-center text-xs">
+                <span className={cn(
+                  "font-semibold flex items-center gap-1.5",
+                  trainingError ? "text-rose-500" : trainingProgress === 100 ? "text-emerald-500" : theme.accent
+                )}>
+                  {!trainingError && trainingProgress < 100 && (
+                    <span className="h-1.5 w-1.5 rounded-full bg-current animate-ping" />
+                  )}
+                  {trainingStep}
+                </span>
+                
+                {/* Countdown Timer (CA04) */}
+                {!trainingError && trainingProgress < 100 && trainingETA > 0 && (
+                  <span className="text-[10px] text-muted-foreground font-mono bg-muted border border-border/80 px-2 py-0.5 rounded-md font-semibold">
+                    Tempo restante estimado: {trainingETA}s
+                  </span>
+                )}
+              </div>
+
+              {/* Progress Bar (CA01) */}
+              <div className="w-full bg-muted h-3.5 rounded-full overflow-hidden border border-border/80 p-[2px]">
+                <div
+                  className={cn(
+                    "h-full rounded-full transition-all duration-300",
+                    trainingError 
+                      ? "bg-rose-500" 
+                      : trainingProgress === 100 
+                        ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]"
+                        : theme.progress
+                  )}
+                  style={{ width: `${trainingProgress}%` }}
+                />
+              </div>
+
+              <div className="flex justify-between items-center text-[10px] font-mono text-muted-foreground">
+                <span>Progresso Real</span>
+                <span className="font-bold">{trainingProgress}%</span>
+              </div>
+            </div>
+
+            {/* Technical Error Stacktrace (CA06) */}
+            {trainingError && trainingErrorDetails && (
+              <div className="space-y-2 animate-in fade-in duration-350">
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] text-rose-500 font-bold uppercase tracking-wider">Mapeamento de Falha</span>
+                  <Button
+                    onClick={toggleTrainingDetails}
+                    variant="outline"
+                    className="text-[9px] font-bold h-6 px-2 border-rose-500/20 bg-rose-500/5 hover:bg-rose-500/10 text-rose-500 font-mono"
+                  >
+                    {showTrainingDetails ? "Ocultar Detalhes" : "Ver Detalhes do Erro"}
+                  </Button>
+                </div>
+
+                {showTrainingDetails && (
+                  <pre className="p-3.5 bg-zinc-950/90 text-rose-400 border border-rose-500/20 rounded-lg text-[9px] leading-relaxed font-mono overflow-x-auto max-h-[160px] scrollbar-thin scrollbar-thumb-rose-500/20">
+                    {trainingErrorDetails}
+                  </pre>
+                )}
+              </div>
+            )}
+
+            {/* Metrics improvement mock on success */}
+            {trainingProgress === 100 && (
+              <div className="p-3.5 bg-emerald-500/5 border border-emerald-500/15 rounded-xl text-[11px] text-emerald-600 dark:text-emerald-400 font-medium space-y-1 animate-in fade-in duration-500">
+                <p className="font-bold flex items-center gap-1">
+                  ✨ Recalibração de Modelo Concluída:
+                </p>
+                <p className="text-[10px] text-muted-foreground leading-relaxed pl-1">
+                  Métricas de validação otimizadas com sucesso! Acurácia geral ajustada de 93.8% para <strong>97.4%</strong>. O motor analítico do módulo {DOMAINS[activeDomain].name} agora está operando com base histórica atualizada.
+                </p>
+              </div>
+            )}
+
+            {/* Control buttons inside training panel */}
+            <div className="flex justify-end gap-2 pt-2 border-t border-border/40 mt-1">
+              {trainingError ? (
+                <>
+                  <Button
+                    onClick={resetTraining}
+                    variant="outline"
+                    className="text-[10px] font-bold h-8 px-3.5 border-border hover:bg-muted"
+                  >
+                    Descartar e Voltar
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      resetTraining();
+                      setTimeout(() => {
+                        startTraining(fileDetails.sizeBytes);
+                      }, 100);
+                    }}
+                    className="text-[10px] font-bold h-8 px-3.5 bg-rose-600 hover:bg-rose-500 text-white"
+                  >
+                    Tentar Novamente
+                  </Button>
+                </>
+              ) : trainingProgress === 100 ? (
+                <Button
+                  onClick={() => {
+                    resetTraining();
+                    handleReset();
+                  }}
+                  className="text-[10px] font-bold h-8 px-3.5 bg-emerald-600 hover:bg-emerald-500 text-white"
+                >
+                  Concluir e Fechar
+                </Button>
+              ) : (
+                <Button
+                  onClick={resetTraining}
+                  variant="outline"
+                  className="text-[10px] font-bold h-8 px-3.5 border-rose-500/25 bg-rose-500/5 hover:bg-rose-500/10 text-rose-500"
+                >
+                  Cancelar Treinamento
+                </Button>
+              )}
             </div>
           </div>
         )}

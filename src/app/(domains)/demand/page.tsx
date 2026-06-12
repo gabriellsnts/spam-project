@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { CSVUploader } from "@/components/shared/csv-uploader";
 
 export default function DemandPage() {
-  const { addLog } = useDomain();
+  const { addLog, isTraining } = useDomain();
   const [seasonalActive, setSeasonalActive] = useState(false);
   
   const [metrics, setMetrics] = useState({
@@ -83,6 +83,7 @@ export default function DemandPage() {
           {seasonalActive ? (
             <Button
               onClick={resetSimulation}
+              disabled={isTraining}
               className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold"
             >
               Resetar Demanda
@@ -90,6 +91,7 @@ export default function DemandPage() {
           ) : (
             <Button
               onClick={triggerSeasonalSimulation}
+              disabled={isTraining}
               className="bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold gap-1.5"
             >
               <Calendar className="h-4 w-4" />

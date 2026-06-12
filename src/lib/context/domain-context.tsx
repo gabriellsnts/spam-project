@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
 export interface AuditLog {
@@ -93,6 +93,22 @@ interface DomainContextProps {
   logout: (reason?: string) => void;
   resetAttempts: (username: string) => void;
   isUserLocked: (username: string) => boolean;
+  // Training fields:
+  isTraining: boolean;
+  trainingProgress: number;
+  trainingStep: string;
+  trainingETA: number;
+  trainingDuration: number;
+  trainingError: string | null;
+  trainingErrorDetails: string | null;
+  showTrainingDetails: boolean;
+  trainingFinishedAlert: boolean;
+  simulatedFail: boolean;
+  setSimulatedFail: (val: boolean) => void;
+  startTraining: (fileSize: number) => void;
+  resetTraining: () => void;
+  dismissFinishedAlert: () => void;
+  toggleTrainingDetails: () => void;
 }
 
 const DomainContext = createContext<DomainContextProps | undefined>(undefined);
@@ -122,6 +138,20 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
   const [isAuthLoading, setIsAuthLoading] = useState(true);
 
   const userProfile = currentUser ? currentUser.profileName : "Visitante";
+
+  // Training states
+  const [isTraining, setIsTraining] = useState(false);
+  const [trainingProgress, setTrainingProgress] = useState(0);
+  const [trainingStep, setTrainingStep] = useState("");
+  const [trainingETA, setTrainingETA] = useState(0);
+  const [trainingDuration, setTrainingDuration] = useState(0);
+  const [trainingError, setTrainingError] = useState<string | null>(null);
+  const [trainingErrorDetails, setTrainingErrorDetails] = useState<string | null>(null);
+  const [showTrainingDetails, setShowTrainingDetails] = useState(false);
+  const [trainingFinishedAlert, setTrainingFinishedAlert] = useState(false);
+  const [simulatedFail, setSimulatedFail] = useState(false);
+
+
 
   // Carregar tema e sessão do localStorage/sessionStorage no cliente
   useEffect(() => {
@@ -185,6 +215,119 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
   const addLog = useCallback((action: string) => {
     addLogWithProfile(userProfile, action);
   }, [userProfile, addLogWithProfile]);
+
+  const trainingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const startTraining = useCallback((fileSize: number) => {
+    if (isTraining) return;
+
+    setIsTraining(true);
+    setTrainingProgress(0);
+    setTrainingStep("Lendo base de dados histórica...");
+    setTrainingError(null);
+    setTrainingErrorDetails(null);
+    setShowTrainingDetails(false);
+    setTrainingFinishedAlert(false);
+
+    // Complexity multipliers based on domain
+    const complexityMultipliers: Record<string, number> = {
+      "maintenance": 1.6,
+      "demand": 1.8,
+      "churn": 2.2,
+      "credit-risk": 1.3
+    };
+    
+    const domainKey = activeDomain || "maintenance";
+    const multiplier = complexityMultipliers[domainKey] || 1.0;
+    
+    // Calculate estimated total duration (seconds) based on file size and active domain complexity
+    const fileSizeKB = fileSize / 1024;
+    const duration = Math.max(12, Math.min(25, Math.round((fileSizeKB / 100) * multiplier) + 8));
+    
+    setTrainingDuration(duration);
+    setTrainingETA(duration);
+
+    addLog(`[Model Training] Iniciado treinamento do modelo para o módulo '${DOMAINS[domainKey].name}'. Tamanho do arquivo: ${fileSizeKB.toFixed(1)} KB. Tempo estimado: ${duration}s.`);
+
+    let elapsedSeconds = 0;
+    
+    if (trainingIntervalRef.current) clearInterval(trainingIntervalRef.current);
+    
+    trainingIntervalRef.current = setInterval(() => {
+      elapsedSeconds += 1;
+      const progressPercent = Math.min(Math.round((elapsedSeconds / duration) * 100), 100);
+      
+      setTrainingProgress(progressPercent);
+      setTrainingETA(Math.max(0, duration - elapsedSeconds));
+
+      // CA02 - Dynamic stage updates
+      if (progressPercent < 15) {
+        setTrainingStep("Lendo base de dados histórica e decodificando tensores...");
+      } else if (progressPercent < 35) {
+        setTrainingStep("Imputando valores ausentes via mediana/moda e normalizando características...");
+      } else if (progressPercent < 55) {
+        // CA06 - Check if error simulation is active
+        if (simulatedFail && progressPercent >= 45) {
+          if (trainingIntervalRef.current) clearInterval(trainingIntervalRef.current);
+          setIsTraining(false);
+          setTrainingProgress(45);
+          setTrainingStep("Falha crítica no motor analítico.");
+          setTrainingError("OutOfMemory (OOM): Falha crítica de alocação de memória durante a computação de gradientes.");
+          setTrainingErrorDetails(
+            `Fatal Error: Memory allocation failed during matrix multiplication of size [12400, 12400] on device CPU:0.\n` +
+            `Requested: 4.8 GB | Available: 4.0 GB | Reserved: 12.5 GB\n\n` +
+            `Stack Trace:\n` +
+            `  tensor_utils.cpp:214 at train_epoch_gradient_descent()\n` +
+            `  model_trainer.py:87 in fit_model()\n` +
+            `  xgboost_executor.go:102 in RunTrainingLoop()\n` +
+            `  [Process terminated with exit code 137]`
+          );
+          addLog(`[Model Training Error] Falha de memória (OOM) no treinamento do módulo '${DOMAINS[domainKey].name}' aos 45%.`);
+          return;
+        }
+        setTrainingStep("Calculando pesos das conexões sinápticas (Backpropagation)...");
+      } else if (progressPercent < 75) {
+        setTrainingStep("Executando iterações do otimizador de gradiente descendente...");
+      } else if (progressPercent < 90) {
+        setTrainingStep("Validando métricas do modelo e calculando matriz de confusão...");
+      } else if (progressPercent < 100) {
+        setTrainingStep("Salvando artefato binário sincronizado localmente...");
+      } else {
+        if (trainingIntervalRef.current) clearInterval(trainingIntervalRef.current);
+        setIsTraining(false);
+        setTrainingFinishedAlert(true);
+        addLog(`[Model Training Success] Treinamento do modelo para o módulo '${DOMAINS[domainKey].name}' concluído com sucesso absoluto.`);
+      }
+    }, 1000);
+  }, [activeDomain, simulatedFail, addLog, isTraining]);
+
+  const resetTraining = useCallback(() => {
+    if (trainingIntervalRef.current) clearInterval(trainingIntervalRef.current);
+    setIsTraining(false);
+    setTrainingProgress(0);
+    setTrainingStep("");
+    setTrainingETA(0);
+    setTrainingDuration(0);
+    setTrainingError(null);
+    setTrainingErrorDetails(null);
+    setShowTrainingDetails(false);
+    setTrainingFinishedAlert(false);
+  }, []);
+
+  const dismissFinishedAlert = useCallback(() => {
+    setTrainingFinishedAlert(false);
+  }, []);
+
+  const toggleTrainingDetails = useCallback(() => {
+    setShowTrainingDetails(prev => !prev);
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (trainingIntervalRef.current) clearInterval(trainingIntervalRef.current);
+    };
+  }, []);
 
   const toggleTheme = () => {
     setTheme((prev) => {
@@ -413,6 +556,22 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         logout,
         resetAttempts,
         isUserLocked,
+        // Training value:
+        isTraining,
+        trainingProgress,
+        trainingStep,
+        trainingETA,
+        trainingDuration,
+        trainingError,
+        trainingErrorDetails,
+        showTrainingDetails,
+        trainingFinishedAlert,
+        simulatedFail,
+        setSimulatedFail,
+        startTraining,
+        resetTraining,
+        dismissFinishedAlert,
+        toggleTrainingDetails,
       }}
     >
       {children}

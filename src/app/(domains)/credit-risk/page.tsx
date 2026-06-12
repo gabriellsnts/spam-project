@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { CSVUploader } from "@/components/shared/csv-uploader";
 
 export default function CreditRiskPage() {
-  const { addLog } = useDomain();
+  const { addLog, isTraining } = useDomain();
   const [stressActive, setStressActive] = useState(false);
 
   const [metrics, setMetrics] = useState({
@@ -111,6 +111,7 @@ export default function CreditRiskPage() {
           {stressActive ? (
             <Button
               onClick={resetSimulation}
+              disabled={isTraining}
               className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold"
             >
               Resetar Análise
@@ -118,6 +119,7 @@ export default function CreditRiskPage() {
           ) : (
             <Button
               onClick={triggerStressSimulation}
+              disabled={isTraining}
               className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold gap-1.5"
             >
               <TrendingUp className="h-4 w-4" />

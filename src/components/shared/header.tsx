@@ -37,7 +37,46 @@ export function Header() {
     toggleTheme,
     currentUser,
     logout,
+    trainingFinishedAlert,
+    dismissFinishedAlert,
   } = useDomain();
+
+  // Play discrete notification sound on completion (CA05)
+  React.useEffect(() => {
+    if (trainingFinishedAlert) {
+      try {
+        const audioCtx = new (window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext)();
+        const now = audioCtx.currentTime;
+        
+        // Premium double chime note (C5 to E5)
+        const osc1 = audioCtx.createOscillator();
+        const gain1 = audioCtx.createGain();
+        osc1.connect(gain1);
+        gain1.connect(audioCtx.destination);
+        osc1.type = "sine";
+        osc1.frequency.setValueAtTime(523.25, now); // C5
+        gain1.gain.setValueAtTime(0, now);
+        gain1.gain.linearRampToValueAtTime(0.12, now + 0.05);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        osc1.start(now);
+        osc1.stop(now + 0.3);
+
+        const osc2 = audioCtx.createOscillator();
+        const gain2 = audioCtx.createGain();
+        osc2.connect(gain2);
+        gain2.connect(audioCtx.destination);
+        osc2.type = "sine";
+        osc2.frequency.setValueAtTime(659.25, now + 0.12); // E5
+        gain2.gain.setValueAtTime(0, now + 0.12);
+        gain2.gain.linearRampToValueAtTime(0.12, now + 0.17);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+        osc2.start(now + 0.12);
+        osc2.stop(now + 0.45);
+      } catch (err) {
+        console.warn("Audio Context blocked or not supported:", err);
+      }
+    }
+  }, [trainingFinishedAlert]);
 
   const [logsOpen, setLogsOpen] = useState(false);
 
@@ -100,8 +139,8 @@ export function Header() {
           </Link>
         </div>
 
-        {/* Active Domain Indicator (CA04) */}
-        <div className="hidden md:flex items-center">
+        {/* Active Domain Indicator (CA04) & Training Finished Alert (CA05) */}
+        <div className="hidden md:flex items-center gap-3">
           {activeDomain ? (
             <div
               className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold animate-in zoom-in-95 duration-300 ${getDomainColorClass(
@@ -132,6 +171,20 @@ export function Header() {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-zinc-650" />
               </span>
               <span>Nenhum domínio ativo</span>
+            </div>
+          )}
+
+          {trainingFinishedAlert && activeDomain && (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 text-xs font-bold animate-pulse shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping" />
+              <span>Treino Concluído!</span>
+              <button
+                onClick={dismissFinishedAlert}
+                className="ml-1 hover:text-foreground text-muted-foreground transition font-sans text-[10px] font-bold"
+                title="Fechar Alerta"
+              >
+                ✕
+              </button>
             </div>
           )}
         </div>

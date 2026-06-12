@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { CSVUploader } from "@/components/shared/csv-uploader";
 
 export default function ChurnPage() {
-  const { addLog } = useDomain();
+  const { addLog, isTraining } = useDomain();
   const [churnSimulated, setChurnSimulated] = useState(false);
 
   const [metrics, setMetrics] = useState({
@@ -83,6 +83,7 @@ export default function ChurnPage() {
           {churnSimulated ? (
             <Button
               onClick={resetSimulation}
+              disabled={isTraining}
               className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold"
             >
               Resetar Score
@@ -90,6 +91,7 @@ export default function ChurnPage() {
           ) : (
             <Button
               onClick={triggerChurnSimulation}
+              disabled={isTraining}
               className="bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold gap-1.5"
             >
               <UserMinus className="h-4 w-4" />

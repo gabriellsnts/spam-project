@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { CSVUploader } from "@/components/shared/csv-uploader";
 
 export default function MaintenancePage() {
-  const { addLog } = useDomain();
+  const { addLog, isTraining } = useDomain();
   const [machines, setMachines] = useState([
     { id: "M01", name: "Torno CNC 01", status: "ok", temp: 58, vibration: 1.2, oee: 88 },
     { id: "M02", name: "Braço Robotizado A", status: "ok", temp: 62, vibration: 2.1, oee: 84 },
@@ -63,6 +63,7 @@ export default function MaintenancePage() {
           {simulationActive ? (
             <Button
               onClick={resetSimulation}
+              disabled={isTraining}
               className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold"
             >
               Resetar Sensores
@@ -70,6 +71,7 @@ export default function MaintenancePage() {
           ) : (
             <Button
               onClick={triggerAnomalySimulation}
+              disabled={isTraining}
               className="bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold gap-1.5"
             >
               <AlertTriangle className="h-4 w-4" />
