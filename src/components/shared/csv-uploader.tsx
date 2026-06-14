@@ -85,8 +85,10 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
     startTraining,
     resetTraining,
     toggleTrainingDetails,
+    trainedModels,
   } = useDomain();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const activeModel = activeDomain ? trainedModels[activeDomain] : null;
 
   // Estados principais
   const [isDragging, setIsDragging] = useState(false);
@@ -841,7 +843,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                     Limpar
                   </Button>
                   <Button
-                    onClick={() => startTraining(fileDetails.sizeBytes)}
+                    onClick={() => startTraining(fileDetails.sizeBytes, fileDetails.rows, allRows)}
                     className={cn("text-[10px] font-bold h-8 px-3.5", theme.button)}
                   >
                     Iniciar Treinamento do Modelo
@@ -992,13 +994,81 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
             )}
 
             {/* Metrics improvement mock on success */}
-            {trainingProgress === 100 && (
-              <div className="p-3.5 bg-emerald-500/5 border border-emerald-500/15 rounded-xl text-[11px] text-emerald-600 dark:text-emerald-400 font-medium space-y-1 animate-in fade-in duration-500">
-                <p className="font-bold flex items-center gap-1">
-                  ✨ Recalibração de Modelo Concluída:
+            {trainingProgress === 100 && activeModel && (
+              <div className="p-4 bg-emerald-500/5 border border-emerald-500/15 rounded-xl text-[11px] text-emerald-600 dark:text-emerald-400 space-y-2.5 animate-in fade-in duration-500">
+                <p className="font-bold flex items-center gap-1 text-xs text-emerald-550 dark:text-emerald-400">
+                  ✨ Recalibração de Modelo Concluída!
                 </p>
-                <p className="text-[10px] text-muted-foreground leading-relaxed pl-1">
-                  Métricas de validação otimizadas com sucesso! Acurácia geral ajustada de 93.8% para <strong>97.4%</strong>. O motor analítico do módulo {DOMAINS[activeDomain].name} agora está operando com base histórica atualizada.
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[10px] font-mono border-b border-emerald-500/15 pb-2">
+                  <div>
+                    <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">ID do Modelo</span>
+                    <span className="text-foreground font-semibold">{activeModel.modelId}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Algoritmo Utilizado</span>
+                    <span className="text-foreground font-semibold">{activeModel.algorithm}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Divisão dos Dados (Treino/Teste)</span>
+                    <span className="text-foreground font-semibold">{activeModel.trainSize} (80%) / {activeModel.testSize} (20%)</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Tipo de Problema</span>
+                    <span className="text-foreground font-semibold">{activeModel.type === "Classification" ? "Classificação" : "Regressão"}</span>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Métricas de Validação (Conjunto de Teste)</span>
+                  <div className="flex flex-wrap gap-3 pt-1">
+                    {activeModel.type === "Classification" ? (
+                      <>
+                        <div className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded">
+                          <span className="text-muted-foreground text-[8px] uppercase block">Acurácia</span>
+                          <span className="text-foreground font-bold font-mono">{((activeModel.metrics.accuracy || 0) * 100).toFixed(2)}%</span>
+                        </div>
+                        <div className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded">
+                          <span className="text-muted-foreground text-[8px] uppercase block">Precisão</span>
+                          <span className="text-foreground font-bold font-mono">{((activeModel.metrics.precision || 0) * 100).toFixed(2)}%</span>
+                        </div>
+                        <div className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded">
+                          <span className="text-muted-foreground text-[8px] uppercase block">Sensibilidade</span>
+                          <span className="text-foreground font-bold font-mono">{((activeModel.metrics.recall || 0) * 100).toFixed(2)}%</span>
+                        </div>
+                        <div className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded">
+                          <span className="text-muted-foreground text-[8px] uppercase block">F1-Score</span>
+                          <span className="text-foreground font-bold font-mono">{(activeModel.metrics.f1Score || 0).toFixed(3)}</span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded">
+                          <span className="text-muted-foreground text-[8px] uppercase block">R² (Score)</span>
+                          <span className="text-foreground font-bold font-mono">{(activeModel.metrics.r2 || 0).toFixed(4)}</span>
+                        </div>
+                        <div className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded">
+                          <span className="text-muted-foreground text-[8px] uppercase block">RMSE (Erro Quadrático Médio)</span>
+                          <span className="text-foreground font-bold font-mono">{(activeModel.metrics.rmse || 0).toFixed(3)}</span>
+                        </div>
+                        <div className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded">
+                          <span className="text-muted-foreground text-[8px] uppercase block">MAE (Erro Absoluto Médio)</span>
+                          <span className="text-foreground font-bold font-mono">{(activeModel.metrics.mae || 0).toFixed(3)}</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-1 pt-1.5 border-t border-emerald-500/15">
+                  <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Hiperparâmetros Calibrados</span>
+                  <pre className="p-2 bg-zinc-950/90 text-emerald-400/90 border border-emerald-500/10 rounded text-[9px] font-mono leading-relaxed overflow-x-auto max-h-[80px]">
+                    {JSON.stringify(activeModel.hyperparameters, null, 2)}
+                  </pre>
+                </div>
+                
+                <p className="text-[10px] text-muted-foreground leading-relaxed pl-1 pt-1 font-sans">
+                  Os parâmetros do motor analítico do módulo <strong>{DOMAINS[activeDomain].name}</strong> foram sincronizados localmente e estão ativos para previsões em tempo real nesta sessão.
                 </p>
               </div>
             )}
@@ -1018,7 +1088,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                     onClick={() => {
                       resetTraining();
                       setTimeout(() => {
-                        startTraining(fileDetails.sizeBytes);
+                        startTraining(fileDetails.sizeBytes, fileDetails.rows, allRows);
                       }, 100);
                     }}
                     className="text-[10px] font-bold h-8 px-3.5 bg-rose-600 hover:bg-rose-500 text-white"

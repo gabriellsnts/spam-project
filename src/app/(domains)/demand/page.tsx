@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { CSVUploader } from "@/components/shared/csv-uploader";
 
 export default function DemandPage() {
-  const { addLog, isTraining } = useDomain();
+  const { addLog, isTraining, trainedModels } = useDomain();
+  const activeModel = trainedModels["demand"];
   const [seasonalActive, setSeasonalActive] = useState(false);
   
   const [metrics, setMetrics] = useState({
@@ -106,12 +107,16 @@ export default function DemandPage() {
         <Card className="bg-card border-border transition-colors duration-300">
           <CardHeader className="pb-2">
             <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
-              Acurácia do Modelo
+              {activeModel ? "R² (Score do Modelo)" : "Acurácia do Modelo"}
             </CardDescription>
-            <CardTitle className="text-2xl font-black text-foreground">{metrics.accuracy}</CardTitle>
+            <CardTitle className="text-2xl font-black text-foreground">
+              {activeModel ? `${((activeModel.metrics.r2 || 0) * 100).toFixed(1)}%` : metrics.accuracy}
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-[10px] text-muted-foreground">Modelo: Holt-Winters &amp; Prophet</div>
+            <div className="text-[10px] text-muted-foreground">
+              {activeModel ? `Modelo: ${activeModel.algorithm}` : "Modelo: Holt-Winters & Prophet"}
+            </div>
           </CardContent>
         </Card>
 

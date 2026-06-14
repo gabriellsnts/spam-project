@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { CSVUploader } from "@/components/shared/csv-uploader";
 
 export default function CreditRiskPage() {
-  const { addLog, isTraining } = useDomain();
+  const { addLog, isTraining, trainedModels } = useDomain();
+  const activeModel = trainedModels["credit-risk"];
   const [stressActive, setStressActive] = useState(false);
 
   const [metrics, setMetrics] = useState({
@@ -191,10 +192,14 @@ export default function CreditRiskPage() {
           <CardHeader>
             <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
               <FileCheck className="h-4 w-4 text-muted-foreground/60" />
-              Propostas de Crédito em Análise
+              Propostas de Crédito em Análise ({activeModel ? activeModel.algorithm : "Deep Neural Network"})
             </CardTitle>
             <CardDescription className="text-[11px] text-muted-foreground">
-              Score preditivo de adimplência e probabilidade estatística de retorno do valor financiado.
+              {activeModel ? (
+                <>Modelo ativo: <strong>{activeModel.modelId}</strong> com Acurácia de <strong>{((activeModel.metrics.accuracy || 0) * 100).toFixed(1)}%</strong>.</>
+              ) : (
+                "Score preditivo de adimplência e probabilidade estatística de retorno do valor financiado."
+              )}
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
