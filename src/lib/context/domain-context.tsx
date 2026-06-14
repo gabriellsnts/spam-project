@@ -81,6 +81,7 @@ export interface TrainedModel {
     precision?: number;
     recall?: number;
     f1Score?: number;
+    aucRoc?: number;
     rmse?: number;
     r2?: number;
     mae?: number;
@@ -130,6 +131,7 @@ interface DomainContextProps {
   dismissFinishedAlert: () => void;
   toggleTrainingDetails: () => void;
   trainedModels: Record<DomainType, TrainedModel | null>;
+  previousTrainedModels: Record<DomainType, TrainedModel | null>;
 }
 
 const DomainContext = createContext<DomainContextProps | undefined>(undefined);
@@ -174,6 +176,14 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
 
   // Model states per domain (CA03)
   const [trainedModels, setTrainedModels] = useState<Record<DomainType, TrainedModel | null>>({
+    maintenance: null,
+    demand: null,
+    churn: null,
+    "credit-risk": null
+  });
+
+  // Track previous session model for comparison (RF12 - CA05)
+  const [previousTrainedModels, setPreviousTrainedModels] = useState<Record<DomainType, TrainedModel | null>>({
     maintenance: null,
     demand: null,
     churn: null,
@@ -376,6 +386,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
             precision: 0.94 + Math.random() * 0.04,
             recall: 0.93 + Math.random() * 0.05,
             f1Score: 0.94 + Math.random() * 0.04,
+            aucRoc: 0.94 + Math.random() * 0.05, // AUC-ROC (RF12)
           };
           hyperparams = domainKey === "credit-risk" ? {
             num_leaves: 31,
@@ -423,6 +434,12 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
           timestamp: Date.now()
         };
 
+        // CA05 (RF12) - Save active model to previous model history before updating
+        setPreviousTrainedModels(prev => ({
+          ...prev,
+          [domainKey]: trainedModels[domainKey]
+        }));
+
         setTrainedModels(prev => ({
           ...prev,
           [domainKey]: newModel
@@ -431,7 +448,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         addLog(`[Model Training Success] Treinamento do modelo para o módulo '${DOMAINS[domainKey].name}' concluído com sucesso. ID: ${modelId}, Algoritmo: ${algStr}.`);
       }
     }, 1000);
-  }, [activeDomain, simulatedFail, addLog, isTraining]);
+  }, [activeDomain, simulatedFail, addLog, isTraining, trainedModels]);
 
   const resetTraining = useCallback(() => {
     if (trainingIntervalRef.current) clearInterval(trainingIntervalRef.current);
@@ -705,6 +722,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         dismissFinishedAlert,
         toggleTrainingDetails,
         trainedModels,
+        previousTrainedModels,
       }}
     >
       {children}

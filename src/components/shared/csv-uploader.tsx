@@ -86,9 +86,57 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
     resetTraining,
     toggleTrainingDetails,
     trainedModels,
+    previousTrainedModels,
   } = useDomain();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const activeModel = activeDomain ? trainedModels[activeDomain] : null;
+  const previousModel = activeDomain ? previousTrainedModels[activeDomain] : null;
+
+  // CA05 Comparison logic
+  const getPerformanceComparison = () => {
+    if (!activeModel || !previousModel) return null;
+    
+    let activeVal = 0;
+    let prevVal = 0;
+    let metricName = "";
+    
+    if (activeModel.type === "Classification") {
+      activeVal = activeModel.metrics.aucRoc || 0;
+      prevVal = previousModel.metrics.aucRoc || 0;
+      metricName = "AUC-ROC";
+    } else {
+      activeVal = activeModel.metrics.r2 || 0;
+      prevVal = previousModel.metrics.r2 || 0;
+      metricName = "R² (Score)";
+    }
+    
+    const diff = activeVal - prevVal;
+    const diffPct = prevVal > 0 ? (diff / prevVal) * 100 : 0;
+    const isImprovement = diff >= 0;
+    
+    return {
+      metricName,
+      diff,
+      diffPct,
+      isImprovement,
+      activeVal,
+      prevVal
+    };
+  };
+
+  const comparison = getPerformanceComparison();
+
+  const handleExportMetricsJSON = () => {
+    if (!activeModel) return;
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(activeModel, null, 2));
+    const downloadAnchor = document.createElement("a");
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `metricas-${activeModel.modelId.toLowerCase()}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    addLog(`[Model Export] Exportadas métricas de performance do modelo ${activeModel.modelId} (JSON).`);
+  };
 
   // Estados principais
   const [isDragging, setIsDragging] = useState(false);
@@ -1024,41 +1072,92 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                   <div className="flex flex-wrap gap-3 pt-1">
                     {activeModel.type === "Classification" ? (
                       <>
-                        <div className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded">
+                        <div 
+                          className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
+                          title="Área sob a Curva ROC. Varia de 0.5 (aleatório) a 1.0 (perfeito). Indica o poder discriminatório do modelo. Valores acima de 0.90 são excepcionais."
+                        >
+                          <span className="text-muted-foreground text-[8px] uppercase block">AUC-ROC</span>
+                          <span className="text-foreground font-bold font-mono">{((activeModel.metrics.aucRoc || 0) * 100).toFixed(2)}%</span>
+                        </div>
+                        <div 
+                          className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
+                          title="Acurácia Geral. Proporção de acertos do modelo sobre todas as predições. Eficiente para classes balanceadas. Bom acima de 85%."
+                        >
                           <span className="text-muted-foreground text-[8px] uppercase block">Acurácia</span>
                           <span className="text-foreground font-bold font-mono">{((activeModel.metrics.accuracy || 0) * 100).toFixed(2)}%</span>
                         </div>
-                        <div className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded">
+                        <div 
+                          className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
+                          title="Precisão do Modelo. Indica a proporção de verdadeiros positivos dentre todas as classificações positivas. Minimiza falsos alarmes."
+                        >
                           <span className="text-muted-foreground text-[8px] uppercase block">Precisão</span>
                           <span className="text-foreground font-bold font-mono">{((activeModel.metrics.precision || 0) * 100).toFixed(2)}%</span>
                         </div>
-                        <div className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded">
+                        <div 
+                          className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
+                          title="Sensibilidade (Recall). Proporção de casos reais positivos capturados pelo modelo. Evita negligenciar falhas ou riscos críticos."
+                        >
                           <span className="text-muted-foreground text-[8px] uppercase block">Sensibilidade</span>
                           <span className="text-foreground font-bold font-mono">{((activeModel.metrics.recall || 0) * 100).toFixed(2)}%</span>
                         </div>
-                        <div className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded">
+                        <div 
+                          className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
+                          title="F1-Score. Média harmônica equilibrando Precisão e Sensibilidade em uma única métrica técnica."
+                        >
                           <span className="text-muted-foreground text-[8px] uppercase block">F1-Score</span>
                           <span className="text-foreground font-bold font-mono">{(activeModel.metrics.f1Score || 0).toFixed(3)}</span>
                         </div>
                       </>
                     ) : (
                       <>
-                        <div className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded">
+                        <div 
+                          className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
+                          title="Coeficiente de Determinação (R²). Explica qual percentual da variância dos dados foi mapeado pelo modelo. Excelente acima de 90%."
+                        >
                           <span className="text-muted-foreground text-[8px] uppercase block">R² (Score)</span>
                           <span className="text-foreground font-bold font-mono">{(activeModel.metrics.r2 || 0).toFixed(4)}</span>
                         </div>
-                        <div className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded">
-                          <span className="text-muted-foreground text-[8px] uppercase block">RMSE (Erro Quadrático Médio)</span>
+                        <div 
+                          className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
+                          title="Erro Quadrático Médio Root (RMSE). Desvio padrão dos resíduos de previsão. Quanto menor o valor em relação à faixa basal, melhor."
+                        >
+                          <span className="text-muted-foreground text-[8px] uppercase block">RMSE</span>
                           <span className="text-foreground font-bold font-mono">{(activeModel.metrics.rmse || 0).toFixed(3)}</span>
                         </div>
-                        <div className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded">
-                          <span className="text-muted-foreground text-[8px] uppercase block">MAE (Erro Absoluto Médio)</span>
+                        <div 
+                          className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
+                          title="Erro Absoluto Médio (MAE). Distância absoluta média entre o valor real e a previsão. Não penaliza outliers de forma exponencial."
+                        >
+                          <span className="text-muted-foreground text-[8px] uppercase block">MAE</span>
                           <span className="text-foreground font-bold font-mono">{(activeModel.metrics.mae || 0).toFixed(3)}</span>
                         </div>
                       </>
                     )}
                   </div>
                 </div>
+
+                {/* Comparação com a Sessão Anterior (CA05) */}
+                {comparison && (
+                  <div className="p-3.5 bg-card border border-border/80 rounded-xl flex items-center justify-between gap-3 text-[10px] animate-in fade-in duration-300">
+                    <div>
+                      <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Comparação com Modelo Anterior</span>
+                      <p className="text-muted-foreground font-sans">
+                        Variação na métrica primária <strong>{comparison.metricName}</strong>:
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0 font-mono font-bold text-xs">
+                      {comparison.isImprovement ? (
+                        <span className="text-emerald-500 flex items-center gap-0.5 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded">
+                          ▲ +{comparison.diffPct.toFixed(2)}%
+                        </span>
+                      ) : (
+                        <span className="text-rose-500 flex items-center gap-0.5 bg-rose-500/10 border border-rose-500/20 px-2.5 py-1 rounded">
+                          ▼ {comparison.diffPct.toFixed(2)}%
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 <div className="space-y-1 pt-1.5 border-t border-emerald-500/15">
                   <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Hiperparâmetros Calibrados</span>
@@ -1097,15 +1196,24 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                   </Button>
                 </>
               ) : trainingProgress === 100 ? (
-                <Button
-                  onClick={() => {
-                    resetTraining();
-                    handleReset();
-                  }}
-                  className="text-[10px] font-bold h-8 px-3.5 bg-emerald-600 hover:bg-emerald-500 text-white"
-                >
-                  Concluir e Fechar
-                </Button>
+                <>
+                  <Button
+                    onClick={handleExportMetricsJSON}
+                    variant="outline"
+                    className="text-[10px] font-bold h-8 px-3.5 border-border hover:bg-muted text-foreground"
+                  >
+                    Exportar JSON
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      resetTraining();
+                      handleReset();
+                    }}
+                    className="text-[10px] font-bold h-8 px-3.5 bg-emerald-600 hover:bg-emerald-500 text-white"
+                  >
+                    Concluir e Fechar
+                  </Button>
+                </>
               ) : (
                 <Button
                   onClick={resetTraining}
