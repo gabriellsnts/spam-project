@@ -90,6 +90,18 @@ export interface TrainedModel {
   trainSize: number;
   testSize: number;
   timestamp: number;
+  confusionMatrix?: {
+    tp: number;
+    tn: number;
+    fp: number;
+    fn: number;
+  };
+  residuals?: {
+    id: number;
+    predicted: number;
+    residual: number;
+    real: number;
+  }[];
 }
 
 interface DomainContextProps {
@@ -378,6 +390,8 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         
         let modelMetrics: TrainedModel["metrics"] = {};
         let hyperparams: Record<string, string | number | boolean> = {};
+        let confusionMatrixData: TrainedModel["confusionMatrix"] = undefined;
+        let residualsData: TrainedModel["residuals"] = undefined;
 
         // Generate metrics based on statistical outcomes
         if (isClassification) {
@@ -401,6 +415,19 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
             scale_pos_weight: 3.5,
             subsample: 0.8
           };
+
+          // Generate Confusion Matrix matching testSize and metrics
+          const tp = Math.round(testSize * 0.48 * (modelMetrics.recall || 0.95));
+          const fn = Math.round(testSize * 0.48) - tp;
+          const fp = Math.round(testSize * 0.52 * (1 - (modelMetrics.precision || 0.95)));
+          const tn = testSize - (tp + fn + fp);
+          
+          confusionMatrixData = {
+            tp: Math.max(0, tp),
+            tn: Math.max(0, tn),
+            fp: Math.max(0, fp),
+            fn: Math.max(0, fn)
+          };
         } else {
           modelMetrics = {
             r2: 0.93 + Math.random() * 0.05,
@@ -420,6 +447,30 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
             weekly_seasonality: true,
             changepoint_prior_scale: 0.05
           };
+
+          // Generate 25 residual points for regression
+          const numPoints = 25;
+          const rmseVal = modelMetrics.rmse || 2.0;
+          const points: { id: number; predicted: number; residual: number; real: number }[] = [];
+          
+          const baseVal = domainKey === "maintenance" ? 80 : 500;
+          const rangeVal = domainKey === "maintenance" ? 30 : 200;
+          
+          for (let i = 0; i < numPoints; i++) {
+            const pred = baseVal + (i / (numPoints - 1)) * rangeVal + (Math.random() - 0.5) * (rangeVal * 0.2);
+            // Box-Muller transform for normal distribution
+            const u1 = Math.random() || 0.0001;
+            const u2 = Math.random() || 0.0001;
+            const randStdNormal = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
+            const resid = randStdNormal * (rmseVal * 0.85); // scaled residual
+            points.push({
+              id: i + 1,
+              predicted: Math.round(pred * 100) / 100,
+              residual: Math.round(resid * 100) / 100,
+              real: Math.round((pred + resid) * 100) / 100
+            });
+          }
+          residualsData = points;
         }
 
         const newModel: TrainedModel = {
@@ -431,7 +482,9 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
           hyperparameters: hyperparams,
           trainSize,
           testSize,
-          timestamp: Date.now()
+          timestamp: Date.now(),
+          confusionMatrix: confusionMatrixData,
+          residuals: residualsData
         };
 
         // CA05 (RF12) - Save active model to previous model history before updating
@@ -616,7 +669,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
 
   // Sincronizar o domínio ativo baseado na URL na inicialização ou reload
   useEffect(() => {
-    const segments = pathname.split("/");
+    const segments = pathname.split("/").filter(Boolean);
     const activeSegment = segments[segments.length - 1] as DomainType;
     if (activeSegment && DOMAINS[activeSegment]) {
       setActiveDomain(activeSegment);
