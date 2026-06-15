@@ -221,53 +221,6 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     message: "15 alertas ativos em 2 domínios requerem atenção."
   });
 
-  const simulateDashboardEvent = useCallback(() => {
-    setDashboardStatus(prev => {
-      const updated = { ...prev };
-      const domainKeys = Object.keys(updated) as DomainType[];
-      const randomDomain = domainKeys[Math.floor(Math.random() * domainKeys.length)];
-      
-      const newAlertCount = updated[randomDomain].activeAlertsCount + 1;
-      
-      updated[randomDomain] = {
-        ...updated[randomDomain],
-        activeAlertsCount: newAlertCount,
-        recentActivities: [
-          {
-            id: Math.random().toString(),
-            description: "Novo alerta preditivo detectado automaticamente",
-            timestamp: new Date().toISOString(),
-            type: "alert"
-          },
-          ...updated[randomDomain].recentActivities.slice(0, 4)
-        ]
-      };
-      
-      // Update system health dynamically
-      let totalAlerts = 0;
-      let domainsWithAlerts = 0;
-      Object.values(updated).forEach(status => {
-        totalAlerts += status.activeAlertsCount;
-        if (status.activeAlertsCount > 0) domainsWithAlerts++;
-      });
-      
-      let newHealth: SystemHealth = { status: "healthy", message: "Todos os sistemas operando normalmente." };
-      if (totalAlerts > 20) {
-        newHealth = { status: "critical", message: `${totalAlerts} alertas críticos em ${domainsWithAlerts} domínios.` };
-      } else if (totalAlerts > 0) {
-        newHealth = { status: "warning", message: `${totalAlerts} alertas ativos em ${domainsWithAlerts} domínios requerem atenção.` };
-      }
-      
-      setSystemHealth(newHealth);
-      
-      return updated;
-    });
-    
-    addLogWithProfile("Sistema", "Atualização em tempo real recebida pelo motor preditivo.");
-  }, [addLogWithProfile]);
-
-
-
   // Carregar tema e sessão do localStorage/sessionStorage no cliente
   useEffect(() => {
     const savedTheme = localStorage.getItem("spam-theme") as "light" | "dark" | null;
@@ -330,6 +283,51 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
   const addLog = useCallback((action: string) => {
     addLogWithProfile(userProfile, action);
   }, [userProfile, addLogWithProfile]);
+
+  const simulateDashboardEvent = useCallback(() => {
+    setDashboardStatus(prev => {
+      const updated = { ...prev };
+      const domainKeys = Object.keys(updated) as DomainType[];
+      const randomDomain = domainKeys[Math.floor(Math.random() * domainKeys.length)];
+      
+      const newAlertCount = updated[randomDomain].activeAlertsCount + 1;
+      
+      updated[randomDomain] = {
+        ...updated[randomDomain],
+        activeAlertsCount: newAlertCount,
+        recentActivities: [
+          {
+            id: Math.random().toString(),
+            description: "Novo alerta preditivo detectado automaticamente",
+            timestamp: new Date().toISOString(),
+            type: "alert"
+          },
+          ...updated[randomDomain].recentActivities.slice(0, 4)
+        ]
+      };
+      
+      // Update system health dynamically
+      let totalAlerts = 0;
+      let domainsWithAlerts = 0;
+      Object.values(updated).forEach(status => {
+        totalAlerts += status.activeAlertsCount;
+        if (status.activeAlertsCount > 0) domainsWithAlerts++;
+      });
+      
+      let newHealth: SystemHealth = { status: "healthy", message: "Todos os sistemas operando normalmente." };
+      if (totalAlerts > 20) {
+        newHealth = { status: "critical", message: `${totalAlerts} alertas críticos em ${domainsWithAlerts} domínios.` };
+      } else if (totalAlerts > 0) {
+        newHealth = { status: "warning", message: `${totalAlerts} alertas ativos em ${domainsWithAlerts} domínios requerem atenção.` };
+      }
+      
+      setSystemHealth(newHealth);
+      
+      return updated;
+    });
+    
+    addLogWithProfile("Sistema", "Atualização em tempo real recebida pelo motor preditivo.");
+  }, [addLogWithProfile]);
 
   const trainingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
