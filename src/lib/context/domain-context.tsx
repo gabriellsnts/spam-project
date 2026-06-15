@@ -509,6 +509,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
       };
       setCurrentUser(loggedUser);
       sessionStorage.setItem("spam-user", JSON.stringify(loggedUser));
+      localStorage.removeItem("spam-inactivity-test-time");
       
       localStorage.removeItem(`spam-attempts-${cleanUsername}`);
       
@@ -541,6 +542,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     const oldProfile = currentUser ? currentUser.profileName : "Visitante";
     setCurrentUser(null);
     sessionStorage.removeItem("spam-user");
+    localStorage.removeItem("spam-inactivity-test-time");
     
     let logMsg = `Sessão encerrada pelo usuário.`;
     if (reason === "inactivity") {
@@ -569,6 +571,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
       const timeoutMs = testTimeout ? parseInt(testTimeout, 10) : 30 * 60 * 1000; // 30 mins (1800000ms)
       
       timeoutId = setTimeout(() => {
+        localStorage.removeItem("spam-inactivity-test-time");
         logout("inactivity");
       }, timeoutMs);
     };
