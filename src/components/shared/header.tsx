@@ -220,7 +220,9 @@ export function Header() {
                 {logs.length}
               </span>
             )}
-          </Butt          {/* Identificação do Usuário e Painel Expandido (RF36) */}
+          </Button>
+
+          {/* Identificação do Usuário e Painel Expandido (RF36) */}
           {currentUser ? (
             <div className="relative group flex items-center">
               <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted/40 border border-transparent hover:border-border transition cursor-default">
