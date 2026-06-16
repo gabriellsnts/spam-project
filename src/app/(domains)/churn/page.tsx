@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { CSVUploader } from "@/components/shared/csv-uploader";
 
 export default function ChurnPage() {
-  const { addLog, isTraining } = useDomain();
+  const { addLog, isTraining, trainedModels } = useDomain();
+  const activeModel = trainedModels["churn"];
   const [churnSimulated, setChurnSimulated] = useState(false);
 
   const [metrics, setMetrics] = useState({
@@ -165,10 +166,14 @@ export default function ChurnPage() {
           <CardHeader>
             <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
               <AlertCircle className="h-4 w-4 text-muted-foreground/60" />
-              Contas com Maior Risco de Churn (ML Classifier)
+              Contas com Maior Risco de Churn ({activeModel ? activeModel.algorithm : "ML Classifier"})
             </CardTitle>
             <CardDescription className="text-[11px] text-muted-foreground">
-              Clientes identificados pelo modelo de rede neural classificadora com probabilidade de saída nos próximos 30 dias.
+              {activeModel ? (
+                <>Modelo calibrado: <strong>{activeModel.modelId}</strong> com Acurácia de <strong>{((activeModel.metrics.accuracy || 0) * 100).toFixed(1)}%</strong>.</>
+              ) : (
+                "Clientes identificados pelo modelo de rede neural classificadora com probabilidade de saída nos próximos 30 dias."
+              )}
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">

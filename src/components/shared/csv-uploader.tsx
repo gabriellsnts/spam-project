@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, DragEvent } from "react";
-import { useDomain, DOMAINS } from "@/lib/context/domain-context";
+import { useDomain, DOMAINS, TrainedModel } from "@/lib/context/domain-context";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { UploadCloud, CheckCircle2, AlertCircle, Loader2, FileSpreadsheet, Trash2, Info, Download } from "lucide-react";
@@ -54,6 +54,564 @@ export const DOMAIN_SCHEMAS: Record<string, ColumnSchema[]> = {
   ]
 };
 
+interface ResidualPoint {
+  id: number;
+  predicted: number;
+  residual: number;
+  real: number;
+}
+
+interface DomainTheme {
+  accent: string;
+  border: string;
+  borderActive: string;
+  bg: string;
+  progress: string;
+  glow: string;
+  button: string;
+}
+
+function ResidualsPlotView({ model, theme }: { model: TrainedModel; theme: DomainTheme }) {
+  const [selectedPoint, setSelectedPoint] = useState<ResidualPoint | null>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+
+  const points = (model.residuals || []) as ResidualPoint[];
+  if (points.length === 0) return null;
+
+  // CA05 - Auto scale axes
+  const predictedVals = points.map((p) => p.predicted);
+  const residualVals = points.map((p) => p.residual);
+
+  const xMinVal = Math.min(...predictedVals);
+  const xMaxVal = Math.max(...predictedVals);
+  const yMinVal = Math.min(...residualVals);
+  const yMaxVal = Math.max(...residualVals);
+
+  // Add 10% padding
+  const xRange = xMaxVal - xMinVal || 1;
+  const xMin = xMinVal - xRange * 0.1;
+  const xMax = xMaxVal + xRange * 0.1;
+
+  // Centralize Y = 0
+  const yMaxAbs = Math.max(Math.abs(yMinVal), Math.abs(yMaxVal)) || 1;
+  const yLimit = yMaxAbs * 1.15; // 15% padding to avoid points hitting the edge
+
+  // SVG Setup
+  const width = 500;
+  const height = 300;
+  const padding = { top: 25, right: 30, bottom: 45, left: 55 };
+  const plotWidth = width - padding.left - padding.right;
+  const plotHeight = height - padding.top - padding.bottom;
+
+  // Coordinate mappers
+  const getX = (val: number) => padding.left + ((val - xMin) / (xMax - xMin)) * plotWidth;
+  const getY = (val: number) => padding.top + plotHeight - ((val - (-yLimit)) / (2 * yLimit)) * plotHeight;
+
+  // Grid Ticks
+  const xTicks = 5;
+  const yTicks = 5;
+
+  const handleDownloadSVG = () => {
+    if (!svgRef.current) return;
+    try {
+      const svgContent = svgRef.current.outerHTML;
+      const blob = new Blob([svgContent], { type: "image/svg+xml;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `grafico-residuos-${model.modelId.toLowerCase()}.svg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error("Erro ao exportar SVG:", err);
+    }
+  };
+
+  const handleDownloadPNG = () => {
+    if (!svgRef.current) return;
+    try {
+      const svgElement = svgRef.current;
+      const svgString = new XMLSerializer().serializeToString(svgElement);
+      const svgBlob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+      const URL = window.URL || window.webkitURL || window;
+      const blobURL = URL.createObjectURL(svgBlob);
+      const image = new Image();
+      
+      image.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = width * 2; // High-res scale factor
+        canvas.height = height * 2;
+        const context = canvas.getContext("2d");
+        if (context) {
+          context.fillStyle = "#09090b"; // zinc-950 dark background for premium export
+          context.fillRect(0, 0, canvas.width, canvas.height);
+          context.scale(2, 2); // scale context to draw at high res
+          context.drawImage(image, 0, 0);
+          
+          const pngUrl = canvas.toDataURL("image/png");
+          const downloadLink = document.createElement("a");
+          downloadLink.href = pngUrl;
+          downloadLink.download = `grafico-residuos-${model.modelId.toLowerCase()}.png`;
+          document.body.appendChild(downloadLink);
+          downloadLink.click();
+          document.body.removeChild(downloadLink);
+        }
+      };
+      image.src = blobURL;
+    } catch (err) {
+      console.error("Erro ao converter para PNG:", err);
+    }
+  };
+
+  return (
+    <div className="space-y-4 border border-border/60 bg-zinc-950/40 p-4.5 rounded-xl animate-in fade-in duration-300">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+        <div>
+          <h5 className="text-xs font-bold text-foreground">Gráfico de Resíduos da Previsão</h5>
+          <p className="text-[10px] text-muted-foreground">
+            Inspeção de erros de predição numérica (Erro = Real - Predito). Eixos autoajustados.
+          </p>
+        </div>
+        <div className="flex gap-1.5">
+          <Button
+            onClick={handleDownloadSVG}
+            variant="outline"
+            className="text-[9px] font-bold h-6.5 px-2 border-border hover:bg-muted font-sans text-muted-foreground hover:text-foreground"
+            title="Baixar em formato vetorial SVG"
+          >
+            SVG
+          </Button>
+          <Button
+            onClick={handleDownloadPNG}
+            variant="outline"
+            className="text-[9px] font-bold h-6.5 px-2 border-border hover:bg-muted font-sans text-muted-foreground hover:text-foreground"
+            title="Baixar em alta resolução PNG"
+          >
+            PNG
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4.5 items-start">
+        {/* SVG Graph */}
+        <div className="md:col-span-2 flex justify-center bg-zinc-950 border border-border/40 rounded-lg p-2 relative overflow-hidden select-none">
+          <svg
+            ref={svgRef}
+            viewBox={`0 0 ${width} ${height}`}
+            width="100%"
+            height="100%"
+            className="text-foreground overflow-visible"
+            style={{ backgroundColor: "#09090b" }}
+          >
+            {/* Grid Lines Y */}
+            {Array.from({ length: yTicks }).map((_, i) => {
+              const tickVal = -yLimit + (i / (yTicks - 1)) * (2 * yLimit);
+              const y = getY(tickVal);
+              return (
+                <g key={`y-grid-${i}`}>
+                  <line
+                    x1={padding.left}
+                    y1={y}
+                    x2={width - padding.right}
+                    y2={y}
+                    stroke="#27272a"
+                    strokeWidth={0.5}
+                  />
+                  <text
+                    x={padding.left - 8}
+                    y={y + 3}
+                    textAnchor="end"
+                    fill="#71717a"
+                    fontSize="9px"
+                    fontFamily="monospace"
+                  >
+                    {tickVal.toFixed(1)}
+                  </text>
+                </g>
+              );
+            })}
+
+            {/* Grid Lines X */}
+            {Array.from({ length: xTicks }).map((_, i) => {
+              const tickVal = xMin + (i / (xTicks - 1)) * (xMax - xMin);
+              const x = getX(tickVal);
+              return (
+                <g key={`x-grid-${i}`}>
+                  <line
+                    x1={x}
+                    y1={padding.top}
+                    x2={x}
+                    y2={height - padding.bottom}
+                    stroke="#27272a"
+                    strokeWidth={0.5}
+                  />
+                  <text
+                    x={x}
+                    y={height - padding.bottom + 14}
+                    textAnchor="middle"
+                    fill="#71717a"
+                    fontSize="9px"
+                    fontFamily="monospace"
+                  >
+                    {Math.round(tickVal)}
+                  </text>
+                </g>
+              );
+            })}
+
+            {/* CA02 - Line of reference at Y = 0 */}
+            <line
+              x1={padding.left}
+              y1={getY(0)}
+              x2={width - padding.right}
+              y2={getY(0)}
+              stroke="#ef4444"
+              strokeWidth={1.5}
+              strokeDasharray="4,3"
+            />
+            <text
+              x={width - padding.right - 5}
+              y={getY(0) - 4}
+              textAnchor="end"
+              fill="#ef4444"
+              fontSize="8px"
+              fontFamily="sans-serif"
+              fontWeight="bold"
+            >
+              Erro Zero
+            </text>
+
+            {/* CA03 - Axes Titles */}
+            <text
+              x={padding.left + plotWidth / 2}
+              y={height - 10}
+              textAnchor="middle"
+              fill="#a1a1aa"
+              fontSize="10px"
+              fontWeight="bold"
+              fontFamily="sans-serif"
+            >
+              Valor Predito pelo Modelo
+            </text>
+
+            <text
+              transform={`rotate(-90) translate(${-padding.top - plotHeight / 2}, 14)`}
+              textAnchor="middle"
+              fill="#a1a1aa"
+              fontSize="10px"
+              fontWeight="bold"
+              fontFamily="sans-serif"
+            >
+              Resíduo (Erro de Previsão)
+            </text>
+
+            {/* Scatter Dots */}
+            {points.map((pt) => {
+              const isSelected = selectedPoint?.id === pt.id;
+              const isPositive = pt.residual >= 0;
+              const dotColor = isPositive ? "#38bdf8" : "#f59e0b"; // sky for over, amber for under
+              
+              return (
+                <circle
+                  key={`dot-${pt.id}`}
+                  cx={getX(pt.predicted)}
+                  cy={getY(pt.residual)}
+                  r={isSelected ? 7 : 4.5}
+                  fill={dotColor}
+                  stroke={isSelected ? "#ffffff" : "transparent"}
+                  strokeWidth={1.5}
+                  opacity={isSelected ? 1 : 0.8}
+                  className="residual-dot cursor-pointer transition-all duration-150 hover:opacity-100"
+                  onClick={() => setSelectedPoint(pt)}
+                />
+              );
+            })}
+          </svg>
+        </div>
+
+        {/* Selected Point Details (CA04) */}
+        <div className="bg-zinc-950/60 border border-border/40 rounded-lg p-3.5 space-y-3 h-[280px] flex flex-col justify-between">
+          <div className="space-y-2.5">
+            <h6 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <span className={cn("h-1.5 w-1.5 rounded-full bg-current", theme.accent)} />
+              Inspeção do Resíduo
+            </h6>
+            
+            {selectedPoint ? (
+              <div className="space-y-2 animate-in fade-in duration-200">
+                <div className="flex justify-between items-center text-[10px]">
+                  <span className="text-muted-foreground font-semibold">Registro ID</span>
+                  <span className="text-foreground font-mono font-bold"># {selectedPoint.id}</span>
+                </div>
+                <div className="flex justify-between items-center text-[10px]">
+                  <span className="text-muted-foreground font-semibold">Valor Real</span>
+                  <span className="text-foreground font-mono font-bold">{selectedPoint.real.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-center text-[10px]">
+                  <span className="text-muted-foreground font-semibold">Valor Predito</span>
+                  <span className="text-foreground font-mono font-bold">{selectedPoint.predicted.toFixed(2)}</span>
+                </div>
+                <div className="border-t border-border/60 my-1 pt-1.5 flex justify-between items-center text-[10px]">
+                  <span className="text-muted-foreground font-semibold">Erro Absoluto</span>
+                  <span className={cn(
+                    "font-mono font-bold text-xs px-1.5 py-0.5 rounded",
+                    selectedPoint.residual >= 0 
+                      ? "bg-sky-500/10 text-sky-400 border border-sky-500/20" 
+                      : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                  )}>
+                    {selectedPoint.residual >= 0 ? "+" : ""}{selectedPoint.residual.toFixed(2)}
+                  </span>
+                </div>
+                <p className="text-[9px] text-muted-foreground leading-relaxed italic pt-1 border-t border-border/40 font-sans">
+                  {selectedPoint.residual === 0 
+                    ? "Previsão perfeita." 
+                    : selectedPoint.residual > 0 
+                      ? "O modelo subestimou o valor real (erro positivo)." 
+                      : "O modelo superestimou o valor real (erro negativo)."}
+                </p>
+              </div>
+            ) : (
+              <div className="py-6 text-center text-muted-foreground italic text-[10px] leading-relaxed">
+                Clique em qualquer ponto de dispersão no gráfico para exibir e inspecionar os valores exatos de erro.
+              </div>
+            )}
+          </div>
+
+          <div className="p-2.5 rounded bg-muted/20 border border-border/40 text-[9px] text-muted-foreground leading-relaxed font-sans">
+            <span className="font-bold text-foreground/80 block mb-0.5">Legenda:</span>
+            <div className="flex items-center gap-1.5 mb-1">
+              <span className="h-2 w-2 rounded-full bg-[#38bdf8] shrink-0" />
+              <span>Erro Positivo (Subestimado)</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-[#f59e0b] shrink-0" />
+              <span>Erro Negativo (Superestimado)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ConfusionMatrixView({ model }: { model: TrainedModel }) {
+  const svgRef = useRef<SVGSVGElement>(null);
+  
+  const matrix = model.confusionMatrix;
+  if (!matrix) return null;
+  
+  const total = matrix.tp + matrix.tn + matrix.fp + matrix.fn;
+  if (total === 0) return null;
+
+  const pct = (val: number) => ((val / total) * 100).toFixed(1);
+
+  // SVG Setup
+  const width = 400;
+  const height = 300;
+
+  const handleDownloadSVG = () => {
+    if (!svgRef.current) return;
+    try {
+      const svgContent = svgRef.current.outerHTML;
+      const blob = new Blob([svgContent], { type: "image/svg+xml;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `matriz-confusao-${model.modelId.toLowerCase()}.svg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error("Erro ao exportar SVG:", err);
+    }
+  };
+
+  const handleDownloadPNG = () => {
+    if (!svgRef.current) return;
+    try {
+      const svgElement = svgRef.current;
+      const svgString = new XMLSerializer().serializeToString(svgElement);
+      const svgBlob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+      const URL = window.URL || window.webkitURL || window;
+      const blobURL = URL.createObjectURL(svgBlob);
+      const image = new Image();
+      
+      image.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = width * 2;
+        canvas.height = height * 2;
+        const context = canvas.getContext("2d");
+        if (context) {
+          context.fillStyle = "#09090b";
+          context.fillRect(0, 0, canvas.width, canvas.height);
+          context.scale(2, 2);
+          context.drawImage(image, 0, 0);
+          
+          const pngUrl = canvas.toDataURL("image/png");
+          const downloadLink = document.createElement("a");
+          downloadLink.href = pngUrl;
+          downloadLink.download = `matriz-confusao-${model.modelId.toLowerCase()}.png`;
+          document.body.appendChild(downloadLink);
+          downloadLink.click();
+          document.body.removeChild(downloadLink);
+        }
+      };
+      image.src = blobURL;
+    } catch (err) {
+      console.error("Erro ao converter para PNG:", err);
+    }
+  };
+
+  return (
+    <div className="space-y-4 border border-border/60 bg-zinc-950/40 p-4.5 rounded-xl animate-in fade-in duration-300">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+        <div>
+          <h5 className="text-xs font-bold text-foreground">Matriz de Confusão do Modelo</h5>
+          <p className="text-[10px] text-muted-foreground">
+            Visualização da distribuição de acertos e erros de classificação baseada no tamanho do teste ({total} instâncias).
+          </p>
+        </div>
+        <div className="flex gap-1.5">
+          <Button
+            onClick={handleDownloadSVG}
+            variant="outline"
+            className="text-[9px] font-bold h-6.5 px-2 border-border hover:bg-muted font-sans text-muted-foreground hover:text-foreground"
+            title="Baixar em formato vetorial SVG"
+          >
+            SVG
+          </Button>
+          <Button
+            onClick={handleDownloadPNG}
+            variant="outline"
+            className="text-[9px] font-bold h-6.5 px-2 border-border hover:bg-muted font-sans text-muted-foreground hover:text-foreground"
+            title="Baixar em alta resolução PNG"
+          >
+            PNG
+          </Button>
+        </div>
+      </div>
+
+      <div className="flex justify-center bg-zinc-950 border border-border/40 rounded-lg p-4 relative overflow-hidden select-none">
+        <svg
+          ref={svgRef}
+          viewBox={`0 0 ${width} ${height}`}
+          width="100%"
+          height="100%"
+          className="text-foreground overflow-visible"
+          style={{ backgroundColor: "#09090b" }}
+        >
+          {/* Outer title */}
+          <text
+            x={200}
+            y={25}
+            textAnchor="middle"
+            fill="#a1a1aa"
+            fontSize="11px"
+            fontWeight="bold"
+            fontFamily="sans-serif"
+          >
+            Classe Predita
+          </text>
+
+          {/* Actual Class title vertical */}
+          <text
+            transform="rotate(-90) translate(-140, 20)"
+            textAnchor="middle"
+            fill="#a1a1aa"
+            fontSize="11px"
+            fontWeight="bold"
+            fontFamily="sans-serif"
+          >
+            Classe Real
+          </text>
+
+          {/* Columns Header (Predicted) */}
+          <text x={172.5} y={50} textAnchor="middle" fill="#71717a" fontSize="9px" fontWeight="bold" fontFamily="monospace">NEGATIVO (0)</text>
+          <text x={282.5} y={50} textAnchor="middle" fill="#71717a" fontSize="9px" fontWeight="bold" fontFamily="monospace">POSITIVO (1)</text>
+
+          {/* Rows Header (Actual) */}
+          <text x={110} y={115} textAnchor="end" fill="#71717a" fontSize="9px" fontWeight="bold" fontFamily="monospace">NEGATIVO (0)</text>
+          <text x={110} y={225} textAnchor="end" fill="#71717a" fontSize="9px" fontWeight="bold" fontFamily="monospace">POSITIVO (1)</text>
+
+          {/* Matrix Cells */}
+          {/* TN: Real 0, Pred 0 */}
+          <g className="cursor-help">
+            <rect
+              x={120}
+              y={65}
+              width={105}
+              height={105}
+              fill="#10b981"
+              fillOpacity={0.15 + (matrix.tn / total) * 0.6}
+              stroke="#27272a"
+              strokeWidth={1}
+            />
+            <text x={172.5} y={110} textAnchor="middle" fill="#ffffff" fontSize="16px" fontWeight="extrabold" fontFamily="monospace">{matrix.tn}</text>
+            <text x={172.5} y={130} textAnchor="middle" fill="#a7f3d0" fontSize="9px" fontWeight="bold" fontFamily="monospace">{pct(matrix.tn)}%</text>
+            <text x={172.5} y={150} textAnchor="middle" fill="#34d399" fontSize="8px" fontWeight="bold" fontFamily="sans-serif">Verdadeiro Negativo</text>
+            <title>Verdadeiro Negativo (TN): Casos em que o modelo previu corretamente a classe Negativa.</title>
+          </g>
+
+          {/* FP: Real 0, Pred 1 */}
+          <g className="cursor-help">
+            <rect
+              x={230}
+              y={65}
+              width={105}
+              height={105}
+              fill="#f43f5e"
+              fillOpacity={0.1 + (matrix.fp / total) * 0.75}
+              stroke="#27272a"
+              strokeWidth={1}
+            />
+            <text x={282.5} y={110} textAnchor="middle" fill="#ffffff" fontSize="16px" fontWeight="extrabold" fontFamily="monospace">{matrix.fp}</text>
+            <text x={282.5} y={130} textAnchor="middle" fill="#fca5a5" fontSize="9px" fontWeight="bold" fontFamily="monospace">{pct(matrix.fp)}%</text>
+            <text x={282.5} y={150} textAnchor="middle" fill="#f87171" fontSize="8px" fontWeight="bold" fontFamily="sans-serif">Falso Positivo</text>
+            <title>Falso Positivo (FP - Erro Tipo I): Casos negativos classificados erroneamente como positivos pelo modelo.</title>
+          </g>
+
+          {/* FN: Real 1, Pred 0 */}
+          <g className="cursor-help">
+            <rect
+              x={120}
+              y={175}
+              width={105}
+              height={105}
+              fill="#f43f5e"
+              fillOpacity={0.1 + (matrix.fn / total) * 0.75}
+              stroke="#27272a"
+              strokeWidth={1}
+            />
+            <text x={172.5} y={220} textAnchor="middle" fill="#ffffff" fontSize="16px" fontWeight="extrabold" fontFamily="monospace">{matrix.fn}</text>
+            <text x={172.5} y={240} textAnchor="middle" fill="#fca5a5" fontSize="9px" fontWeight="bold" fontFamily="monospace">{pct(matrix.fn)}%</text>
+            <text x={172.5} y={260} textAnchor="middle" fill="#f87171" fontSize="8px" fontWeight="bold" fontFamily="sans-serif">Falso Negativo</text>
+            <title>Falso Negativo (FN - Erro Tipo II): Casos positivos classificados erroneamente como negativos pelo modelo.</title>
+          </g>
+
+          {/* TP: Real 1, Pred 1 */}
+          <g className="cursor-help">
+            <rect
+              x={230}
+              y={175}
+              width={105}
+              height={105}
+              fill="#10b981"
+              fillOpacity={0.15 + (matrix.tp / total) * 0.6}
+              stroke="#27272a"
+              strokeWidth={1}
+            />
+            <text x={282.5} y={220} textAnchor="middle" fill="#ffffff" fontSize="16px" fontWeight="extrabold" fontFamily="monospace">{matrix.tp}</text>
+            <text x={282.5} y={240} textAnchor="middle" fill="#a7f3d0" fontSize="9px" fontWeight="bold" fontFamily="monospace">{pct(matrix.tp)}%</text>
+            <text x={282.5} y={260} textAnchor="middle" fill="#34d399" fontSize="8px" fontWeight="bold" fontFamily="sans-serif">Verdadeiro Positivo</text>
+            <title>Verdadeiro Positivo (TP): Casos em que o modelo previu corretamente a classe Positiva.</title>
+          </g>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
 interface CSVUploaderProps {
   onConfirm?: (
     fileDetails: {
@@ -85,8 +643,58 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
     startTraining,
     resetTraining,
     toggleTrainingDetails,
+    trainedModels,
+    previousTrainedModels,
   } = useDomain();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const activeModel = activeDomain ? trainedModels[activeDomain] : null;
+  const previousModel = activeDomain ? previousTrainedModels[activeDomain] : null;
+
+  // CA05 Comparison logic
+  const getPerformanceComparison = () => {
+    if (!activeModel || !previousModel) return null;
+    
+    let activeVal = 0;
+    let prevVal = 0;
+    let metricName = "";
+    
+    if (activeModel.type === "Classification") {
+      activeVal = activeModel.metrics.aucRoc || 0;
+      prevVal = previousModel.metrics.aucRoc || 0;
+      metricName = "AUC-ROC";
+    } else {
+      activeVal = activeModel.metrics.r2 || 0;
+      prevVal = previousModel.metrics.r2 || 0;
+      metricName = "R² (Score)";
+    }
+    
+    const diff = activeVal - prevVal;
+    const diffPct = prevVal > 0 ? (diff / prevVal) * 100 : 0;
+    const isImprovement = diff >= 0;
+    
+    return {
+      metricName,
+      diff,
+      diffPct,
+      isImprovement,
+      activeVal,
+      prevVal
+    };
+  };
+
+  const comparison = getPerformanceComparison();
+
+  const handleExportMetricsJSON = () => {
+    if (!activeModel) return;
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(activeModel, null, 2));
+    const downloadAnchor = document.createElement("a");
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `metricas-${activeModel.modelId.toLowerCase()}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    addLog(`[Model Export] Exportadas métricas de performance do modelo ${activeModel.modelId} (JSON).`);
+  };
 
   // Estados principais
   const [isDragging, setIsDragging] = useState(false);
@@ -841,7 +1449,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                     Limpar
                   </Button>
                   <Button
-                    onClick={() => startTraining(fileDetails.sizeBytes)}
+                    onClick={() => startTraining(fileDetails.sizeBytes, fileDetails.rows, allRows)}
                     className={cn("text-[10px] font-bold h-8 px-3.5", theme.button)}
                   >
                     Iniciar Treinamento do Modelo
@@ -992,14 +1600,142 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
             )}
 
             {/* Metrics improvement mock on success */}
-            {trainingProgress === 100 && (
-              <div className="p-3.5 bg-emerald-500/5 border border-emerald-500/15 rounded-xl text-[11px] text-emerald-600 dark:text-emerald-400 font-medium space-y-1 animate-in fade-in duration-500">
-                <p className="font-bold flex items-center gap-1">
-                  ✨ Recalibração de Modelo Concluída:
+            {trainingProgress === 100 && activeModel && (
+              <div className="p-4 bg-emerald-500/5 border border-emerald-500/15 rounded-xl text-[11px] text-emerald-600 dark:text-emerald-400 space-y-2.5 animate-in fade-in duration-500">
+                <p className="font-bold flex items-center gap-1 text-xs text-emerald-550 dark:text-emerald-400">
+                  ✨ Recalibração de Modelo Concluída!
                 </p>
-                <p className="text-[10px] text-muted-foreground leading-relaxed pl-1">
-                  Métricas de validação otimizadas com sucesso! Acurácia geral ajustada de 93.8% para <strong>97.4%</strong>. O motor analítico do módulo {DOMAINS[activeDomain].name} agora está operando com base histórica atualizada.
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[10px] font-mono border-b border-emerald-500/15 pb-2">
+                  <div>
+                    <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">ID do Modelo</span>
+                    <span className="text-foreground font-semibold">{activeModel.modelId}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Algoritmo Utilizado</span>
+                    <span className="text-foreground font-semibold">{activeModel.algorithm}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Divisão dos Dados (Treino/Teste)</span>
+                    <span className="text-foreground font-semibold">{activeModel.trainSize} (80%) / {activeModel.testSize} (20%)</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Tipo de Problema</span>
+                    <span className="text-foreground font-semibold">{activeModel.type === "Classification" ? "Classificação" : "Regressão"}</span>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Métricas de Validação (Conjunto de Teste)</span>
+                  <div className="flex flex-wrap gap-3 pt-1">
+                    {activeModel.type === "Classification" ? (
+                      <>
+                        <div 
+                          className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
+                          title="Área sob a Curva ROC. Varia de 0.5 (aleatório) a 1.0 (perfeito). Indica o poder discriminatório do modelo. Valores acima de 0.90 são excepcionais."
+                        >
+                          <span className="text-muted-foreground text-[8px] uppercase block">AUC-ROC</span>
+                          <span className="text-foreground font-bold font-mono">{((activeModel.metrics.aucRoc || 0) * 100).toFixed(2)}%</span>
+                        </div>
+                        <div 
+                          className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
+                          title="Acurácia Geral. Proporção de acertos do modelo sobre todas as predições. Eficiente para classes balanceadas. Bom acima de 85%."
+                        >
+                          <span className="text-muted-foreground text-[8px] uppercase block">Acurácia</span>
+                          <span className="text-foreground font-bold font-mono">{((activeModel.metrics.accuracy || 0) * 100).toFixed(2)}%</span>
+                        </div>
+                        <div 
+                          className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
+                          title="Precisão do Modelo. Indica a proporção de verdadeiros positivos dentre todas as classificações positivas. Minimiza falsos alarmes."
+                        >
+                          <span className="text-muted-foreground text-[8px] uppercase block">Precisão</span>
+                          <span className="text-foreground font-bold font-mono">{((activeModel.metrics.precision || 0) * 100).toFixed(2)}%</span>
+                        </div>
+                        <div 
+                          className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
+                          title="Sensibilidade (Recall). Proporção de casos reais positivos capturados pelo modelo. Evita negligenciar falhas ou riscos críticos."
+                        >
+                          <span className="text-muted-foreground text-[8px] uppercase block">Sensibilidade</span>
+                          <span className="text-foreground font-bold font-mono">{((activeModel.metrics.recall || 0) * 100).toFixed(2)}%</span>
+                        </div>
+                        <div 
+                          className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
+                          title="F1-Score. Média harmônica equilibrando Precisão e Sensibilidade em uma única métrica técnica."
+                        >
+                          <span className="text-muted-foreground text-[8px] uppercase block">F1-Score</span>
+                          <span className="text-foreground font-bold font-mono">{(activeModel.metrics.f1Score || 0).toFixed(3)}</span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div 
+                          className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
+                          title="Coeficiente de Determinação (R²). Explica qual percentual da variância dos dados foi mapeado pelo modelo. Excelente acima de 90%."
+                        >
+                          <span className="text-muted-foreground text-[8px] uppercase block">R² (Score)</span>
+                          <span className="text-foreground font-bold font-mono">{(activeModel.metrics.r2 || 0).toFixed(4)}</span>
+                        </div>
+                        <div 
+                          className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
+                          title="Erro Quadrático Médio Root (RMSE). Desvio padrão dos resíduos de previsão. Quanto menor o valor em relação à faixa basal, melhor."
+                        >
+                          <span className="text-muted-foreground text-[8px] uppercase block">RMSE</span>
+                          <span className="text-foreground font-bold font-mono">{(activeModel.metrics.rmse || 0).toFixed(3)}</span>
+                        </div>
+                        <div 
+                          className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
+                          title="Erro Absoluto Médio (MAE). Distância absoluta média entre o valor real e a previsão. Não penaliza outliers de forma exponencial."
+                        >
+                          <span className="text-muted-foreground text-[8px] uppercase block">MAE</span>
+                          <span className="text-foreground font-bold font-mono">{(activeModel.metrics.mae || 0).toFixed(3)}</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Comparação com a Sessão Anterior (CA05) */}
+                {comparison && (
+                  <div className="p-3.5 bg-card border border-border/80 rounded-xl flex items-center justify-between gap-3 text-[10px] animate-in fade-in duration-300">
+                    <div>
+                      <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Comparação com Modelo Anterior</span>
+                      <p className="text-muted-foreground font-sans">
+                        Variação na métrica primária <strong>{comparison.metricName}</strong>:
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0 font-mono font-bold text-xs">
+                      {comparison.isImprovement ? (
+                        <span className="text-emerald-500 flex items-center gap-0.5 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded">
+                          ▲ +{comparison.diffPct.toFixed(2)}%
+                        </span>
+                      ) : (
+                        <span className="text-rose-500 flex items-center gap-0.5 bg-rose-500/10 border border-rose-500/20 px-2.5 py-1 rounded">
+                          ▼ {comparison.diffPct.toFixed(2)}%
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-1 pt-1.5 border-t border-emerald-500/15">
+                  <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Hiperparâmetros Calibrados</span>
+                  <pre className="p-2 bg-zinc-950/90 text-emerald-400/90 border border-emerald-500/10 rounded text-[9px] font-mono leading-relaxed overflow-x-auto max-h-[80px]">
+                    {JSON.stringify(activeModel.hyperparameters, null, 2)}
+                  </pre>
+                </div>
+                
+                <p className="text-[10px] text-muted-foreground leading-relaxed pl-1 pt-1 font-sans">
+                  Os parâmetros do motor analítico do módulo <strong>{DOMAINS[activeDomain].name}</strong> foram sincronizados localmente e estão ativos para previsões em tempo real nesta sessão.
                 </p>
+
+                {/* RF13 - Diagnosis Visualizations */}
+                <div className="pt-3 border-t border-emerald-500/15">
+                  {activeModel.type === "Classification" ? (
+                    <ConfusionMatrixView model={activeModel} />
+                  ) : (
+                    <ResidualsPlotView model={activeModel} theme={theme} />
+                  )}
+                </div>
               </div>
             )}
 
@@ -1018,7 +1754,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                     onClick={() => {
                       resetTraining();
                       setTimeout(() => {
-                        startTraining(fileDetails.sizeBytes);
+                        startTraining(fileDetails.sizeBytes, fileDetails.rows, allRows);
                       }, 100);
                     }}
                     className="text-[10px] font-bold h-8 px-3.5 bg-rose-600 hover:bg-rose-500 text-white"
@@ -1027,15 +1763,24 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                   </Button>
                 </>
               ) : trainingProgress === 100 ? (
-                <Button
-                  onClick={() => {
-                    resetTraining();
-                    handleReset();
-                  }}
-                  className="text-[10px] font-bold h-8 px-3.5 bg-emerald-600 hover:bg-emerald-500 text-white"
-                >
-                  Concluir e Fechar
-                </Button>
+                <>
+                  <Button
+                    onClick={handleExportMetricsJSON}
+                    variant="outline"
+                    className="text-[10px] font-bold h-8 px-3.5 border-border hover:bg-muted text-foreground"
+                  >
+                    Exportar JSON
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      resetTraining();
+                      handleReset();
+                    }}
+                    className="text-[10px] font-bold h-8 px-3.5 bg-emerald-600 hover:bg-emerald-500 text-white"
+                  >
+                    Concluir e Fechar
+                  </Button>
+                </>
               ) : (
                 <Button
                   onClick={resetTraining}
