@@ -32,7 +32,6 @@ export function Header() {
     activeDomain,
     initiateDomainSwitch,
     logs,
-    userProfile,
     theme,
     toggleTheme,
     currentUser,

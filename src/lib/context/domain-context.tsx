@@ -905,14 +905,11 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         resetTraining,
         dismissFinishedAlert,
         toggleTrainingDetails,
-<<<<<<< HEAD
         dashboardStatus,
         systemHealth,
         simulateDashboardEvent,
-=======
         trainedModels,
         previousTrainedModels,
->>>>>>> origin/main
       }}
     >
       {children}
