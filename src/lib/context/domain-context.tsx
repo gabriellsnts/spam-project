@@ -66,9 +66,32 @@ export const DOMAINS: Record<DomainType, DomainMetadata> = {
   },
 };
 
+export interface DashboardActivity {
+  id: string;
+  description: string;
+  timestamp: string;
+  type: "training" | "alert" | "prediction" | "system";
+}
+
+export interface DomainStatus {
+  isModelTrained: boolean;
+  activeAlertsCount: number;
+  lastPredictionDate: string | null;
+  recentActivities: DashboardActivity[];
+}
+
+export interface SystemHealth {
+  status: "healthy" | "warning" | "critical";
+  message: string;
+}
+
 interface User {
   username: string;
   profileName: string;
+  fullName: string;
+  accessProfile: string;
+  department: string;
+  lastLogin: string;
 }
 
 export interface TrainedModel {
@@ -142,6 +165,10 @@ interface DomainContextProps {
   resetTraining: () => void;
   dismissFinishedAlert: () => void;
   toggleTrainingDetails: () => void;
+  // Dashboard fields:
+  dashboardStatus: Record<DomainType, DomainStatus>;
+  systemHealth: SystemHealth;
+  simulateDashboardEvent: () => void;
   trainedModels: Record<DomainType, TrainedModel | null>;
   previousTrainedModels: Record<DomainType, TrainedModel | null>;
 }
@@ -186,6 +213,44 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
   const [trainingFinishedAlert, setTrainingFinishedAlert] = useState(false);
   const [simulatedFail, setSimulatedFail] = useState(false);
 
+  // Dashboard states (RF27)
+  const [dashboardStatus, setDashboardStatus] = useState<Record<DomainType, DomainStatus>>({
+    "maintenance": {
+      isModelTrained: true,
+      activeAlertsCount: 3,
+      lastPredictionDate: new Date().toISOString(),
+      recentActivities: [
+        { id: "1", description: "Alerta de vibração anômala no Motor B-12", timestamp: new Date(Date.now() - 3600000).toISOString(), type: "alert" },
+        { id: "2", description: "Novo modelo preditivo treinado", timestamp: new Date(Date.now() - 86400000).toISOString(), type: "training" },
+      ]
+    },
+    "demand": {
+      isModelTrained: false,
+      activeAlertsCount: 0,
+      lastPredictionDate: null,
+      recentActivities: [
+        { id: "3", description: "Dados de sazonalidade importados", timestamp: new Date(Date.now() - 172800000).toISOString(), type: "system" }
+      ]
+    },
+    "churn": {
+      isModelTrained: true,
+      activeAlertsCount: 12,
+      lastPredictionDate: new Date(Date.now() - 7200000).toISOString(),
+      recentActivities: [
+        { id: "4", description: "Previsão de rotatividade gerada", timestamp: new Date(Date.now() - 7200000).toISOString(), type: "prediction" },
+        { id: "5", description: "Alerta de risco crítico - Cliente VIP", timestamp: new Date(Date.now() - 14400000).toISOString(), type: "alert" }
+      ]
+    },
+    "credit-risk": {
+      isModelTrained: true,
+      activeAlertsCount: 0,
+      lastPredictionDate: new Date(Date.now() - 43200000).toISOString(),
+      recentActivities: [
+        { id: "6", description: "Reavaliação de score da base completa", timestamp: new Date(Date.now() - 43200000).toISOString(), type: "prediction" }
+      ]
+    }
+  });
+
   // Model states per domain (CA03)
   const [trainedModels, setTrainedModels] = useState<Record<DomainType, TrainedModel | null>>({
     maintenance: null,
@@ -202,7 +267,10 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     "credit-risk": null
   });
 
-
+  const [systemHealth, setSystemHealth] = useState<SystemHealth>({
+    status: "warning",
+    message: "15 alertas ativos em 2 domínios requerem atenção."
+  });
 
   // Carregar tema e sessão do localStorage/sessionStorage no cliente
   useEffect(() => {
@@ -266,6 +334,51 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
   const addLog = useCallback((action: string) => {
     addLogWithProfile(userProfile, action);
   }, [userProfile, addLogWithProfile]);
+
+  const simulateDashboardEvent = useCallback(() => {
+    setDashboardStatus(prev => {
+      const updated = { ...prev };
+      const domainKeys = Object.keys(updated) as DomainType[];
+      const randomDomain = domainKeys[Math.floor(Math.random() * domainKeys.length)];
+      
+      const newAlertCount = updated[randomDomain].activeAlertsCount + 1;
+      
+      updated[randomDomain] = {
+        ...updated[randomDomain],
+        activeAlertsCount: newAlertCount,
+        recentActivities: [
+          {
+            id: Math.random().toString(),
+            description: "Novo alerta preditivo detectado automaticamente",
+            timestamp: new Date().toISOString(),
+            type: "alert"
+          },
+          ...updated[randomDomain].recentActivities.slice(0, 4)
+        ]
+      };
+      
+      // Update system health dynamically
+      let totalAlerts = 0;
+      let domainsWithAlerts = 0;
+      Object.values(updated).forEach(status => {
+        totalAlerts += status.activeAlertsCount;
+        if (status.activeAlertsCount > 0) domainsWithAlerts++;
+      });
+      
+      let newHealth: SystemHealth = { status: "healthy", message: "Todos os sistemas operando normalmente." };
+      if (totalAlerts > 20) {
+        newHealth = { status: "critical", message: `${totalAlerts} alertas críticos em ${domainsWithAlerts} domínios.` };
+      } else if (totalAlerts > 0) {
+        newHealth = { status: "warning", message: `${totalAlerts} alertas ativos em ${domainsWithAlerts} domínios requerem atenção.` };
+      }
+      
+      setSystemHealth(newHealth);
+      
+      return updated;
+    });
+    
+    addLogWithProfile("Sistema", "Atualização em tempo real recebida pelo motor preditivo.");
+  }, [addLogWithProfile]);
 
   const trainingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -565,14 +678,22 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     }
 
     // Hash das senhas pré-cadastradas para conformidade com CA05
-    const USERS_DB: Record<string, { profileName: string; passwordHash: string }> = {
+    const USERS_DB: Record<string, { profileName: string; passwordHash: string; fullName: string; accessProfile: string; department: string; lastLogin: string }> = {
       admin: {
         profileName: "Administrador",
         passwordHash: "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9", // admin123
+        fullName: "Administrador do Sistema",
+        accessProfile: "Super Admin",
+        department: "TI & Infraestrutura",
+        lastLogin: new Date().toISOString()
       },
       gestor: {
         profileName: "Gestor de Operações",
         passwordHash: "db05065fff4dff901e0cf548ee0a478770a3074516026ff01021a3c0a7a917a4", // spam2026
+        fullName: "João Silva",
+        accessProfile: "Gestor Analítico",
+        department: "Operações",
+        lastLogin: new Date().toISOString()
       },
     };
 
@@ -580,9 +701,17 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     const passwordHash = await sha256(password);
     
     if (user && user.passwordHash === passwordHash) {
-      const loggedUser = { username: cleanUsername, profileName: user.profileName };
+      const loggedUser = { 
+        username: cleanUsername, 
+        profileName: user.profileName,
+        fullName: user.fullName,
+        accessProfile: user.accessProfile,
+        department: user.department,
+        lastLogin: user.lastLogin
+      };
       setCurrentUser(loggedUser);
       sessionStorage.setItem("spam-user", JSON.stringify(loggedUser));
+      localStorage.removeItem("spam-inactivity-test-time");
       
       localStorage.removeItem(`spam-attempts-${cleanUsername}`);
       
@@ -615,6 +744,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     const oldProfile = currentUser ? currentUser.profileName : "Visitante";
     setCurrentUser(null);
     sessionStorage.removeItem("spam-user");
+    localStorage.removeItem("spam-inactivity-test-time");
     
     let logMsg = `Sessão encerrada pelo usuário.`;
     if (reason === "inactivity") {
@@ -643,6 +773,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
       const timeoutMs = testTimeout ? parseInt(testTimeout, 10) : 30 * 60 * 1000; // 30 mins (1800000ms)
       
       timeoutId = setTimeout(() => {
+        localStorage.removeItem("spam-inactivity-test-time");
         logout("inactivity");
       }, timeoutMs);
     };
@@ -774,8 +905,14 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         resetTraining,
         dismissFinishedAlert,
         toggleTrainingDetails,
+<<<<<<< HEAD
+        dashboardStatus,
+        systemHealth,
+        simulateDashboardEvent,
+=======
         trainedModels,
         previousTrainedModels,
+>>>>>>> origin/main
       }}
     >
       {children}
