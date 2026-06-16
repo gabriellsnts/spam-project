@@ -2,10 +2,10 @@
 
 import React, { useState } from "react";
 import { useDomain } from "@/lib/context/domain-context";
-import { TrendingUp, AlertTriangle, Coins, Percent, FileCheck } from "lucide-react";
+import { TrendingUp, AlertTriangle, Coins, Percent, FileCheck, BarChart3 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CSVUploader } from "@/components/shared/csv-uploader";
+import { CSVUploader, ConfusionMatrixView } from "@/components/shared/csv-uploader";
 
 export default function CreditRiskPage() {
   const { addLog, isTraining, trainedModels } = useDomain();
@@ -288,7 +288,26 @@ export default function CreditRiskPage() {
       </div>
 
       {/* Ingestão de Dados Históricos */}
-      <CSVUploader />
+      <div className="space-y-6">
+        {activeModel && (
+          <Card className="bg-card border-border transition-colors duration-300">
+            <CardHeader>
+              <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                <BarChart3 className="h-4 w-4 text-emerald-500" />
+                Diagnóstico Visual do Modelo (RF13)
+              </CardTitle>
+              <CardDescription className="text-[11px] text-muted-foreground">
+                Matriz de confusão interativa mapeando acertos e erros de classificação do modelo.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ConfusionMatrixView model={activeModel} />
+            </CardContent>
+          </Card>
+        )}
+
+        <CSVUploader />
+      </div>
     </div>
   );
 }

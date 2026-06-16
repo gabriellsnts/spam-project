@@ -1,0 +1,13 @@
+cliente_id;nome;score_risco;ltv;fator_risco;acao_recomendada
+C001;Empresa Alfa;85;12000;Suporte inativo;Ligação urgente
+C002;Empresa Beta;40;25000;Regular;Visita periódica
+C003;Empresa Gama;90;45000;Preço alto;Oferecer desconto
+C004;Empresa Delta;15;5000;Regular;Manter contato
+C005;Empresa Epsilon;75;8000;Inatividade;Enviar e-mail
+C006;Empresa Zeta;65;9500;Problemas técnicos;Suporte avançado
+C007;Empresa Eta;50;15000;Regular;Acompanhamento mensal
+C008;Empresa Theta;95;60000;Concorrente ativo;Reunião executiva
+C009;Empresa Iota;30;7000;Regular;Manter contato
+C010;Empresa Kappa;80;11000;Reclamações frequentes;Gerente de conta dedicado
+C011;Empresa Lambda;20;14000;Regular;Acompanhamento mensal
+C012;Empresa Mu;88;32000;Suporte lento;Priorizar chamados

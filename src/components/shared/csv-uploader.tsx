@@ -61,7 +61,7 @@ interface ResidualPoint {
   real: number;
 }
 
-interface DomainTheme {
+export interface DomainTheme {
   accent: string;
   border: string;
   borderActive: string;
@@ -71,12 +71,70 @@ interface DomainTheme {
   button: string;
 }
 
-function ResidualsPlotView({ model, theme }: { model: TrainedModel; theme: DomainTheme }) {
+export const getDomainTheme = (domain: string): DomainTheme => {
+  switch (domain) {
+    case "maintenance":
+      return {
+        accent: "text-amber-500",
+        border: "border-amber-500/20 hover:border-amber-500/50",
+        borderActive: "border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.2)] bg-amber-500/[0.03]",
+        bg: "bg-amber-500/5",
+        progress: "bg-amber-500",
+        glow: "glow-amber",
+        button: "bg-amber-600 hover:bg-amber-500 text-white"
+      };
+    case "demand":
+      return {
+        accent: "text-sky-500",
+        border: "border-sky-500/20 hover:border-sky-500/50",
+        borderActive: "border-sky-500 shadow-[0_0_20px_rgba(14,165,233,0.2)] bg-sky-500/[0.03]",
+        bg: "bg-sky-500/5",
+        progress: "bg-sky-500",
+        glow: "glow-sky",
+        button: "bg-sky-600 hover:bg-sky-500 text-white"
+      };
+    case "churn":
+      return {
+        accent: "text-violet-500",
+        border: "border-violet-500/20 hover:border-violet-500/50",
+        borderActive: "border-violet-500 shadow-[0_0_20px_rgba(139,92,246,0.2)] bg-violet-500/[0.03]",
+        bg: "bg-violet-500/5",
+        progress: "bg-violet-500",
+        glow: "glow-violet",
+        button: "bg-violet-600 hover:bg-violet-500 text-white"
+      };
+    case "credit-risk":
+      return {
+        accent: "text-emerald-500",
+        border: "border-emerald-500/20 hover:border-emerald-500/50",
+        borderActive: "border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.2)] bg-emerald-500/[0.03]",
+        bg: "bg-emerald-500/5",
+        progress: "bg-emerald-500",
+        glow: "glow-emerald",
+        button: "bg-emerald-600 hover:bg-emerald-500 text-white"
+      };
+    default:
+      return {
+        accent: "text-green-500",
+        border: "border-green-500/20 hover:border-green-500/50",
+        borderActive: "border-green-500 shadow-[0_0_20px_rgba(34,197,94,0.2)] bg-green-500/[0.03]",
+        bg: "bg-green-500/5",
+        progress: "bg-green-500",
+        glow: "glow-emerald",
+        button: "bg-green-600 hover:bg-green-500 text-white"
+      };
+  }
+};
+
+export function ResidualsPlotView({ model, theme: customTheme }: { model: TrainedModel; theme?: DomainTheme }) {
   const [selectedPoint, setSelectedPoint] = useState<ResidualPoint | null>(null);
+  const [hoveredPoint, setHoveredPoint] = useState<ResidualPoint | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
   const points = (model.residuals || []) as ResidualPoint[];
   if (points.length === 0) return null;
+
+  const domainTheme = customTheme || getDomainTheme(model.domain);
 
   // CA05 - Auto scale axes
   const predictedVals = points.map((p) => p.predicted);
@@ -164,6 +222,44 @@ function ResidualsPlotView({ model, theme }: { model: TrainedModel; theme: Domai
     }
   };
 
+  const handleDownloadJPEG = () => {
+    if (!svgRef.current) return;
+    try {
+      const svgElement = svgRef.current;
+      const svgString = new XMLSerializer().serializeToString(svgElement);
+      const svgBlob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+      const URL = window.URL || window.webkitURL || window;
+      const blobURL = URL.createObjectURL(svgBlob);
+      const image = new Image();
+      
+      image.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = width * 2;
+        canvas.height = height * 2;
+        const context = canvas.getContext("2d");
+        if (context) {
+          context.fillStyle = "#09090b";
+          context.fillRect(0, 0, canvas.width, canvas.height);
+          context.scale(2, 2);
+          context.drawImage(image, 0, 0);
+          
+          const jpegUrl = canvas.toDataURL("image/jpeg", 0.95);
+          const downloadLink = document.createElement("a");
+          downloadLink.href = jpegUrl;
+          downloadLink.download = `grafico-residuos-${model.modelId.toLowerCase()}.jpg`;
+          document.body.appendChild(downloadLink);
+          downloadLink.click();
+          document.body.removeChild(downloadLink);
+        }
+      };
+      image.src = blobURL;
+    } catch (err) {
+      console.error("Erro ao converter para JPEG:", err);
+    }
+  };
+
+  const showPoint = hoveredPoint || selectedPoint;
+
   return (
     <div className="space-y-4 border border-border/60 bg-zinc-950/40 p-4.5 rounded-xl animate-in fade-in duration-300">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
@@ -189,6 +285,14 @@ function ResidualsPlotView({ model, theme }: { model: TrainedModel; theme: Domai
             title="Baixar em alta resolução PNG"
           >
             PNG
+          </Button>
+          <Button
+            onClick={handleDownloadJPEG}
+            variant="outline"
+            className="text-[9px] font-bold h-6.5 px-2 border-border hover:bg-muted font-sans text-muted-foreground hover:text-foreground"
+            title="Baixar em alta resolução JPEG"
+          >
+            JPEG
           </Button>
         </div>
       </div>
@@ -309,6 +413,7 @@ function ResidualsPlotView({ model, theme }: { model: TrainedModel; theme: Domai
             {/* Scatter Dots */}
             {points.map((pt) => {
               const isSelected = selectedPoint?.id === pt.id;
+              const isHovered = hoveredPoint?.id === pt.id;
               const isPositive = pt.residual >= 0;
               const dotColor = isPositive ? "#38bdf8" : "#f59e0b"; // sky for over, amber for under
               
@@ -317,24 +422,47 @@ function ResidualsPlotView({ model, theme }: { model: TrainedModel; theme: Domai
                   key={`dot-${pt.id}`}
                   cx={getX(pt.predicted)}
                   cy={getY(pt.residual)}
-                  r={isSelected ? 7 : 4.5}
+                  r={isSelected || isHovered ? 7 : 4.5}
                   fill={dotColor}
-                  stroke={isSelected ? "#ffffff" : "transparent"}
+                  stroke={isSelected || isHovered ? "#ffffff" : "transparent"}
                   strokeWidth={1.5}
-                  opacity={isSelected ? 1 : 0.8}
+                  opacity={isSelected || isHovered ? 1 : 0.8}
                   className="residual-dot cursor-pointer transition-all duration-150 hover:opacity-100"
+                  onMouseEnter={() => setHoveredPoint(pt)}
+                  onMouseLeave={() => setHoveredPoint(null)}
                   onClick={() => setSelectedPoint(pt)}
                 />
               );
             })}
           </svg>
+
+          {/* CA04 - Tooltip flutuante interativo posicionado em porcentagem */}
+          {showPoint && (
+            <div 
+              className="absolute bg-zinc-900/95 border border-border text-foreground p-2 rounded-lg shadow-xl text-[10px] font-mono pointer-events-none z-50 transition-all duration-75 select-none"
+              style={{
+                left: `${(getX(showPoint.predicted) / width) * 100}%`,
+                top: `${(getY(showPoint.residual) / height) * 100}%`,
+                transform: 'translate(-50%, -125%)',
+              }}
+            >
+              <div className="font-bold text-center border-b border-border pb-0.5 mb-1 text-[9px] text-zinc-400">Ponto #{showPoint.id}</div>
+              <div>Real: <span className="font-bold text-foreground">{showPoint.real.toFixed(2)}</span></div>
+              <div>Predito: <span className="font-bold text-foreground">{showPoint.predicted.toFixed(2)}</span></div>
+              <div className="mt-0.5 pt-0.5 border-t border-border/50">
+                Erro: <span className={`font-bold ${showPoint.residual >= 0 ? "text-sky-400" : "text-amber-400"}`}>
+                  {showPoint.residual >= 0 ? "+" : ""}{showPoint.residual.toFixed(2)}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Selected Point Details (CA04) */}
+        {/* Selected Point Details */}
         <div className="bg-zinc-950/60 border border-border/40 rounded-lg p-3.5 space-y-3 h-[280px] flex flex-col justify-between">
           <div className="space-y-2.5">
             <h6 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <span className={cn("h-1.5 w-1.5 rounded-full bg-current", theme.accent)} />
+              <span className={cn("h-1.5 w-1.5 rounded-full bg-current", domainTheme.accent)} />
               Inspeção do Resíduo
             </h6>
             
@@ -357,7 +485,7 @@ function ResidualsPlotView({ model, theme }: { model: TrainedModel; theme: Domai
                   <span className={cn(
                     "font-mono font-bold text-xs px-1.5 py-0.5 rounded",
                     selectedPoint.residual >= 0 
-                      ? "bg-sky-500/10 text-sky-400 border border-sky-500/20" 
+                      ? "bg-sky-550/10 text-sky-400 border border-sky-500/20" 
                       : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
                   )}>
                     {selectedPoint.residual >= 0 ? "+" : ""}{selectedPoint.residual.toFixed(2)}
@@ -395,8 +523,10 @@ function ResidualsPlotView({ model, theme }: { model: TrainedModel; theme: Domai
   );
 }
 
-function ConfusionMatrixView({ model }: { model: TrainedModel }) {
+export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
   const svgRef = useRef<SVGSVGElement>(null);
+  const [hoveredCell, setHoveredCell] = useState<"tp" | "tn" | "fp" | "fn" | null>(null);
+  const [selectedCell, setSelectedCell] = useState<"tp" | "tn" | "fp" | "fn" | null>(null);
   
   const matrix = model.confusionMatrix;
   if (!matrix) return null;
@@ -463,6 +593,141 @@ function ConfusionMatrixView({ model }: { model: TrainedModel }) {
     }
   };
 
+  const handleDownloadJPEG = () => {
+    if (!svgRef.current) return;
+    try {
+      const svgElement = svgRef.current;
+      const svgString = new XMLSerializer().serializeToString(svgElement);
+      const svgBlob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+      const URL = window.URL || window.webkitURL || window;
+      const blobURL = URL.createObjectURL(svgBlob);
+      const image = new Image();
+      
+      image.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = width * 2;
+        canvas.height = height * 2;
+        const context = canvas.getContext("2d");
+        if (context) {
+          context.fillStyle = "#09090b";
+          context.fillRect(0, 0, canvas.width, canvas.height);
+          context.scale(2, 2);
+          context.drawImage(image, 0, 0);
+          
+          const jpegUrl = canvas.toDataURL("image/jpeg", 0.95);
+          const downloadLink = document.createElement("a");
+          downloadLink.href = jpegUrl;
+          downloadLink.download = `matriz-confusao-${model.modelId.toLowerCase()}.jpg`;
+          document.body.appendChild(downloadLink);
+          downloadLink.click();
+          document.body.removeChild(downloadLink);
+        }
+      };
+      image.src = blobURL;
+    } catch (err) {
+      console.error("Erro ao converter para JPEG:", err);
+    }
+  };
+
+  const activeCell = hoveredCell || selectedCell;
+
+  const getCellDetails = (cell: "tp" | "tn" | "fp" | "fn") => {
+    const isChurn = model.domain === "churn";
+    
+    // Values and percentages
+    let value = 0;
+    switch (cell) {
+      case "tp": value = matrix.tp; break;
+      case "tn": value = matrix.tn; break;
+      case "fp": value = matrix.fp; break;
+      case "fn": value = matrix.fn; break;
+    }
+    const percentStr = pct(value);
+
+    if (isChurn) {
+      switch (cell) {
+        case "tn":
+          return {
+            title: "Verdadeiro Negativo (TN)",
+            badge: "Sucesso de Retenção",
+            badgeColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+            value,
+            percent: percentStr,
+            desc: "Clientes saudáveis e ativos identificados corretamente pelo modelo. Nenhuma ação de retenção é necessária para estes casos.",
+          };
+        case "tp":
+          return {
+            title: "Verdadeiro Positivo (TP)",
+            badge: "Alerta de Churn Correto",
+            badgeColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+            value,
+            percent: percentStr,
+            desc: "Clientes com alto risco de cancelamento identificados corretamente. Permite agir proativamente com campanhas de engajamento antes do cancelamento efetivo.",
+          };
+        case "fp":
+          return {
+            title: "Falso Positivo (FP)",
+            badge: "Alerta Falso (Erro Tipo I)",
+            badgeColor: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+            value,
+            percent: percentStr,
+            desc: "Clientes estáveis que o modelo previu incorretamente como risco de churn. Pode gerar custos operacionais ou descontos desnecessários com ofertas de retenção.",
+          };
+        case "fn":
+          return {
+            title: "Falso Negativo (FN)",
+            badge: "Perda Silenciosa (Erro Tipo II)",
+            badgeColor: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+            value,
+            percent: percentStr,
+            desc: "Clientes em risco crítico que o modelo classificou incorretamente como saudáveis. É a falha mais grave, pois impede qualquer ação preventiva de retenção.",
+          };
+      }
+    } else {
+      // credit-risk
+      switch (cell) {
+        case "tn":
+          return {
+            title: "Verdadeiro Negativo (TN)",
+            badge: "Bom Pagador Confirmado",
+            badgeColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+            value,
+            percent: percentStr,
+            desc: "Clientes de baixo risco (adimplentes) classificados corretamente. Permite a liberação automática de crédito com segurança e agilidade.",
+          };
+        case "tp":
+          return {
+            title: "Verdadeiro Positivo (TP)",
+            badge: "Risco Mitigado",
+            badgeColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+            value,
+            percent: percentStr,
+            desc: "Clientes inadimplentes ou de alto risco detectados com sucesso pelo modelo. Evita a concessão indevida de crédito e protege o caixa da empresa.",
+          };
+        case "fp":
+          return {
+            title: "Falso Positivo (FP)",
+            badge: "Crédito Negado Injustamente",
+            badgeColor: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+            value,
+            percent: percentStr,
+            desc: "Bons pagadores classificados incorretamente como risco de inadimplência. Representa perda de receita e de oportunidades comerciais viáveis.",
+          };
+        case "fn":
+          return {
+            title: "Falso Negativo (FN)",
+            badge: "Prejuízo Direto (Erro Tipo II)",
+            badgeColor: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+            value,
+            percent: percentStr,
+            desc: "Clientes inadimplentes classificados incorretamente como seguros. É o erro de maior impacto financeiro direto, resultando em calote e inadimplência ativa.",
+          };
+      }
+    }
+  };
+
+  const details = activeCell ? getCellDetails(activeCell) : null;
+
   return (
     <div className="space-y-4 border border-border/60 bg-zinc-950/40 p-4.5 rounded-xl animate-in fade-in duration-300">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
@@ -489,124 +754,229 @@ function ConfusionMatrixView({ model }: { model: TrainedModel }) {
           >
             PNG
           </Button>
+          <Button
+            onClick={handleDownloadJPEG}
+            variant="outline"
+            className="text-[9px] font-bold h-6.5 px-2 border-border hover:bg-muted font-sans text-muted-foreground hover:text-foreground"
+            title="Baixar em alta resolução JPEG"
+          >
+            JPEG
+          </Button>
         </div>
       </div>
 
-      <div className="flex justify-center bg-zinc-950 border border-border/40 rounded-lg p-4 relative overflow-hidden select-none">
-        <svg
-          ref={svgRef}
-          viewBox={`0 0 ${width} ${height}`}
-          width="100%"
-          height="100%"
-          className="text-foreground overflow-visible"
-          style={{ backgroundColor: "#09090b" }}
-        >
-          {/* Outer title */}
-          <text
-            x={200}
-            y={25}
-            textAnchor="middle"
-            fill="#a1a1aa"
-            fontSize="11px"
-            fontWeight="bold"
-            fontFamily="sans-serif"
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4.5 items-start">
+        {/* SVG Matrix */}
+        <div className="md:col-span-2 flex justify-center bg-zinc-950 border border-border/40 rounded-lg p-4 relative overflow-hidden select-none">
+          <svg
+            ref={svgRef}
+            viewBox={`0 0 ${width} ${height}`}
+            width="100%"
+            height="100%"
+            className="text-foreground overflow-visible"
+            style={{ backgroundColor: "#09090b" }}
           >
-            Classe Predita
-          </text>
+            {/* Outer title */}
+            <text
+              x={200}
+              y={25}
+              textAnchor="middle"
+              fill="#a1a1aa"
+              fontSize="11px"
+              fontWeight="bold"
+              fontFamily="sans-serif"
+            >
+              Classe Predita
+            </text>
 
-          {/* Actual Class title vertical */}
-          <text
-            transform="rotate(-90) translate(-140, 20)"
-            textAnchor="middle"
-            fill="#a1a1aa"
-            fontSize="11px"
-            fontWeight="bold"
-            fontFamily="sans-serif"
-          >
-            Classe Real
-          </text>
+            {/* Actual Class title vertical */}
+            <text
+              transform="rotate(-90) translate(-140, 20)"
+              textAnchor="middle"
+              fill="#a1a1aa"
+              fontSize="11px"
+              fontWeight="bold"
+              fontFamily="sans-serif"
+            >
+              Classe Real
+            </text>
 
-          {/* Columns Header (Predicted) */}
-          <text x={172.5} y={50} textAnchor="middle" fill="#71717a" fontSize="9px" fontWeight="bold" fontFamily="monospace">NEGATIVO (0)</text>
-          <text x={282.5} y={50} textAnchor="middle" fill="#71717a" fontSize="9px" fontWeight="bold" fontFamily="monospace">POSITIVO (1)</text>
+            {/* Columns Header (Predicted) */}
+            <text x={172.5} y={50} textAnchor="middle" fill="#71717a" fontSize="9px" fontWeight="bold" fontFamily="monospace">NEGATIVO (0)</text>
+            <text x={282.5} y={50} textAnchor="middle" fill="#71717a" fontSize="9px" fontWeight="bold" fontFamily="monospace">POSITIVO (1)</text>
 
-          {/* Rows Header (Actual) */}
-          <text x={110} y={115} textAnchor="end" fill="#71717a" fontSize="9px" fontWeight="bold" fontFamily="monospace">NEGATIVO (0)</text>
-          <text x={110} y={225} textAnchor="end" fill="#71717a" fontSize="9px" fontWeight="bold" fontFamily="monospace">POSITIVO (1)</text>
+            {/* Rows Header (Actual) */}
+            <text x={110} y={115} textAnchor="end" fill="#71717a" fontSize="9px" fontWeight="bold" fontFamily="monospace">NEGATIVO (0)</text>
+            <text x={110} y={225} textAnchor="end" fill="#71717a" fontSize="9px" fontWeight="bold" fontFamily="monospace">POSITIVO (1)</text>
 
-          {/* Matrix Cells */}
-          {/* TN: Real 0, Pred 0 */}
-          <g className="cursor-help">
-            <rect
-              x={120}
-              y={65}
-              width={105}
-              height={105}
-              fill="#10b981"
-              fillOpacity={0.15 + (matrix.tn / total) * 0.6}
-              stroke="#27272a"
-              strokeWidth={1}
-            />
-            <text x={172.5} y={110} textAnchor="middle" fill="#ffffff" fontSize="16px" fontWeight="extrabold" fontFamily="monospace">{matrix.tn}</text>
-            <text x={172.5} y={130} textAnchor="middle" fill="#a7f3d0" fontSize="9px" fontWeight="bold" fontFamily="monospace">{pct(matrix.tn)}%</text>
-            <text x={172.5} y={150} textAnchor="middle" fill="#34d399" fontSize="8px" fontWeight="bold" fontFamily="sans-serif">Verdadeiro Negativo</text>
-            <title>Verdadeiro Negativo (TN): Casos em que o modelo previu corretamente a classe Negativa.</title>
-          </g>
+            {/* TN: Real 0, Pred 0 */}
+            <g 
+              className="cursor-pointer"
+              onMouseEnter={() => setHoveredCell("tn")}
+              onMouseLeave={() => setHoveredCell(null)}
+              onClick={() => setSelectedCell("tn")}
+            >
+              <rect
+                x={120}
+                y={65}
+                width={105}
+                height={105}
+                fill="#10b981"
+                fillOpacity={0.15 + (matrix.tn / total) * 0.6}
+                stroke={activeCell === "tn" ? "#ffffff" : "#27272a"}
+                strokeWidth={activeCell === "tn" ? 2 : 1}
+                className="transition-all duration-150"
+              />
+              <text x={172.5} y={110} textAnchor="middle" fill="#ffffff" fontSize="16px" fontWeight="extrabold" fontFamily="monospace">{matrix.tn}</text>
+              <text x={172.5} y={130} textAnchor="middle" fill="#a7f3d0" fontSize="9px" fontWeight="bold" fontFamily="monospace">{pct(matrix.tn)}%</text>
+              <text x={172.5} y={150} textAnchor="middle" fill="#34d399" fontSize="8px" fontWeight="bold" fontFamily="sans-serif">Verdadeiro Negativo</text>
+            </g>
 
-          {/* FP: Real 0, Pred 1 */}
-          <g className="cursor-help">
-            <rect
-              x={230}
-              y={65}
-              width={105}
-              height={105}
-              fill="#f43f5e"
-              fillOpacity={0.1 + (matrix.fp / total) * 0.75}
-              stroke="#27272a"
-              strokeWidth={1}
-            />
-            <text x={282.5} y={110} textAnchor="middle" fill="#ffffff" fontSize="16px" fontWeight="extrabold" fontFamily="monospace">{matrix.fp}</text>
-            <text x={282.5} y={130} textAnchor="middle" fill="#fca5a5" fontSize="9px" fontWeight="bold" fontFamily="monospace">{pct(matrix.fp)}%</text>
-            <text x={282.5} y={150} textAnchor="middle" fill="#f87171" fontSize="8px" fontWeight="bold" fontFamily="sans-serif">Falso Positivo</text>
-            <title>Falso Positivo (FP - Erro Tipo I): Casos negativos classificados erroneamente como positivos pelo modelo.</title>
-          </g>
+            {/* FP: Real 0, Pred 1 */}
+            <g 
+              className="cursor-pointer"
+              onMouseEnter={() => setHoveredCell("fp")}
+              onMouseLeave={() => setHoveredCell(null)}
+              onClick={() => setSelectedCell("fp")}
+            >
+              <rect
+                x={230}
+                y={65}
+                width={105}
+                height={105}
+                fill="#f43f5e"
+                fillOpacity={0.1 + (matrix.fp / total) * 0.75}
+                stroke={activeCell === "fp" ? "#ffffff" : "#27272a"}
+                strokeWidth={activeCell === "fp" ? 2 : 1}
+                className="transition-all duration-150"
+              />
+              <text x={282.5} y={110} textAnchor="middle" fill="#ffffff" fontSize="16px" fontWeight="extrabold" fontFamily="monospace">{matrix.fp}</text>
+              <text x={282.5} y={130} textAnchor="middle" fill="#fca5a5" fontSize="9px" fontWeight="bold" fontFamily="monospace">{pct(matrix.fp)}%</text>
+              <text x={282.5} y={150} textAnchor="middle" fill="#f87171" fontSize="8px" fontWeight="bold" fontFamily="sans-serif">Falso Positivo</text>
+            </g>
 
-          {/* FN: Real 1, Pred 0 */}
-          <g className="cursor-help">
-            <rect
-              x={120}
-              y={175}
-              width={105}
-              height={105}
-              fill="#f43f5e"
-              fillOpacity={0.1 + (matrix.fn / total) * 0.75}
-              stroke="#27272a"
-              strokeWidth={1}
-            />
-            <text x={172.5} y={220} textAnchor="middle" fill="#ffffff" fontSize="16px" fontWeight="extrabold" fontFamily="monospace">{matrix.fn}</text>
-            <text x={172.5} y={240} textAnchor="middle" fill="#fca5a5" fontSize="9px" fontWeight="bold" fontFamily="monospace">{pct(matrix.fn)}%</text>
-            <text x={172.5} y={260} textAnchor="middle" fill="#f87171" fontSize="8px" fontWeight="bold" fontFamily="sans-serif">Falso Negativo</text>
-            <title>Falso Negativo (FN - Erro Tipo II): Casos positivos classificados erroneamente como negativos pelo modelo.</title>
-          </g>
+            {/* FN: Real 1, Pred 0 */}
+            <g 
+              className="cursor-pointer"
+              onMouseEnter={() => setHoveredCell("fn")}
+              onMouseLeave={() => setHoveredCell(null)}
+              onClick={() => setSelectedCell("fn")}
+            >
+              <rect
+                x={120}
+                y={175}
+                width={105}
+                height={105}
+                fill="#f43f5e"
+                fillOpacity={0.1 + (matrix.fn / total) * 0.75}
+                stroke={activeCell === "fn" ? "#ffffff" : "#27272a"}
+                strokeWidth={activeCell === "fn" ? 2 : 1}
+                className="transition-all duration-150"
+              />
+              <text x={172.5} y={220} textAnchor="middle" fill="#ffffff" fontSize="16px" fontWeight="extrabold" fontFamily="monospace">{matrix.fn}</text>
+              <text x={172.5} y={240} textAnchor="middle" fill="#fca5a5" fontSize="9px" fontWeight="bold" fontFamily="monospace">{pct(matrix.fn)}%</text>
+              <text x={172.5} y={260} textAnchor="middle" fill="#f87171" fontSize="8px" fontWeight="bold" fontFamily="sans-serif">Falso Negativo</text>
+            </g>
 
-          {/* TP: Real 1, Pred 1 */}
-          <g className="cursor-help">
-            <rect
-              x={230}
-              y={175}
-              width={105}
-              height={105}
-              fill="#10b981"
-              fillOpacity={0.15 + (matrix.tp / total) * 0.6}
-              stroke="#27272a"
-              strokeWidth={1}
-            />
-            <text x={282.5} y={220} textAnchor="middle" fill="#ffffff" fontSize="16px" fontWeight="extrabold" fontFamily="monospace">{matrix.tp}</text>
-            <text x={282.5} y={240} textAnchor="middle" fill="#a7f3d0" fontSize="9px" fontWeight="bold" fontFamily="monospace">{pct(matrix.tp)}%</text>
-            <text x={282.5} y={260} textAnchor="middle" fill="#34d399" fontSize="8px" fontWeight="bold" fontFamily="sans-serif">Verdadeiro Positivo</text>
-            <title>Verdadeiro Positivo (TP): Casos em que o modelo previu corretamente a classe Positiva.</title>
-          </g>
-        </svg>
+            {/* TP: Real 1, Pred 1 */}
+            <g 
+              className="cursor-pointer"
+              onMouseEnter={() => setHoveredCell("tp")}
+              onMouseLeave={() => setHoveredCell(null)}
+              onClick={() => setSelectedCell("tp")}
+            >
+              <rect
+                x={230}
+                y={175}
+                width={105}
+                height={105}
+                fill="#10b981"
+                fillOpacity={0.15 + (matrix.tp / total) * 0.6}
+                stroke={activeCell === "tp" ? "#ffffff" : "#27272a"}
+                strokeWidth={activeCell === "tp" ? 2 : 1}
+                className="transition-all duration-150"
+              />
+              <text x={282.5} y={220} textAnchor="middle" fill="#ffffff" fontSize="16px" fontWeight="extrabold" fontFamily="monospace">{matrix.tp}</text>
+              <text x={282.5} y={240} textAnchor="middle" fill="#a7f3d0" fontSize="9px" fontWeight="bold" fontFamily="monospace">{pct(matrix.tp)}%</text>
+              <text x={282.5} y={260} textAnchor="middle" fill="#34d399" fontSize="8px" fontWeight="bold" fontFamily="sans-serif">Verdadeiro Positivo</text>
+            </g>
+          </svg>
+        </div>
+
+        {/* Interactive Explanation Card */}
+        <div className="bg-zinc-950/60 border border-border/40 rounded-lg p-3.5 space-y-3 h-[300px] flex flex-col justify-between">
+          {details ? (
+            <div className="space-y-2 animate-in fade-in duration-200">
+              <h6 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Análise do Quadrante
+              </h6>
+              
+              <div className="space-y-1">
+                <div className="text-xs font-bold text-foreground">{details.title}</div>
+                <div className="flex items-center gap-1.5">
+                  <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold border uppercase tracking-wider ${details.badgeColor}`}>
+                    {details.badge}
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-[10px] font-mono border-y border-border/40 py-2 my-1">
+                <div>
+                  <span className="text-muted-foreground block text-[8px] uppercase font-sans">Quantidade</span>
+                  <span className="text-foreground font-bold">{details.value} casos</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block text-[8px] uppercase font-sans">Proporção</span>
+                  <span className="text-foreground font-bold">{details.percent}%</span>
+                </div>
+              </div>
+
+              <p className="text-[10px] text-muted-foreground leading-relaxed pt-1 font-sans">
+                {details.desc}
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2.5">
+              <h6 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#8b5cf6]" />
+                Métricas do Classificador
+              </h6>
+              <div className="space-y-1.5 text-[10px] font-mono">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Acurácia Geral:</span>
+                  <span className="text-foreground font-bold">{((model.metrics.accuracy || 0) * 100).toFixed(1)}%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Precisão:</span>
+                  <span className="text-foreground font-bold">{((model.metrics.precision || 0) * 100).toFixed(1)}%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Sensibilidade:</span>
+                  <span className="text-foreground font-bold">{((model.metrics.recall || 0) * 100).toFixed(1)}%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">F1-Score:</span>
+                  <span className="text-foreground font-bold">{(model.metrics.f1Score || 0).toFixed(3)}</span>
+                </div>
+              </div>
+              <p className="text-[9px] text-muted-foreground leading-relaxed italic border-t border-border/40 pt-2 mt-2 font-sans">
+                Passe o mouse ou clique em qualquer quadrante da matriz para inspecionar os detalhes operacionais e o impacto comercial de cada erro/acerto.
+              </p>
+            </div>
+          )}
+
+          <div className="p-2 rounded bg-muted/20 border border-border/40 text-[9px] text-muted-foreground leading-relaxed font-sans">
+            <span className="font-bold text-foreground/80 block mb-0.5">Legenda:</span>
+            <div className="flex items-center gap-1.5 mb-1">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
+              <span>Verdadeiros (Acertos)</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-rose-500 shrink-0" />
+              <span>Falsos (Erros)</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -5,7 +5,7 @@ import { useDomain } from "@/lib/context/domain-context";
 import { TrendingUp, BarChart3, Package, Calendar } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CSVUploader } from "@/components/shared/csv-uploader";
+import { CSVUploader, ResidualsPlotView } from "@/components/shared/csv-uploader";
 
 export default function DemandPage() {
   const { addLog, isTraining, trainedModels } = useDomain();
@@ -276,7 +276,26 @@ export default function DemandPage() {
       </div>
 
       {/* Ingestão de Dados Históricos */}
-      <CSVUploader />
+      <div className="space-y-6">
+        {activeModel && (
+          <Card className="bg-card border-border transition-colors duration-300">
+            <CardHeader>
+              <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                <BarChart3 className="h-4 w-4 text-sky-500" />
+                Diagnóstico Visual do Modelo (RF13)
+              </CardTitle>
+              <CardDescription className="text-[11px] text-muted-foreground">
+                Gráfico de resíduos interativo para verificação da qualidade das predições.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResidualsPlotView model={activeModel} />
+            </CardContent>
+          </Card>
+        )}
+
+        <CSVUploader />
+      </div>
     </div>
   );
 }
