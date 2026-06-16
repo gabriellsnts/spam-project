@@ -21,7 +21,8 @@ import { DescriptiveStats } from "@/components/shared/descriptive-stats";
 import { calculateMachineRUL, BASE_RULS } from "@/lib/predictive-engine";
 
 export default function MaintenancePage() {
-  const { addLog, isTraining } = useDomain();
+  const { addLog, isTraining, trainedModels } = useDomain();
+  const activeModel = trainedModels["maintenance"];
   const [csvFileDetails, setCsvFileDetails] = useState<{
     name: string;
     size: string;
@@ -291,10 +292,18 @@ ${
             <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
               Modelos Estatísticos
             </CardDescription>
-            <CardTitle className="text-2xl font-black text-foreground">XGBoost v2</CardTitle>
+            <CardTitle className="text-xl font-black text-foreground truncate" title={activeModel ? activeModel.algorithm : "XGBoost v2"}>
+              {activeModel ? activeModel.algorithm : "XGBoost v2"}
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-[10px] text-muted-foreground">Acurácia RUL: 94.8%</div>
+            <div className="text-[10px] text-muted-foreground">
+              {activeModel ? (
+                <>R² do Modelo: <strong>{(activeModel.metrics.r2 || 0).toFixed(4)}</strong></>
+              ) : (
+                "Acurácia RUL: 94.8%"
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>
