@@ -4,9 +4,9 @@ import React, { useState, useRef, DragEvent } from "react";
 import { useDomain, DOMAINS, TrainedModel } from "@/lib/context/domain-context";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { UploadCloud, CheckCircle2, AlertCircle, Loader2, FileSpreadsheet, Trash2, Info, Download } from "lucide-react";
+import { UploadCloud, CheckCircle2, AlertCircle, Loader2, FileSpreadsheet, Trash2, Info, Download, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
 // Colunas recomendadas/esperadas para cada domínio como orientação ao Engenheiro de Dados
 const EXPECTED_COLUMNS: Record<string, string[]> = {
@@ -1092,6 +1092,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
   } | null>(null);
 
   const [isReportOpen, setIsReportOpen] = useState(false);
+  const [confirmRetrainOpen, setConfirmRetrainOpen] = useState(false);
 
   if (!activeDomain) return null;
 
@@ -1819,7 +1820,13 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                     Limpar
                   </Button>
                   <Button
-                    onClick={() => startTraining(fileDetails.sizeBytes, fileDetails.rows, allRows)}
+                    onClick={() => {
+                      if (activeModel) {
+                        setConfirmRetrainOpen(true);
+                      } else {
+                        startTraining(fileDetails.sizeBytes, fileDetails.rows, allRows);
+                      }
+                    }}
                     className={cn("text-[10px] font-bold h-8 px-3.5", theme.button)}
                   >
                     Iniciar Treinamento do Modelo
@@ -2235,6 +2242,54 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
               className={cn("text-[10px] font-bold h-8 px-3.5", theme.button)}
             >
               Fechar Relatório
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Confirmação para Retreinamento (RF14 - CA04) */}
+      <Dialog open={confirmRetrainOpen} onOpenChange={setConfirmRetrainOpen}>
+        <DialogContent className="max-w-md bg-card border border-border rounded-xl p-5 shadow-2xl">
+          <DialogHeader className="pb-3 border-b border-border/80">
+            <div className="flex items-center gap-2.5 text-rose-500 mb-1">
+              <AlertTriangle className="h-5.5 w-5.5" />
+              <DialogTitle className="text-sm font-bold text-foreground font-sans">
+                Confirmar Substituição de Modelo Preditivo (CA04)
+              </DialogTitle>
+            </div>
+            <DialogDescription className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
+              Um modelo preditivo já está treinado e operacional para o módulo <strong>{domainInfo.name}</strong> nesta sessão.
+              <br />
+              <br />
+              Se você prosseguir com o retreinamento, o modelo anterior (<strong>{activeModel?.modelId}</strong>) e suas calibrações de hiperparâmetros serão <span className="text-rose-500 font-semibold font-bold">permanentemente substituídos</span> no motor analítico por esta nova versão.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-3 text-[10px] text-muted-foreground bg-muted/40 border border-border/80 rounded-lg p-3 flex gap-2">
+            <Info className="h-4 w-4 text-muted-foreground/60 shrink-0 mt-0.5" />
+            <div>
+              <span className="font-semibold text-foreground">Aviso Técnico:</span> O novo modelo será treinado com base no arquivo <strong>{fileDetails?.name}</strong> contendo {fileDetails?.rows} registros. A alteração das taxas de erro e a nova matriz de classificação/resíduos poderão ser comparadas imediatamente após a conclusão.
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-3 border-t border-border/80 mt-1">
+            <Button
+              onClick={() => setConfirmRetrainOpen(false)}
+              variant="outline"
+              className="text-[10px] font-bold h-8 px-3.5 border-border hover:bg-muted"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => {
+                setConfirmRetrainOpen(false);
+                if (fileDetails) {
+                  startTraining(fileDetails.sizeBytes, fileDetails.rows, allRows);
+                }
+              }}
+              className="text-[10px] font-bold h-8 px-3.5 bg-rose-600 hover:bg-rose-500 text-white font-semibold transition"
+            >
+              Substituir Modelo e Treinar
             </Button>
           </div>
         </DialogContent>
