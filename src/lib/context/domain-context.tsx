@@ -127,6 +127,16 @@ export interface TrainedModel {
   }[];
 }
 
+export interface RetrainingCycle {
+  modelId: string;
+  timestamp: number;
+  algorithm: string;
+  hyperparameters: Record<string, string | number | boolean>;
+  metrics: TrainedModel["metrics"];
+  trainSize: number;
+  testSize: number;
+}
+
 interface DomainContextProps {
   activeDomain: DomainType | null;
   logs: AuditLog[];
@@ -171,6 +181,8 @@ interface DomainContextProps {
   simulateDashboardEvent: () => void;
   trainedModels: Record<DomainType, TrainedModel | null>;
   previousTrainedModels: Record<DomainType, TrainedModel | null>;
+  hyperparameterHistory: Record<DomainType, RetrainingCycle[]>;
+  clearHyperparameterHistory: (domain: DomainType) => void;
 }
 
 const DomainContext = createContext<DomainContextProps | undefined>(undefined);
@@ -267,6 +279,27 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     "credit-risk": null
   });
 
+  // Track history of hyperparameters of retraining cycles (CA06)
+  const [hyperparameterHistory, setHyperparameterHistory] = useState<Record<DomainType, RetrainingCycle[]>>({
+    maintenance: [],
+    demand: [],
+    churn: [],
+    "credit-risk": []
+  });
+
+  const archiveRetrainingCycle = useCallback((domain: DomainType, cycle: RetrainingCycle) => {
+    setHyperparameterHistory(prev => {
+      const currentList = prev[domain] || [];
+      const updatedList = [cycle, ...currentList];
+      const nextHistory = {
+        ...prev,
+        [domain]: updatedList
+      };
+      localStorage.setItem("spam-hyperparameter-history", JSON.stringify(nextHistory));
+      return nextHistory;
+    });
+  }, []);
+
   const [systemHealth, setSystemHealth] = useState<SystemHealth>({
     status: "warning",
     message: "15 alertas ativos em 2 domínios requerem atenção."
@@ -290,6 +323,16 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         console.error("Erro ao carregar usuário salvo:", e);
       }
     }
+
+    const savedHistory = localStorage.getItem("spam-hyperparameter-history");
+    if (savedHistory) {
+      try {
+        setHyperparameterHistory(JSON.parse(savedHistory));
+      } catch (e) {
+        console.error("Erro ao carregar histórico de hiperparâmetros:", e);
+      }
+    }
+
     setIsAuthLoading(false);
   }, []);
 
@@ -611,10 +654,21 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
           [domainKey]: newModel
         }));
 
+        const newCycle: RetrainingCycle = {
+          modelId,
+          timestamp: newModel.timestamp,
+          algorithm: newModel.algorithm,
+          hyperparameters: newModel.hyperparameters,
+          metrics: newModel.metrics,
+          trainSize: newModel.trainSize,
+          testSize: newModel.testSize
+        };
+        archiveRetrainingCycle(domainKey, newCycle);
+
         addLog(`[Model Training Success] Treinamento do modelo para o módulo '${DOMAINS[domainKey].name}' concluído com sucesso. ID: ${modelId}, Algoritmo: ${algStr}.`);
       }
     }, 1000);
-  }, [activeDomain, simulatedFail, addLog, isTraining, trainedModels]);
+  }, [activeDomain, simulatedFail, addLog, isTraining, trainedModels, archiveRetrainingCycle]);
 
   const resetTraining = useCallback(() => {
     if (trainingIntervalRef.current) clearInterval(trainingIntervalRef.current);
@@ -865,6 +919,18 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     addLogWithProfile(userProfile, "Histórico de logs de auditoria limpo manualmente.");
   };
 
+  const clearHyperparameterHistory = useCallback((domain: DomainType) => {
+    setHyperparameterHistory(prev => {
+      const nextHistory = {
+        ...prev,
+        [domain]: []
+      };
+      localStorage.setItem("spam-hyperparameter-history", JSON.stringify(nextHistory));
+      return nextHistory;
+    });
+    addLog(`[Model History] Limpo histórico de ciclos de retreinamento para o módulo '${DOMAINS[domain].name}'.`);
+  }, [addLog]);
+
   return (
     <DomainContext.Provider
       value={{
@@ -910,6 +976,8 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         simulateDashboardEvent,
         trainedModels,
         previousTrainedModels,
+        hyperparameterHistory,
+        clearHyperparameterHistory,
       }}
     >
       {children}

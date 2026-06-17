@@ -1015,10 +1015,13 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
     toggleTrainingDetails,
     trainedModels,
     previousTrainedModels,
+    hyperparameterHistory,
+    clearHyperparameterHistory,
   } = useDomain();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const activeModel = activeDomain ? trainedModels[activeDomain] : null;
   const previousModel = activeDomain ? previousTrainedModels[activeDomain] : null;
+  const history = activeDomain ? hyperparameterHistory[activeDomain] : [];
 
   // CA05 Comparison logic
   const getPerformanceComparison = () => {
@@ -2367,6 +2370,65 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                       ) : (
                         <ResidualsPlotView model={activeModel} theme={theme} />
                       )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Histórico de Calibrações / Ciclos de Retreio (CA06) */}
+                {history && history.length > 0 && (
+                  <div className="pt-3 border-t border-border/40 space-y-2 mt-4 animate-in fade-in duration-300">
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold flex items-center gap-1">
+                        📜 Histórico de Calibrações (Ciclos de Retreio)
+                      </span>
+                      <Button
+                        onClick={() => clearHyperparameterHistory(activeDomain)}
+                        variant="ghost"
+                        className="text-[8px] font-bold h-5 px-1.5 hover:bg-rose-500/10 text-rose-500 font-sans"
+                      >
+                        Limpar Histórico
+                      </Button>
+                    </div>
+
+                    <div className="border border-border/60 rounded-lg overflow-hidden bg-zinc-950/40 max-h-[140px] overflow-y-auto scrollbar-thin">
+                      <table className="w-full text-[10px] text-left border-collapse">
+                        <thead>
+                          <tr className="bg-muted/40 border-b border-border text-[8px] uppercase text-muted-foreground font-bold font-sans">
+                            <th className="p-2">Modelo</th>
+                            <th className="p-2">Data/Hora</th>
+                            <th className="p-2">Métricas de Validação</th>
+                            <th className="p-2">Hiperparâmetros Calibrados</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border/40 font-mono">
+                          {history.map((cycle, idx) => (
+                            <tr key={idx} className="hover:bg-muted/10">
+                              <td className="p-2 font-bold text-foreground font-sans truncate max-w-[120px]" title={cycle.modelId}>
+                                {cycle.modelId.substring(0, 15)}...
+                              </td>
+                              <td className="p-2 text-[9px] text-muted-foreground">
+                                {new Date(cycle.timestamp).toLocaleString()}
+                              </td>
+                              <td className="p-2 text-[9px]">
+                                {cycle.metrics.accuracy !== undefined ? (
+                                  <div className="flex flex-wrap gap-1.5 font-sans">
+                                    <span className="text-emerald-500 font-bold bg-emerald-500/10 border border-emerald-500/20 px-1 rounded text-[8px]">AUC: {((cycle.metrics.aucRoc || 0) * 100).toFixed(1)}%</span>
+                                    <span className="text-muted-foreground text-[8px]">ACC: {((cycle.metrics.accuracy || 0) * 100).toFixed(1)}%</span>
+                                  </div>
+                                ) : (
+                                  <div className="flex flex-wrap gap-1.5 font-sans">
+                                    <span className="text-sky-500 font-bold bg-sky-500/10 border border-sky-500/20 px-1 rounded text-[8px]">R²: {(cycle.metrics.r2 || 0).toFixed(3)}</span>
+                                    <span className="text-muted-foreground text-[8px]">RMSE: {(cycle.metrics.rmse || 0).toFixed(2)}</span>
+                                  </div>
+                                )}
+                              </td>
+                              <td className="p-2 text-[8px] text-muted-foreground font-mono whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]" title={JSON.stringify(cycle.hyperparameters)}>
+                                {JSON.stringify(cycle.hyperparameters)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
                   </div>
                 )}
