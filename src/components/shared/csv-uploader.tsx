@@ -1978,141 +1978,398 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
 
             {/* Metrics improvement mock on success */}
             {trainingProgress === 100 && activeModel && (
-              <div className="p-4 bg-emerald-500/5 border border-emerald-500/15 rounded-xl text-[11px] text-emerald-600 dark:text-emerald-400 space-y-2.5 animate-in fade-in duration-500">
-                <p className="font-bold flex items-center gap-1 text-xs text-emerald-550 dark:text-emerald-400">
-                  ✨ Recalibração de Modelo Concluída!
-                </p>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[10px] font-mono border-b border-emerald-500/15 pb-2">
-                  <div>
-                    <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">ID do Modelo</span>
-                    <span className="text-foreground font-semibold">{activeModel.modelId}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Algoritmo Utilizado</span>
-                    <span className="text-foreground font-semibold">{activeModel.algorithm}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Divisão dos Dados (Treino/Teste)</span>
-                    <span className="text-foreground font-semibold">{activeModel.trainSize} (80%) / {activeModel.testSize} (20%)</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Tipo de Problema</span>
-                    <span className="text-foreground font-semibold">{activeModel.type === "Classification" ? "Classificação" : "Regressão"}</span>
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Métricas de Validação (Conjunto de Teste)</span>
-                  <div className="flex flex-wrap gap-3 pt-1">
-                    {activeModel.type === "Classification" ? (
-                      <>
-                        <div 
-                          className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
-                          title="Área sob a Curva ROC. Varia de 0.5 (aleatório) a 1.0 (perfeito). Indica o poder discriminatório do modelo. Valores acima de 0.90 são excepcionais."
-                        >
-                          <span className="text-muted-foreground text-[8px] uppercase block">AUC-ROC</span>
-                          <span className="text-foreground font-bold font-mono">{((activeModel.metrics.aucRoc || 0) * 100).toFixed(2)}%</span>
-                        </div>
-                        <div 
-                          className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
-                          title="Acurácia Geral. Proporção de acertos do modelo sobre todas as predições. Eficiente para classes balanceadas. Bom acima de 85%."
-                        >
-                          <span className="text-muted-foreground text-[8px] uppercase block">Acurácia</span>
-                          <span className="text-foreground font-bold font-mono">{((activeModel.metrics.accuracy || 0) * 100).toFixed(2)}%</span>
-                        </div>
-                        <div 
-                          className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
-                          title="Precisão do Modelo. Indica a proporção de verdadeiros positivos dentre todas as classificações positivas. Minimiza falsos alarmes."
-                        >
-                          <span className="text-muted-foreground text-[8px] uppercase block">Precisão</span>
-                          <span className="text-foreground font-bold font-mono">{((activeModel.metrics.precision || 0) * 100).toFixed(2)}%</span>
-                        </div>
-                        <div 
-                          className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
-                          title="Sensibilidade (Recall). Proporção de casos reais positivos capturados pelo modelo. Evita negligenciar falhas ou riscos críticos."
-                        >
-                          <span className="text-muted-foreground text-[8px] uppercase block">Sensibilidade</span>
-                          <span className="text-foreground font-bold font-mono">{((activeModel.metrics.recall || 0) * 100).toFixed(2)}%</span>
-                        </div>
-                        <div 
-                          className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
-                          title="F1-Score. Média harmônica equilibrando Precisão e Sensibilidade em uma única métrica técnica."
-                        >
-                          <span className="text-muted-foreground text-[8px] uppercase block">F1-Score</span>
-                          <span className="text-foreground font-bold font-mono">{(activeModel.metrics.f1Score || 0).toFixed(3)}</span>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div 
-                          className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
-                          title="Coeficiente de Determinação (R²). Explica qual percentual da variância dos dados foi mapeado pelo modelo. Excelente acima de 90%."
-                        >
-                          <span className="text-muted-foreground text-[8px] uppercase block">R² (Score)</span>
-                          <span className="text-foreground font-bold font-mono">{(activeModel.metrics.r2 || 0).toFixed(4)}</span>
-                        </div>
-                        <div 
-                          className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
-                          title="Erro Quadrático Médio Root (RMSE). Desvio padrão dos resíduos de previsão. Quanto menor o valor em relação à faixa basal, melhor."
-                        >
-                          <span className="text-muted-foreground text-[8px] uppercase block">RMSE</span>
-                          <span className="text-foreground font-bold font-mono">{(activeModel.metrics.rmse || 0).toFixed(3)}</span>
-                        </div>
-                        <div 
-                          className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
-                          title="Erro Absoluto Médio (MAE). Distância absoluta média entre o valor real e a previsão. Não penaliza outliers de forma exponencial."
-                        >
-                          <span className="text-muted-foreground text-[8px] uppercase block">MAE</span>
-                          <span className="text-foreground font-bold font-mono">{(activeModel.metrics.mae || 0).toFixed(3)}</span>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                {/* Comparação com a Sessão Anterior (CA05) */}
-                {comparison && (
-                  <div className="p-3.5 bg-card border border-border/80 rounded-xl flex items-center justify-between gap-3 text-[10px] animate-in fade-in duration-300">
-                    <div>
-                      <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Comparação com Modelo Anterior</span>
-                      <p className="text-muted-foreground font-sans">
-                        Variação na métrica primária <strong>{comparison.metricName}</strong>:
-                      </p>
+              <div className="space-y-4">
+                {previousModel ? (
+                  // Layout Lado a Lado (Comparação Side-by-Side - CA05)
+                  <div className="space-y-4 animate-in fade-in duration-500">
+                    {/* Resumo executivo de melhoria / variação de performance */}
+                    <div className="p-4 bg-emerald-500/5 border border-emerald-500/15 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-[11px]">
+                      <div className="space-y-0.5 font-sans">
+                        <p className="font-bold text-xs text-emerald-550 dark:text-emerald-400 flex items-center gap-1">
+                          ✨ Recalibração de Modelo Concluída!
+                        </p>
+                        <p className="text-muted-foreground">
+                          O modelo anterior foi atualizado. Variação na métrica de validação primária <strong>{comparison?.metricName}</strong>:
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0 font-mono font-bold text-sm">
+                        {comparison?.isImprovement ? (
+                          <span className="text-emerald-500 flex items-center gap-0.5 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-lg">
+                            ▲ +{comparison?.diffPct.toFixed(2)}% de Melhoria
+                          </span>
+                        ) : (
+                          <span className="text-rose-500 flex items-center gap-0.5 bg-rose-500/10 border border-rose-500/20 px-3 py-1.5 rounded-lg">
+                            ▼ {comparison?.diffPct.toFixed(2)}% de Regressão
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1.5 shrink-0 font-mono font-bold text-xs">
-                      {comparison.isImprovement ? (
-                        <span className="text-emerald-500 flex items-center gap-0.5 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded">
-                          ▲ +{comparison.diffPct.toFixed(2)}%
-                        </span>
+
+                    {/* Comparativo de Taxas de Erro */}
+                    <div className="p-4 bg-muted/20 border border-border/80 rounded-xl space-y-3">
+                      <h5 className="text-xs font-bold text-foreground flex items-center gap-1.5 font-sans">
+                        📊 Comparativo de Taxas de Erro e Desempenho
+                      </h5>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        {activeModel.type === "Classification" && activeModel.confusionMatrix && previousModel.confusionMatrix ? (() => {
+                          const activeFP = activeModel.confusionMatrix.fp;
+                          const prevFP = previousModel.confusionMatrix.fp;
+                          const fpDiff = activeFP - prevFP;
+
+                          const activeFN = activeModel.confusionMatrix.fn;
+                          const prevFN = previousModel.confusionMatrix.fn;
+                          const fnDiff = activeFN - prevFN;
+
+                          const activeErr = ((activeFP + activeFN) / activeModel.testSize) * 100;
+                          const prevErr = ((prevFP + prevFN) / previousModel.testSize) * 100;
+                          const errDiff = activeErr - prevErr;
+
+                          return (
+                            <>
+                              <div className="p-3 bg-card rounded-lg border border-border/60 text-xs">
+                                <span className="text-muted-foreground text-[9px] uppercase font-semibold block">Falsos Positivos (Erro Tipo I)</span>
+                                <div className="text-lg font-black font-mono mt-1 text-foreground flex items-baseline gap-2">
+                                  {prevFP} ➜ {activeFP}
+                                  <span className={`text-[10px] font-bold ${fpDiff <= 0 ? "text-emerald-500" : "text-rose-500"}`}>
+                                    {fpDiff <= 0 ? `${fpDiff} (Melhor)` : `+${fpDiff} (Pior)`}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="p-3 bg-card rounded-lg border border-border/60 text-xs">
+                                <span className="text-muted-foreground text-[9px] uppercase font-semibold block">Falsos Negativos (Erro Tipo II)</span>
+                                <div className="text-lg font-black font-mono mt-1 text-foreground flex items-baseline gap-2">
+                                  {prevFN} ➜ {activeFN}
+                                  <span className={`text-[10px] font-bold ${fnDiff <= 0 ? "text-emerald-500" : "text-rose-500"}`}>
+                                    {fnDiff <= 0 ? `${fnDiff} (Melhor)` : `+${fnDiff} (Pior)`}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="p-3 bg-card rounded-lg border border-border/60 text-xs">
+                                <span className="text-muted-foreground text-[9px] uppercase font-semibold block">Taxa de Erro Geral</span>
+                                <div className="text-lg font-black font-mono mt-1 text-foreground flex items-baseline gap-2">
+                                  {prevErr.toFixed(2)}% ➜ {activeErr.toFixed(2)}%
+                                  <span className={`text-[10px] font-bold ${errDiff <= 0 ? "text-emerald-500" : "text-rose-500"}`}>
+                                    {errDiff <= 0 ? `${errDiff.toFixed(2)}% (Melhor)` : `+${errDiff.toFixed(2)}% (Pior)`}
+                                  </span>
+                                </div>
+                              </div>
+                            </>
+                          );
+                        })() : activeModel.metrics.rmse && previousModel.metrics.rmse ? (() => {
+                          const activeRMSE = activeModel.metrics.rmse || 0;
+                          const prevRMSE = previousModel.metrics.rmse || 0;
+                          const rmseDiff = activeRMSE - prevRMSE;
+                          const rmseDiffPct = prevRMSE > 0 ? (rmseDiff / prevRMSE) * 100 : 0;
+
+                          const activeMAE = activeModel.metrics.mae || 0;
+                          const prevMAE = previousModel.metrics.mae || 0;
+                          const maeDiff = activeMAE - prevMAE;
+                          const maeDiffPct = prevMAE > 0 ? (maeDiff / prevMAE) * 100 : 0;
+
+                          const activeR2 = activeModel.metrics.r2 || 0;
+                          const prevR2 = previousModel.metrics.r2 || 0;
+                          const r2Diff = activeR2 - prevR2;
+                          const r2DiffPct = prevR2 > 0 ? (r2Diff / prevR2) * 100 : 0;
+
+                          return (
+                            <>
+                              <div className="p-3 bg-card rounded-lg border border-border/60 text-xs">
+                                <span className="text-muted-foreground text-[9px] uppercase font-semibold block">RMSE (Erro Quadrático)</span>
+                                <div className="text-lg font-black font-mono mt-1 text-foreground flex items-baseline gap-2">
+                                  {prevRMSE.toFixed(3)} ➜ {activeRMSE.toFixed(3)}
+                                  <span className={`text-[10px] font-bold ${rmseDiff <= 0 ? "text-emerald-500" : "text-rose-500"}`}>
+                                    {rmseDiff <= 0 ? `${rmseDiffPct.toFixed(2)}%` : `+${rmseDiffPct.toFixed(2)}%`}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="p-3 bg-card rounded-lg border border-border/60 text-xs">
+                                <span className="text-muted-foreground text-[9px] uppercase font-semibold block">MAE (Erro Absoluto)</span>
+                                <div className="text-lg font-black font-mono mt-1 text-foreground flex items-baseline gap-2">
+                                  {prevMAE.toFixed(3)} ➜ {activeMAE.toFixed(3)}
+                                  <span className={`text-[10px] font-bold ${maeDiff <= 0 ? "text-emerald-500" : "text-rose-500"}`}>
+                                    {maeDiff <= 0 ? `${maeDiffPct.toFixed(2)}%` : `+${maeDiffPct.toFixed(2)}%`}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="p-3 bg-card rounded-lg border border-border/60 text-xs">
+                                <span className="text-muted-foreground text-[9px] uppercase font-semibold block">R² (Coeficiente Variância)</span>
+                                <div className="text-lg font-black font-mono mt-1 text-foreground flex items-baseline gap-2">
+                                  {prevR2.toFixed(4)} ➜ {activeR2.toFixed(4)}
+                                  <span className={`text-[10px] font-bold ${r2Diff >= 0 ? "text-emerald-500" : "text-rose-500"}`}>
+                                    {r2Diff >= 0 ? `+${r2DiffPct.toFixed(2)}%` : `${r2DiffPct.toFixed(2)}%`}
+                                  </span>
+                                </div>
+                              </div>
+                            </>
+                          );
+                        })() : null}
+                      </div>
+                    </div>
+
+                    {/* Exibição Lado a Lado dos Modelos */}
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+                      {/* Painel do Modelo Anterior */}
+                      <div className="p-4 bg-zinc-950/20 border border-border/80 rounded-xl space-y-3 relative opacity-85 hover:opacity-100 transition-opacity duration-300">
+                        <div className="absolute top-2.5 right-3 text-[8px] bg-muted/60 text-muted-foreground border border-border/40 px-1.5 py-0.5 rounded font-mono uppercase">
+                          Modelo Anterior
+                        </div>
+                        
+                        <div className="space-y-1">
+                          <h5 className="text-xs font-bold text-foreground">Metadados do Modelo</h5>
+                          <div className="grid grid-cols-2 gap-2 text-[10px] font-mono bg-muted/20 p-2 border border-border/40 rounded-lg">
+                            <div>
+                              <span className="text-muted-foreground block text-[8px] uppercase font-sans">ID do Modelo</span>
+                              <span className="text-foreground font-semibold truncate block max-w-[130px]" title={previousModel.modelId}>{previousModel.modelId}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground block text-[8px] uppercase font-sans">Algoritmo</span>
+                              <span className="text-foreground font-semibold">{previousModel.algorithm}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground block text-[8px] uppercase font-sans">Divisão (Treino/Teste)</span>
+                              <span className="text-foreground font-semibold">{previousModel.trainSize} / {previousModel.testSize}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground block text-[8px] uppercase font-sans">Métrica Primária</span>
+                              <span className="text-foreground font-bold font-mono">
+                                {previousModel.type === "Classification" 
+                                  ? `AUC-ROC: ${((previousModel.metrics.aucRoc || 0) * 100).toFixed(2)}%`
+                                  : `R²: ${(previousModel.metrics.r2 || 0).toFixed(4)}`}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Métricas Detalhadas */}
+                        <div className="space-y-1">
+                          <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Métricas Técnicas</span>
+                          <div className="flex flex-wrap gap-2 pt-0.5">
+                            {previousModel.type === "Classification" ? (
+                              <>
+                                <div className="bg-zinc-900/60 border border-border/60 px-2 py-0.5 rounded text-[10px] font-mono">
+                                  <span className="text-muted-foreground text-[8px] uppercase block">Acurácia</span>
+                                  <span className="text-foreground font-bold">{((previousModel.metrics.accuracy || 0) * 100).toFixed(2)}%</span>
+                                </div>
+                                <div className="bg-zinc-900/60 border border-border/60 px-2 py-0.5 rounded text-[10px] font-mono">
+                                  <span className="text-muted-foreground text-[8px] uppercase block">Precisão</span>
+                                  <span className="text-foreground font-bold">{((previousModel.metrics.precision || 0) * 100).toFixed(2)}%</span>
+                                </div>
+                                <div className="bg-zinc-900/60 border border-border/60 px-2 py-0.5 rounded text-[10px] font-mono">
+                                  <span className="text-muted-foreground text-[8px] uppercase block">Sensibilidade</span>
+                                  <span className="text-foreground font-bold">{((previousModel.metrics.recall || 0) * 100).toFixed(2)}%</span>
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <div className="bg-zinc-900/60 border border-border/60 px-2 py-0.5 rounded text-[10px] font-mono">
+                                  <span className="text-muted-foreground text-[8px] uppercase block">RMSE</span>
+                                  <span className="text-foreground font-bold">{(previousModel.metrics.rmse || 0).toFixed(3)}</span>
+                                </div>
+                                <div className="bg-zinc-900/60 border border-border/60 px-2 py-0.5 rounded text-[10px] font-mono">
+                                  <span className="text-muted-foreground text-[8px] uppercase block">MAE</span>
+                                  <span className="text-foreground font-bold">{(previousModel.metrics.mae || 0).toFixed(3)}</span>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Diagnóstico Visual Anterior */}
+                        <div className="pt-2 border-t border-border/40">
+                          {previousModel.type === "Classification" ? (
+                            <ConfusionMatrixView model={previousModel} />
+                          ) : (
+                            <ResidualsPlotView model={previousModel} theme={theme} />
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Painel do Novo Modelo (Retreinado) */}
+                      <div className="p-4 bg-emerald-500/[0.01] border border-emerald-500/25 rounded-xl space-y-3 relative">
+                        <div className="absolute top-2.5 right-3 text-[8px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded font-mono uppercase font-bold">
+                          Modelo Retreinado
+                        </div>
+                        
+                        <div className="space-y-1">
+                          <h5 className="text-xs font-bold text-foreground">Metadados do Modelo</h5>
+                          <div className="grid grid-cols-2 gap-2 text-[10px] font-mono bg-muted/20 p-2 border border-border/40 rounded-lg">
+                            <div>
+                              <span className="text-muted-foreground block text-[8px] uppercase font-sans">ID do Modelo</span>
+                              <span className="text-foreground font-semibold truncate block max-w-[130px]" title={activeModel.modelId}>{activeModel.modelId}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground block text-[8px] uppercase font-sans">Algoritmo</span>
+                              <span className="text-foreground font-semibold">{activeModel.algorithm}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground block text-[8px] uppercase font-sans">Divisão (Treino/Teste)</span>
+                              <span className="text-foreground font-semibold">{activeModel.trainSize} / {activeModel.testSize}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground block text-[8px] uppercase font-sans">Métrica Primária</span>
+                              <span className="text-emerald-500 font-bold font-mono">
+                                {activeModel.type === "Classification" 
+                                  ? `AUC-ROC: ${((activeModel.metrics.aucRoc || 0) * 100).toFixed(2)}%`
+                                  : `R²: ${(activeModel.metrics.r2 || 0).toFixed(4)}`}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Métricas Detalhadas */}
+                        <div className="space-y-1">
+                          <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Métricas Técnicas</span>
+                          <div className="flex flex-wrap gap-2 pt-0.5">
+                            {activeModel.type === "Classification" ? (
+                              <>
+                                <div className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded text-[10px] font-mono">
+                                  <span className="text-muted-foreground text-[8px] uppercase block">Acurácia</span>
+                                  <span className="text-foreground font-bold">{((activeModel.metrics.accuracy || 0) * 100).toFixed(2)}%</span>
+                                </div>
+                                <div className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded text-[10px] font-mono">
+                                  <span className="text-muted-foreground text-[8px] uppercase block">Precisão</span>
+                                  <span className="text-foreground font-bold">{((activeModel.metrics.precision || 0) * 100).toFixed(2)}%</span>
+                                </div>
+                                <div className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded text-[10px] font-mono">
+                                  <span className="text-muted-foreground text-[8px] uppercase block">Sensibilidade</span>
+                                  <span className="text-foreground font-bold">{((activeModel.metrics.recall || 0) * 100).toFixed(2)}%</span>
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <div className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded text-[10px] font-mono">
+                                  <span className="text-muted-foreground text-[8px] uppercase block">RMSE</span>
+                                  <span className="text-foreground font-bold">{(activeModel.metrics.rmse || 0).toFixed(3)}</span>
+                                </div>
+                                <div className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded text-[10px] font-mono">
+                                  <span className="text-muted-foreground text-[8px] uppercase block">MAE</span>
+                                  <span className="text-foreground font-bold">{(activeModel.metrics.mae || 0).toFixed(3)}</span>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Diagnóstico Visual Novo */}
+                        <div className="pt-2 border-t border-border/40">
+                          {activeModel.type === "Classification" ? (
+                            <ConfusionMatrixView model={activeModel} />
+                          ) : (
+                            <ResidualsPlotView model={activeModel} theme={theme} />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  // Layout Original para Quando Não Há Modelo Anterior
+                  <div className="p-4 bg-emerald-500/5 border border-emerald-500/15 rounded-xl text-[11px] text-emerald-600 dark:text-emerald-400 space-y-2.5 animate-in fade-in duration-500">
+                    <p className="font-bold flex items-center gap-1 text-xs text-emerald-550 dark:text-emerald-400">
+                      ✨ Recalibração de Modelo Concluída!
+                    </p>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[10px] font-mono border-b border-emerald-500/15 pb-2">
+                      <div>
+                        <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">ID do Modelo</span>
+                        <span className="text-foreground font-semibold">{activeModel.modelId}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Algoritmo Utilizado</span>
+                        <span className="text-foreground font-semibold">{activeModel.algorithm}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Divisão dos Dados (Treino/Teste)</span>
+                        <span className="text-foreground font-semibold">{activeModel.trainSize} (80%) / {activeModel.testSize} (20%)</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Tipo de Problema</span>
+                        <span className="text-foreground font-semibold">{activeModel.type === "Classification" ? "Classificação" : "Regressão"}</span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Métricas de Validação (Conjunto de Teste)</span>
+                      <div className="flex flex-wrap gap-3 pt-1">
+                        {activeModel.type === "Classification" ? (
+                          <>
+                            <div 
+                              className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
+                              title="Área sob a Curva ROC. Varia de 0.5 (aleatório) a 1.0 (perfeito). Indica o poder discriminatório do modelo. Valores acima de 0.90 são excepcionais."
+                            >
+                              <span className="text-muted-foreground text-[8px] uppercase block">AUC-ROC</span>
+                              <span className="text-foreground font-bold font-mono">{((activeModel.metrics.aucRoc || 0) * 100).toFixed(2)}%</span>
+                            </div>
+                            <div 
+                              className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
+                              title="Acurácia Geral. Proporção de acertos do modelo sobre todas as predições. Eficiente para classes balanceadas. Bom acima de 85%."
+                            >
+                              <span className="text-muted-foreground text-[8px] uppercase block">Acurácia</span>
+                              <span className="text-foreground font-bold font-mono">{((activeModel.metrics.accuracy || 0) * 100).toFixed(2)}%</span>
+                            </div>
+                            <div 
+                              className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
+                              title="Precisão do Modelo. Indica a proporção de verdadeiros positivos dentre todas as classificações positivas. Minimiza falsos alarmes."
+                            >
+                              <span className="text-muted-foreground text-[8px] uppercase block">Precisão</span>
+                              <span className="text-foreground font-bold font-mono">{((activeModel.metrics.precision || 0) * 100).toFixed(2)}%</span>
+                            </div>
+                            <div 
+                              className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
+                              title="Sensibilidade (Recall). Proporção de casos reais positivos capturados pelo modelo. Evita negligenciar falhas ou riscos críticos."
+                            >
+                              <span className="text-muted-foreground text-[8px] uppercase block">Sensibilidade</span>
+                              <span className="text-foreground font-bold font-mono">{((activeModel.metrics.recall || 0) * 100).toFixed(2)}%</span>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div 
+                              className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
+                              title="Coeficiente de Determinação (R²). Explica qual percentual da variância dos dados foi mapeado pelo modelo. Excelente acima de 90%."
+                            >
+                              <span className="text-muted-foreground text-[8px] uppercase block">R² (Score)</span>
+                              <span className="text-foreground font-bold font-mono">{(activeModel.metrics.r2 || 0).toFixed(4)}</span>
+                            </div>
+                            <div 
+                              className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
+                              title="Erro Quadrático Médio Root (RMSE). Desvio padrão dos resíduos de previsão. Quanto menor o valor em relação à faixa basal, melhor."
+                            >
+                              <span className="text-muted-foreground text-[8px] uppercase block">RMSE</span>
+                              <span className="text-foreground font-bold font-mono">{(activeModel.metrics.rmse || 0).toFixed(3)}</span>
+                            </div>
+                            <div 
+                              className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
+                              title="Erro Absoluto Médio (MAE). Distância absoluta média entre o valor real e a previsão. Não penaliza outliers de forma exponencial."
+                            >
+                              <span className="text-muted-foreground text-[8px] uppercase block">MAE</span>
+                              <span className="text-foreground font-bold font-mono">{(activeModel.metrics.mae || 0).toFixed(3)}</span>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="space-y-1 pt-1.5 border-t border-emerald-500/15">
+                      <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Hiperparâmetros Calibrados</span>
+                      <pre className="p-2 bg-zinc-950/90 text-emerald-400/90 border border-emerald-500/10 rounded text-[9px] font-mono leading-relaxed overflow-x-auto max-h-[80px]">
+                        {JSON.stringify(activeModel.hyperparameters, null, 2)}
+                      </pre>
+                    </div>
+                    
+                    <p className="text-[10px] text-muted-foreground leading-relaxed pl-1 pt-1 font-sans">
+                      Os parâmetros do motor analítico do módulo <strong>{DOMAINS[activeDomain].name}</strong> foram sincronizados localmente e estão ativos para previsões em tempo real nesta sessão.
+                    </p>
+
+                    {/* RF13 - Diagnosis Visualizations */}
+                    <div className="pt-3 border-t border-emerald-500/15">
+                      {activeModel.type === "Classification" ? (
+                        <ConfusionMatrixView model={activeModel} />
                       ) : (
-                        <span className="text-rose-500 flex items-center gap-0.5 bg-rose-500/10 border border-rose-500/20 px-2.5 py-1 rounded">
-                          ▼ {comparison.diffPct.toFixed(2)}%
-                        </span>
+                        <ResidualsPlotView model={activeModel} theme={theme} />
                       )}
                     </div>
                   </div>
                 )}
-
-                <div className="space-y-1 pt-1.5 border-t border-emerald-500/15">
-                  <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Hiperparâmetros Calibrados</span>
-                  <pre className="p-2 bg-zinc-950/90 text-emerald-400/90 border border-emerald-500/10 rounded text-[9px] font-mono leading-relaxed overflow-x-auto max-h-[80px]">
-                    {JSON.stringify(activeModel.hyperparameters, null, 2)}
-                  </pre>
-                </div>
-                
-                <p className="text-[10px] text-muted-foreground leading-relaxed pl-1 pt-1 font-sans">
-                  Os parâmetros do motor analítico do módulo <strong>{DOMAINS[activeDomain].name}</strong> foram sincronizados localmente e estão ativos para previsões em tempo real nesta sessão.
-                </p>
-
-                {/* RF13 - Diagnosis Visualizations */}
-                <div className="pt-3 border-t border-emerald-500/15">
-                  {activeModel.type === "Classification" ? (
-                    <ConfusionMatrixView model={activeModel} />
-                  ) : (
-                    <ResidualsPlotView model={activeModel} theme={theme} />
-                  )}
-                </div>
               </div>
             )}
 
