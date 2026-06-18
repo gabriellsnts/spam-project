@@ -62,3 +62,60 @@ export function calculateMachineRUL(
 
   return { rul, status };
 }
+
+export interface CreditRiskTelemetry {
+  propostaId: string;
+  cliente: string;
+  valor: number;
+  score: number;
+}
+
+export interface CreditRiskPredictionResult {
+  probabilidadeRetorno: number;
+  acao: "Aprovar" | "Análise Manual" | "Revisar Garantia" | "Rejeitar";
+}
+
+/**
+ * Calcula a probabilidade de retorno de crédito e a ação sugerida.
+ */
+export function predictCreditRisk(
+  valor: number,
+  score: number
+): CreditRiskPredictionResult {
+  // Deterministic but realistic prediction rules based on score and loan value
+  let probabilidadeRetorno = 0;
+  
+  if (score >= 800) {
+    probabilidadeRetorno = Math.min(100, Math.round(92 + (score - 800) * 0.04));
+  } else if (score >= 700) {
+    probabilidadeRetorno = Math.round(80 + (score - 700) * 0.12);
+  } else if (score >= 600) {
+    probabilidadeRetorno = Math.round(65 + (score - 600) * 0.15);
+  } else if (score >= 500) {
+    probabilidadeRetorno = Math.round(45 + (score - 500) * 0.2);
+  } else {
+    probabilidadeRetorno = Math.max(5, Math.round((score / 500) * 45));
+  }
+
+  // Adjust by amount (valor): higher amount reduces probability of return for lower score categories
+  if (valor > 250000 && score < 750) {
+    probabilidadeRetorno = Math.max(5, probabilidadeRetorno - 6);
+  }
+  if (valor > 600000 && score < 700) {
+    probabilidadeRetorno = Math.max(5, probabilidadeRetorno - 12);
+  }
+
+  let acao: "Aprovar" | "Análise Manual" | "Revisar Garantia" | "Rejeitar" = "Rejeitar";
+  if (score >= 750) {
+    acao = "Aprovar";
+  } else if (score >= 600) {
+    acao = "Análise Manual";
+  } else if (score >= 500) {
+    acao = "Revisar Garantia";
+  } else {
+    acao = "Rejeitar";
+  }
+
+  return { probabilidadeRetorno, acao };
+}
+

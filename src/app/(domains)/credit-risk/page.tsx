@@ -1,16 +1,81 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDomain } from "@/lib/context/domain-context";
-import { TrendingUp, AlertTriangle, Coins, Percent, FileCheck, BarChart3 } from "lucide-react";
+import { TrendingUp, AlertTriangle, Coins, Percent, FileCheck, BarChart3, Lock, ShieldCheck, History, Printer, Loader2, Calendar } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CSVUploader, ConfusionMatrixView } from "@/components/shared/csv-uploader";
+import { CSVUploader, ConfusionMatrixView, DOMAIN_SCHEMAS } from "@/components/shared/csv-uploader";
+import { predictCreditRisk } from "@/lib/predictive-engine";
 
 export default function CreditRiskPage() {
   const { addLog, isTraining, trainedModels } = useDomain();
   const activeModel = trainedModels["credit-risk"];
   const [stressActive, setStressActive] = useState(false);
+
+  // Form schemas and fields for credit-risk manual input (CA01)
+  const schema = DOMAIN_SCHEMAS["credit-risk"] || [];
+  const inputFields = schema.filter(col => col.name !== "probabilidade_retorno" && col.name !== "acao");
+
+  // Form state
+  const [formData, setFormData] = useState<Record<string, string>>(() => {
+    const initial: Record<string, string> = {};
+    inputFields.forEach(field => {
+      initial[field.name] = "";
+    });
+    return initial;
+  });
+  
+  // Real-time validation errors state (CA04)
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validateField = (name: string, value: string, type: "numeric" | "text") => {
+    if (!value || value.trim() === "") {
+      return "Este campo é obrigatório.";
+    }
+    if (type === "numeric") {
+      const cleaned = value.replace(",", ".");
+      if (isNaN(Number(cleaned)) || !/^\d+(\.\d+)?$/.test(cleaned)) {
+        return "Insira um número válido (ex: 125000). Letras não são permitidas.";
+      }
+      if (Number(cleaned) <= 0) {
+        return "O valor deve ser maior que zero.";
+      }
+      if (name === "score") {
+        const val = Number(cleaned);
+        if (val < 300 || val > 1000) {
+          return "O score deve estar entre 300 e 1000.";
+        }
+      }
+    }
+    return "";
+  };
+
+  const handleInputChange = (name: string, value: string, type: "numeric" | "text") => {
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    const error = validateField(name, value, type);
+    setErrors((prev) => ({ ...prev, [name]: error }));
+  };
+
+  const getFieldLabel = (name: string) => {
+    switch (name) {
+      case "proposta_id": return "ID da Proposta";
+      case "cliente": return "Nome do Cliente / Proponente";
+      case "valor": return "Valor Solicitado (R$)";
+      case "score": return "Score de Crédito (300-1000)";
+      default: return name;
+    }
+  };
+
+  const getFieldPlaceholder = (name: string) => {
+    switch (name) {
+      case "proposta_id": return "Ex: PROP-915";
+      case "cliente": return "Ex: Distribuidora Central Ltda";
+      case "valor": return "Ex: 250000";
+      case "score": return "Ex: 720";
+      default: return "";
+    }
+  };
 
   const [metrics, setMetrics] = useState({
     defaultRate: "1.80%",
@@ -88,6 +153,19 @@ export default function CreditRiskPage() {
       { label: "D", count: 3, percentage: 2, color: "bg-rose-500" },
     ]);
     addLog("Simulação de estresse desativada. Coeficientes de liquidez e default restaurados.");
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newErrors: Record<string, string> = {};
+    inputFields.forEach(field => {
+      const err = validateField(field.name, formData[field.name] || "", field.type);
+      if (err) newErrors[field.name] = err;
+    });
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      return;
+    }
   };
 
   return (
@@ -181,6 +259,96 @@ export default function CreditRiskPage() {
           </CardHeader>
           <CardContent>
             <div className="text-[10px] text-muted-foreground">Valor em Risco estimado a 95%</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Seção de Predição Individual Manual (RF15) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Form Card */}
+        <Card className="lg:col-span-2 bg-card border-border transition-colors duration-300 relative overflow-hidden">
+          <div className="absolute top-0 right-0 h-32 w-32 bg-emerald-500/5 blur-2xl rounded-full" />
+          <CardHeader>
+            <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
+              <FileCheck className="h-4 w-4 text-emerald-500" />
+              Predição Individual (Entrada Manual)
+            </CardTitle>
+            <CardDescription className="text-[11px] text-muted-foreground">
+              Insira os dados manualmente para obter uma classificação instantânea de risco e probabilidade de retorno de crédito.
+            </CardDescription>
+          </CardHeader>
+          
+          <CardContent>
+            {!activeModel ? (
+              // CA03 - Block message when model is not active
+              <div className="flex flex-col items-center justify-center py-10 px-4 text-center border border-dashed border-border rounded-xl bg-zinc-950/20">
+                <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-full mb-3">
+                  <Lock className="h-6 w-6" />
+                </div>
+                <h4 className="text-xs font-bold text-foreground mb-1">Módulo de Predição Individual Bloqueado</h4>
+                <p className="text-[10px] text-muted-foreground max-w-md leading-relaxed">
+                  Não há nenhum modelo treinado e ativo para o domínio de Risco de Crédito. Faça o upload de uma base de dados histórica no painel abaixo e inicie o treinamento para liberar este formulário.
+                </p>
+              </div>
+            ) : (
+              // CA01 - Dynamic Form based on model variables
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {inputFields.map((field) => (
+                    <div key={field.name} className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-foreground/80 tracking-wide block uppercase">
+                        {getFieldLabel(field.name)}
+                      </label>
+                      <input
+                        type="text"
+                        name={field.name}
+                        value={formData[field.name] || ""}
+                        placeholder={getFieldPlaceholder(field.name)}
+                        onChange={(e) => handleInputChange(field.name, e.target.value, field.type)}
+                        className={`w-full bg-zinc-950/40 border text-xs rounded-lg px-3 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-1 transition-all ${
+                          errors[field.name]
+                            ? "border-rose-500 focus:ring-rose-500 focus:border-rose-500"
+                            : "border-border focus:ring-emerald-500 focus:border-emerald-500 hover:border-emerald-500/50"
+                        }`}
+                      />
+                      {errors[field.name] && (
+                        // CA04 - Real-time error highlight & message
+                        <p className="text-rose-500 text-[10px] font-semibold mt-1">
+                          {errors[field.name]}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <Button
+                    type="submit"
+                    className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2"
+                  >
+                    Calcular Score de Risco
+                  </Button>
+                </div>
+              </form>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Lateral History Panel Placeholder */}
+        <Card className="bg-card border-border transition-colors duration-300">
+          <CardHeader>
+            <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
+              <History className="h-4 w-4 text-muted-foreground/60" />
+              Histórico Lateral
+            </CardTitle>
+            <CardDescription className="text-[11px] text-muted-foreground">
+              Últimas predições individuais realizadas neste dispositivo.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-[10px] text-muted-foreground text-center py-6 italic">
+              Nenhuma predição realizada neste ciclo.
+            </div>
           </CardContent>
         </Card>
       </div>
