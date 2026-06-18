@@ -29,6 +29,19 @@ export default function CreditRiskPage() {
   // Real-time validation errors state (CA04)
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Prediction execution states (CA02)
+  const [isPredicting, setIsPredicting] = useState(false);
+  const [predictionResult, setPredictionResult] = useState<{
+    probabilidadeRetorno: number;
+    acao: "Aprovar" | "Análise Manual" | "Revisar Garantia" | "Rejeitar";
+    dataInput: {
+      valor: number;
+      score: number;
+      cliente: string;
+      propostaId: string;
+    };
+  } | null>(null);
+
   const validateField = (name: string, value: string, type: "numeric" | "text") => {
     if (!value || value.trim() === "") {
       return "Este campo é obrigatório.";
@@ -166,6 +179,34 @@ export default function CreditRiskPage() {
     if (Object.keys(newErrors).length > 0) {
       return;
     }
+
+    setIsPredicting(true);
+    setPredictionResult(null);
+
+    const valorNum = Number(formData.valor.replace(",", "."));
+    const scoreNum = Number(formData.score);
+
+    // Simular processamento local em menos de 1 segundo (600ms)
+    setTimeout(() => {
+      const result = predictCreditRisk(valorNum, scoreNum);
+      
+      const newPrediction = {
+        probabilidadeRetorno: result.probabilidadeRetorno,
+        acao: result.acao,
+        dataInput: {
+          valor: valorNum,
+          score: scoreNum,
+          cliente: formData.cliente,
+          propostaId: formData.proposta_id
+        }
+      };
+
+      setPredictionResult(newPrediction);
+      setIsPredicting(false);
+      addLog(`[Individual Prediction] Predição realizada para '${formData.cliente}' (${formData.proposta_id}). Resultado: ${result.acao} (${result.probabilidadeRetorno}% de retorno).`);
+      
+      // A atualização do histórico será adicionada no Passo 3
+    }, 600);
   };
 
   return (
@@ -292,44 +333,170 @@ export default function CreditRiskPage() {
               </div>
             ) : (
               // CA01 - Dynamic Form based on model variables
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {inputFields.map((field) => (
-                    <div key={field.name} className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-foreground/80 tracking-wide block uppercase">
-                        {getFieldLabel(field.name)}
-                      </label>
-                      <input
-                        type="text"
-                        name={field.name}
-                        value={formData[field.name] || ""}
-                        placeholder={getFieldPlaceholder(field.name)}
-                        onChange={(e) => handleInputChange(field.name, e.target.value, field.type)}
-                        className={`w-full bg-zinc-950/40 border text-xs rounded-lg px-3 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-1 transition-all ${
-                          errors[field.name]
-                            ? "border-rose-500 focus:ring-rose-500 focus:border-rose-500"
-                            : "border-border focus:ring-emerald-500 focus:border-emerald-500 hover:border-emerald-500/50"
-                        }`}
-                      />
-                      {errors[field.name] && (
-                        // CA04 - Real-time error highlight & message
-                        <p className="text-rose-500 text-[10px] font-semibold mt-1">
-                          {errors[field.name]}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
+              <div className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {inputFields.map((field) => (
+                      <div key={field.name} className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-foreground/80 tracking-wide block uppercase">
+                          {getFieldLabel(field.name)}
+                        </label>
+                        <input
+                          type="text"
+                          name={field.name}
+                          disabled={isPredicting}
+                          value={formData[field.name] || ""}
+                          placeholder={getFieldPlaceholder(field.name)}
+                          onChange={(e) => handleInputChange(field.name, e.target.value, field.type)}
+                          className={`w-full bg-zinc-950/40 border text-xs rounded-lg px-3 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-1 transition-all ${
+                            errors[field.name]
+                              ? "border-rose-500 focus:ring-rose-500 focus:border-rose-500"
+                              : "border-border focus:ring-emerald-500 focus:border-emerald-500 hover:border-emerald-500/50"
+                          }`}
+                        />
+                        {errors[field.name] && (
+                          // CA04 - Real-time error highlight & message
+                          <p className="text-rose-500 text-[10px] font-semibold mt-1">
+                            {errors[field.name]}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
 
-                <div className="flex justify-end pt-2">
-                  <Button
-                    type="submit"
-                    className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2"
-                  >
-                    Calcular Score de Risco
-                  </Button>
-                </div>
-              </form>
+                  <div className="flex justify-end pt-2">
+                    <Button
+                      type="submit"
+                      disabled={isPredicting}
+                      className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2 flex items-center gap-1.5"
+                    >
+                      {isPredicting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                      Calcular Score de Risco
+                    </Button>
+                  </div>
+                </form>
+
+                {/* CA02 - Highlighted Prediction Result Card */}
+                {isPredicting && (
+                  <div className="flex flex-col items-center justify-center py-8 text-center animate-pulse border border-dashed border-border rounded-xl bg-zinc-950/20">
+                    <Loader2 className="h-8 w-8 text-emerald-500 animate-spin mb-2" />
+                    <p className="text-[10px] text-muted-foreground">Executando tensores e calculando score de risco...</p>
+                  </div>
+                )}
+
+                {predictionResult && (
+                  <div className={`p-5 rounded-xl border border-dashed transition-all duration-300 animate-in fade-in slide-in-from-bottom-2 ${
+                    predictionResult.acao === "Aprovar"
+                      ? "bg-emerald-500/5 border-emerald-500/30 text-emerald-400"
+                      : predictionResult.acao === "Análise Manual"
+                      ? "bg-amber-500/5 border-amber-500/30 text-amber-400"
+                      : predictionResult.acao === "Revisar Garantia"
+                      ? "bg-orange-500/5 border-orange-500/30 text-orange-400"
+                      : "bg-rose-500/5 border-rose-500/30 text-rose-400"
+                  }`}>
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="space-y-2.5 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase ${
+                            predictionResult.acao === "Aprovar"
+                              ? "bg-emerald-500/10 text-emerald-400"
+                              : predictionResult.acao === "Análise Manual"
+                              ? "bg-amber-500/10 text-amber-400"
+                              : predictionResult.acao === "Revisar Garantia"
+                              ? "bg-orange-500/10 text-orange-450"
+                              : "bg-rose-500/10 text-rose-400"
+                          }`}>
+                            Veredicto: {predictionResult.acao}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground font-mono">
+                            ID: {predictionResult.dataInput.propostaId}
+                          </span>
+                        </div>
+
+                        <div className="space-y-1">
+                          <h4 className="text-sm font-bold text-foreground">
+                            {predictionResult.dataInput.cliente}
+                          </h4>
+                          <p className="text-[11px] text-muted-foreground max-w-lg leading-relaxed">
+                            {predictionResult.acao === "Aprovar"
+                              ? "Crédito recomendado para aprovação automática. O proponente apresenta baixo risco de inadimplência."
+                              : predictionResult.acao === "Análise Manual"
+                              ? "Classificação intermediária. Recomenda-se a revisão detalhada do comitê de crédito antes da concessão."
+                              : predictionResult.acao === "Revisar Garantia"
+                              ? "Exposição de risco elevada. Recomenda-se aprovação condicionada à apresentação de garantias colaterais ou fiança."
+                              : "Reprovado pelo modelo. Perfil com probabilidade de retorno de crédito abaixo do nível de segurança prudencial."}
+                          </p>
+                        </div>
+
+                        {/* Inputs recap */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2 border-t border-border/40 text-[10px]">
+                          <div>
+                            <span className="text-muted-foreground block font-semibold">Valor da Proposta</span>
+                            <span className="text-foreground font-mono font-bold">
+                              {predictionResult.dataInput.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground block font-semibold">Score Informado</span>
+                            <span className="text-foreground font-mono font-bold">
+                              {predictionResult.dataInput.score} pts
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground block font-semibold">Algoritmo Ativo</span>
+                            <span className="text-foreground font-mono font-bold">
+                              {activeModel.algorithm}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground block font-semibold">ID do Modelo</span>
+                            <span className="text-foreground font-mono font-bold truncate block max-w-[120px]" title={activeModel.modelId}>
+                              {activeModel.modelId.substring(12, 19)}...
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Confidence score gauge / circle */}
+                      <div className="flex flex-col items-center justify-center shrink-0 p-3 bg-zinc-950/40 rounded-xl border border-border/60">
+                        <div className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider mb-1.5">Probabilidade Retorno</div>
+                        <div className="relative flex items-center justify-center h-20 w-20">
+                          {/* Circular Gauge */}
+                          <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                            <path
+                              className="text-muted/20"
+                              strokeWidth="2.5"
+                              stroke="currentColor"
+                              fill="none"
+                              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                            />
+                            <path
+                              className={`transition-all duration-500 ease-out ${
+                                predictionResult.acao === "Aprovar"
+                                  ? "text-emerald-500"
+                                  : predictionResult.acao === "Análise Manual"
+                                  ? "text-amber-500"
+                                  : predictionResult.acao === "Revisar Garantia"
+                                  ? "text-orange-500"
+                                  : "text-rose-500"
+                              }`}
+                              strokeWidth="2.5"
+                              strokeDasharray={`${predictionResult.probabilidadeRetorno}, 100`}
+                              strokeLinecap="round"
+                              stroke="currentColor"
+                              fill="none"
+                              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                            />
+                          </svg>
+                          <div className="absolute text-center">
+                            <span className="text-base font-black text-foreground font-mono">{predictionResult.probabilidadeRetorno}%</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </CardContent>
         </Card>
