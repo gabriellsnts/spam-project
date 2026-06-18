@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useDomain } from "@/lib/context/domain-context";
-import { TrendingUp, AlertTriangle, Coins, Percent, FileCheck, BarChart3, Lock, ShieldCheck, History, Printer, Loader2, Calendar } from "lucide-react";
+import { TrendingUp, AlertTriangle, Coins, Percent, FileCheck, BarChart3, Lock, History, Printer, Loader2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CSVUploader, ConfusionMatrixView, DOMAIN_SCHEMAS } from "@/components/shared/csv-uploader";
@@ -553,6 +553,18 @@ export default function CreditRiskPage() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Botão de Impressão (CA06) */}
+                    <div className="flex justify-end pt-3 border-t border-border/40 mt-4">
+                      <Button
+                        onClick={() => window.print()}
+                        variant="outline"
+                        className="border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10 text-xs font-bold gap-1.5"
+                      >
+                        <Printer className="h-4 w-4" />
+                        Imprimir Comprovante Simplificado
+                      </Button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -737,6 +749,150 @@ export default function CreditRiskPage() {
 
         <CSVUploader />
       </div>
+
+      {/* Container Oculto na tela, visível apenas no Print (CA06) */}
+      {predictionResult && (
+        <div id="print-receipt-container" className="hidden print:block">
+          <style dangerouslySetInnerHTML={{ __html: `
+            @media print {
+              body * {
+                visibility: hidden !important;
+              }
+              #print-receipt-container, #print-receipt-container * {
+                visibility: visible !important;
+              }
+              #print-receipt-container {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                padding: 40px !important;
+                background-color: #ffffff !important;
+                color: #000000 !important;
+                font-family: monospace !important;
+                font-size: 12px !important;
+                line-height: 1.5 !important;
+              }
+              .receipt-header {
+                text-align: center !important;
+                margin-bottom: 20px !important;
+                border-bottom: 2px solid #000000 !important;
+                padding-bottom: 10px !important;
+              }
+              .receipt-title {
+                font-size: 16px !important;
+                font-weight: bold !important;
+                margin-top: 5px !important;
+              }
+              .receipt-section {
+                margin-bottom: 15px !important;
+              }
+              .receipt-row {
+                display: flex !important;
+                justify-content: space-between !important;
+                margin-bottom: 5px !important;
+              }
+              .receipt-divider {
+                border-top: 1px dashed #000000 !important;
+                margin: 15px 0 !important;
+              }
+              .receipt-verdict {
+                font-size: 14px !important;
+                font-weight: bold !important;
+                text-align: center !important;
+                border: 2px solid #000000 !important;
+                padding: 10px !important;
+                margin: 15px 0 !important;
+              }
+              .receipt-footer {
+                text-align: center !important;
+                margin-top: 40px !important;
+                font-size: 10px !important;
+              }
+              .signature-line {
+                margin-top: 50px !important;
+                border-top: 1px solid #000000 !important;
+                width: 250px !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+                text-align: center !important;
+              }
+            }
+          ` }} />
+          
+          <div className="receipt-header">
+            <div>SPAM - SISTEMA PREDITIVO DE ANÁLISE MULTIDOMÍNIO</div>
+            <div className="receipt-title">COMPROVANTE DE VEREDICTO DE CRÉDITO</div>
+          </div>
+
+          <div className="receipt-section">
+            <div className="receipt-row">
+              <strong>Data de Emissão:</strong>
+              <span>{new Date().toLocaleDateString("pt-BR")} - {new Date().toLocaleTimeString("pt-BR")}</span>
+            </div>
+            <div className="receipt-row">
+              <strong>ID do Modelo Preditivo:</strong>
+              <span>{activeModel?.modelId || "N/A"}</span>
+            </div>
+            <div className="receipt-row">
+              <strong>Algoritmo Executado:</strong>
+              <span>{activeModel?.algorithm || "N/A"} ({activeModel?.type || "N/A"})</span>
+            </div>
+          </div>
+
+          <div className="receipt-divider" />
+
+          <div className="receipt-section">
+            <h3 style={{ fontSize: "13px", fontWeight: "bold", marginBottom: "8px" }}>DADOS DE ENTRADA DA PROPOSTA</h3>
+            <div className="receipt-row">
+              <span>ID da Proposta:</span>
+              <strong style={{ fontFamily: "monospace" }}>{predictionResult.dataInput.propostaId}</strong>
+            </div>
+            <div className="receipt-row">
+              <span>Cliente Proponente:</span>
+              <strong>{predictionResult.dataInput.cliente}</strong>
+            </div>
+            <div className="receipt-row">
+              <span>Valor Solicitado:</span>
+              <strong>{predictionResult.dataInput.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</strong>
+            </div>
+            <div className="receipt-row">
+              <span>Score de Crédito:</span>
+              <strong>{predictionResult.dataInput.score} pontos</strong>
+            </div>
+          </div>
+
+          <div className="receipt-divider" />
+
+          <div className="receipt-section">
+            <h3 style={{ fontSize: "13px", fontWeight: "bold", marginBottom: "8px", textAlign: "center" }}>RESULTADO DO MOTOR ANALÍTICO</h3>
+            <div className="receipt-verdict">
+              VEREDICTO DO MODELO: {predictionResult.acao.toUpperCase()}<br />
+              PROBABILIDADE DE RETORNO DO CRÉDITO: {predictionResult.probabilidadeRetorno}%
+            </div>
+            <p style={{ textAlign: "center", fontStyle: "italic", fontSize: "10px", marginTop: "5px" }}>
+              {predictionResult.acao === "Aprovar"
+                ? "Crédito recomendado para aprovação automática."
+                : predictionResult.acao === "Análise Manual"
+                ? "Crédito retido para análise e homologação física."
+                : predictionResult.acao === "Revisar Garantia"
+                ? "Aprovação condicionada a apresentação de garantias colaterais."
+                : "Crédito negado de acordo com política de risco prudencial."}
+            </p>
+          </div>
+
+          <div className="receipt-divider" />
+
+          <div className="signature-line">
+            Assinatura do Analista Responsável
+          </div>
+
+          <div className="receipt-footer">
+            <div>SPAM Intelligent Systems © {new Date().getFullYear()}</div>
+            <div>Chave de Autenticidade: {predictionResult.dataInput.propostaId}-{predictionResult.dataInput.score}</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
