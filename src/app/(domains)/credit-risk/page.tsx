@@ -42,6 +42,51 @@ export default function CreditRiskPage() {
     };
   } | null>(null);
 
+  interface HistoryItem {
+    id: string;
+    cliente: string;
+    acao: "Aprovar" | "Análise Manual" | "Revisar Garantia" | "Rejeitar";
+    probabilidadeRetorno: number;
+    valor: number;
+    score: number;
+    timestamp: number;
+  }
+
+  // History state (CA05)
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+
+  // Load history from localStorage inside useEffect to prevent hydration mismatches
+  useEffect(() => {
+    const saved = localStorage.getItem("credit-risk-prediction-history");
+    if (saved) {
+      try {
+        setHistory(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to parse prediction history:", e);
+      }
+    }
+  }, []);
+
+  const handleSelectHistoryItem = (item: HistoryItem) => {
+    setPredictionResult({
+      probabilidadeRetorno: item.probabilidadeRetorno,
+      acao: item.acao,
+      dataInput: {
+        valor: item.valor,
+        score: item.score,
+        cliente: item.cliente,
+        propostaId: item.id
+      }
+    });
+    setFormData({
+      proposta_id: item.id,
+      cliente: item.cliente,
+      valor: item.valor.toString(),
+      score: item.score.toString()
+    });
+    setErrors({});
+  };
+
   const validateField = (name: string, value: string, type: "numeric" | "text") => {
     if (!value || value.trim() === "") {
       return "Este campo é obrigatório.";
@@ -205,7 +250,21 @@ export default function CreditRiskPage() {
       setIsPredicting(false);
       addLog(`[Individual Prediction] Predição realizada para '${formData.cliente}' (${formData.proposta_id}). Resultado: ${result.acao} (${result.probabilidadeRetorno}% de retorno).`);
       
-      // A atualização do histórico será adicionada no Passo 3
+      const newPredictionItem: HistoryItem = {
+        id: newPrediction.dataInput.propostaId,
+        cliente: newPrediction.dataInput.cliente,
+        acao: newPrediction.acao,
+        probabilidadeRetorno: newPrediction.probabilidadeRetorno,
+        valor: newPrediction.dataInput.valor,
+        score: newPrediction.dataInput.score,
+        timestamp: Date.now()
+      };
+
+      setHistory(prev => {
+        const updated = [newPredictionItem, ...prev].slice(0, 5);
+        localStorage.setItem("credit-risk-prediction-history", JSON.stringify(updated));
+        return updated;
+      });
     }, 600);
   };
 
@@ -501,21 +560,56 @@ export default function CreditRiskPage() {
           </CardContent>
         </Card>
 
-        {/* Lateral History Panel Placeholder */}
-        <Card className="bg-card border-border transition-colors duration-300">
+        {/* Lateral History Panel (CA05) */}
+        <Card className="bg-card border-border transition-colors duration-300 flex flex-col">
           <CardHeader>
             <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
-              <History className="h-4 w-4 text-muted-foreground/60" />
+              <History className="h-4 w-4 text-emerald-500" />
               Histórico Lateral
             </CardTitle>
             <CardDescription className="text-[11px] text-muted-foreground">
-              Últimas predições individuais realizadas neste dispositivo.
+              Últimas 5 predições individuais realizadas neste dispositivo (clique para carregar).
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="text-[10px] text-muted-foreground text-center py-6 italic">
-              Nenhuma predição realizada neste ciclo.
-            </div>
+          <CardContent className="flex-1">
+            {history.length === 0 ? (
+              <div className="text-[10px] text-muted-foreground text-center py-8 italic border border-dashed border-border rounded-xl">
+                Nenhuma predição recente no histórico.
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {history.map((item, index) => (
+                  <button
+                    key={`${item.id}-${index}-${item.timestamp}`}
+                    onClick={() => handleSelectHistoryItem(item)}
+                    className="w-full text-left p-3 rounded-lg border border-border hover:bg-muted/40 transition duration-150 flex items-center justify-between gap-3 group"
+                  >
+                    <div className="space-y-1 min-w-0">
+                      <div className="text-xs font-bold text-foreground truncate group-hover:text-emerald-500 transition-colors">
+                        {item.cliente}
+                      </div>
+                      <div className="text-[9px] text-muted-foreground font-mono flex items-center gap-1.5">
+                        <span>{item.id}</span>
+                        <span>•</span>
+                        <span>{new Date(item.timestamp).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</span>
+                      </div>
+                    </div>
+
+                    <div className="shrink-0">
+                      <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase border ${
+                        item.acao === "Aprovar"
+                          ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/25"
+                          : item.acao === "Análise Manual" || item.acao === "Revisar Garantia"
+                          ? "bg-amber-500/10 text-amber-500 border-amber-500/25"
+                          : "bg-rose-500/10 text-rose-500 border-rose-500/25"
+                      }`}>
+                        {item.acao}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
