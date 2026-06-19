@@ -1,16 +1,19 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useDomain } from "@/lib/context/domain-context";
-import { TrendingUp, BarChart3, Package, Calendar } from "lucide-react";
+import { TrendingUp, BarChart3, Package, Calendar, AlertCircle, Sparkles } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CSVUploader } from "@/components/shared/csv-uploader";
+import { FeatureImportanceChart } from "@/components/shared/feature-importance-chart";
+import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts";
 
 export default function DemandPage() {
   const { addLog, isTraining, trainedModels } = useDomain();
   const activeModel = trainedModels["demand"];
   const [seasonalActive, setSeasonalActive] = useState(false);
+  const [horizon, setHorizon] = useState<7 | 30 | 90>(30);
   
   const [metrics, setMetrics] = useState({
     accuracy: "93.8%",
@@ -26,7 +29,48 @@ export default function DemandPage() {
     { id: "P04", name: "Pernos de Fixação Hexagonal", stock: 2400, leadTime: 5, monthlyDemand: 2500, risk: "medium" },
   ]);
 
+  const generateChartData = (days: number, isSeasonal: boolean) => {
+    const data = [];
+    const today = new Date();
+    for (let i = -15; i <= 0; i++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() + i);
+      data.push({
+        date: d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }),
+        historico: 100 + Math.random() * 50 + (i * 2),
+        previsao: null,
+        isFuture: false,
+      });
+    }
+    const lastHist = data[data.length - 1].historico as number;
+    for (let i = 1; i <= days; i++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() + i);
+      let multiplier = 1;
+      if (isSeasonal && i > 5 && i < 15) multiplier = 2.5; 
+      
+      data.push({
+        date: d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }),
+        historico: null,
+        previsao: lastHist + (i * 1.5) * multiplier + (Math.random() * 20),
+        isFuture: true,
+      });
+    }
+    const currentPoint = data.find(d => d.isFuture === false && data.indexOf(d) === 15);
+    if (currentPoint) {
+      data[15].previsao = currentPoint.historico;
+    }
+
+    return data;
+  };
+
+  const chartData = useMemo(() => generateChartData(horizon, seasonalActive), [horizon, seasonalActive]);
+
   const triggerSeasonalSimulation = () => {
+    if (!activeModel) {
+      addLog("Erro: É necessário treinar um modelo primeiro para gerar previsões.", "error");
+      return;
+    }
     setSeasonalActive(true);
     setMetrics({
       accuracy: "91.2%",
@@ -42,7 +86,7 @@ export default function DemandPage() {
         return p;
       })
     );
-    addLog("Simulação de sazonalidade de alta demanda ativada (Black Friday / Pico). Alerta de ruptura de estoque disparado.");
+    addLog("Simulação de sazonalidade de alta demanda ativada. Alerta de ruptura de estoque disparado.");
   };
 
   const resetSimulation = () => {
@@ -62,9 +106,21 @@ export default function DemandPage() {
     addLog("Simulação de sazonalidade redefinida. Projeções de demanda normalizadas.");
   };
 
+  const mockFeatures = [
+    { name: "Sazonalidade Mensal", weight: 0.45, description: "Variação esperada devido a feriados e picos sazonais." },
+    { name: "Preço do Produto", weight: 0.25, description: "Sensibilidade de demanda cruzada com alterações no ticket médio." },
+    { name: "Promoções Ativas", weight: 0.15, description: "Impacto temporário por queimas de estoque e campanhas pontuais." },
+    { name: "Temperatura", weight: 0.10, description: "Fator climático local impactando logística e tráfego em loja." },
+    { name: "Concorrentes Ativos", weight: 0.05, description: "Ações promocionais do mercado registradas no CRM." },
+  ];
+
+  const handleExport = () => {
+    window.print();
+    addLog("Relatório consolidado exportado para PDF via impressão.");
+  };
+
   return (
     <div className="space-y-6">
-      {/* Module Title Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-card border border-border shadow-md relative overflow-hidden transition-colors duration-300">
         <div className="absolute top-0 right-0 h-40 w-40 bg-sky-500/5 blur-3xl rounded-full" />
         <div className="space-y-1 relative z-10">
@@ -80,8 +136,16 @@ export default function DemandPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 relative z-10">
-          {seasonalActive ? (
+        <div className="flex flex-col sm:flex-row items-center gap-2 relative z-10">
+          <Button variant="outline" size="sm" onClick={handleExport} className="text-xs">
+            Exportar Relatório (PDF)
+          </Button>
+          {!activeModel ? (
+            <div className="flex items-center gap-2 text-amber-500 bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-500/20 text-xs font-semibold">
+              <AlertCircle className="h-4 w-4" />
+              Treine um modelo primeiro
+            </div>
+          ) : seasonalActive ? (
             <Button
               onClick={resetSimulation}
               disabled={isTraining}
@@ -102,7 +166,6 @@ export default function DemandPage() {
         </div>
       </div>
 
-      {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-card border-border transition-colors duration-300">
           <CardHeader className="pb-2">
@@ -130,7 +193,7 @@ export default function DemandPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-[10px] text-muted-foreground">Próximos 30 dias operacionais</div>
+            <div className="text-[10px] text-muted-foreground">Próximos {horizon} dias operacionais</div>
           </CardContent>
         </Card>
 
@@ -161,80 +224,101 @@ export default function DemandPage() {
         </Card>
       </div>
 
-      {/* Main Content Layout */}
+      <div className="p-4 bg-sky-500/10 border border-sky-500/20 rounded-lg text-sm text-foreground flex gap-3">
+        <Sparkles className="h-5 w-5 text-sky-500 shrink-0" />
+        <div>
+          <strong className="text-sky-500 block mb-1">Insight Automático:</strong>
+          {seasonalActive 
+            ? "Simulação de pico indica risco severo de ruptura de estoque para 'Pernos de Fixação' e 'Bobina de Aço'. Aumento de demanda focado na próxima quinzena."
+            : "A tendência atual aponta crescimento orgânico moderado, sem gargalos logísticos no horizonte de curto prazo. Faturamento estável."}
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Mock Chart */}
         <Card className="lg:col-span-2 bg-card border-border transition-colors duration-300">
-          <CardHeader>
-            <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
-              <BarChart3 className="h-4 w-4 text-muted-foreground/60" />
-              Projeção de Séries Temporais (30 dias)
-            </CardTitle>
-            <CardDescription className="text-[11px] text-muted-foreground">
-              Linha sólida representa a demanda real histórica; linha tracejada azul representa a previsão estatística.
-            </CardDescription>
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between pb-2">
+            <div>
+              <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                <BarChart3 className="h-4 w-4 text-muted-foreground/60" />
+                Projeção de Séries Temporais
+              </CardTitle>
+              <CardDescription className="text-[11px] text-muted-foreground">
+                Unidade: Quantidade Estimada de Vendas (un) | Domínio: Previsão de Demanda
+              </CardDescription>
+            </div>
+            <div className="flex gap-2">
+              {[7, 30, 90].map((h) => (
+                <Button
+                  key={h}
+                  variant={horizon === h ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setHorizon(h as 7 | 30 | 90)}
+                  className="h-7 text-[10px] px-2"
+                  disabled={!activeModel}
+                >
+                  {h} Dias
+                </Button>
+              ))}
+            </div>
           </CardHeader>
-          <CardContent className="h-[240px] flex flex-col justify-end">
-            {/* SVG Mock Chart */}
-            <div className="w-full h-full relative mb-2">
-              <svg className="w-full h-full animate-in fade-in duration-500" viewBox="0 0 500 200" preserveAspectRatio="none">
-                {/* Grid Lines */}
-                <line x1="0" y1="50" x2="500" y2="50" className="stroke-border/40" strokeWidth="1" strokeDasharray="4 4" />
-                <line x1="0" y1="100" x2="500" y2="100" className="stroke-border/40" strokeWidth="1" strokeDasharray="4 4" />
-                <line x1="0" y1="150" x2="500" y2="150" className="stroke-border/40" strokeWidth="1" strokeDasharray="4 4" />
-
-                {/* Actual Demand Path */}
-                <path
-                  d="M0 160 Q 50 140 100 150 T 200 120 T 300 130 T 350 110"
-                  fill="none"
-                  className="stroke-muted-foreground"
-                  strokeWidth="2.5"
-                />
-
-                {/* Predicted Demand Path */}
-                <path
-                  d={
-                    seasonalActive
-                      ? "M350 110 L 375 70 L 400 40 L 425 20 L 450 30 L 475 10 L 500 20"
-                      : "M350 110 L 375 115 L 400 100 L 425 105 L 450 95 L 475 90 L 500 95"
-                  }
-                  fill="none"
-                  stroke="#0ea5e9"
-                  strokeWidth="2.5"
-                  strokeDasharray="4"
-                  className="transition-all duration-1000"
-                />
-
-                {/* Shading below prediction */}
-                <path
-                  d={
-                    seasonalActive
-                      ? "M350 110 L 375 70 L 400 40 L 425 20 L 450 30 L 475 10 L 500 20 L 500 200 L 350 200 Z"
-                      : "M350 110 L 375 115 L 400 100 L 425 105 L 450 95 L 475 90 L 500 95 L 500 200 L 350 200 Z"
-                  }
-                  fill="url(#gradient-sky)"
-                  className="opacity-15 transition-all duration-1000"
-                />
-
-                <defs>
-                  <linearGradient id="gradient-sky" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#0ea5e9" />
-                    <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0" />
-                  </linearGradient>
-                </defs>
-              </svg>
-            </div>
-            
-            <div className="flex justify-between text-[10px] text-muted-foreground font-mono px-2">
-              <span>Semana 01</span>
-              <span>Semana 02</span>
-              <span>Semana 03 (Histórico / Previsão)</span>
-              <span>Semana 04</span>
-            </div>
+          <CardContent>
+            {!activeModel ? (
+               <div className="h-[280px] w-full flex flex-col items-center justify-center text-muted-foreground border border-dashed border-border rounded-lg bg-muted/20">
+                 <AlertCircle className="h-8 w-8 mb-2 opacity-50" />
+                 <p className="text-sm">Geração bloqueada.</p>
+                 <p className="text-xs opacity-70">Faça o upload de dados e treine o modelo primeiro.</p>
+               </div>
+            ) : (
+              <div className="h-[280px] w-full mt-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="currentColor" opacity={0.1} vertical={false} />
+                    <XAxis 
+                      dataKey="date" 
+                      tick={{ fontSize: 10, fill: "currentColor", opacity: 0.6 }} 
+                      tickLine={false} 
+                      axisLine={false} 
+                    />
+                    <YAxis 
+                      tick={{ fontSize: 10, fill: "currentColor", opacity: 0.6 }} 
+                      tickLine={false} 
+                      axisLine={false} 
+                    />
+                    <RechartsTooltip 
+                      contentStyle={{ backgroundColor: 'hsl(var(--popover))', borderColor: 'hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
+                      labelStyle={{ fontWeight: 'bold', color: 'hsl(var(--foreground))', marginBottom: '4px' }}
+                      itemStyle={{ color: 'hsl(var(--foreground))' }}
+                      formatter={(value: any, name: string) => [
+                        `${Number(value).toFixed(0)} un`, 
+                        name === 'historico' ? 'Histórico Real' : 'Previsão Estimada'
+                      ]}
+                    />
+                    <ReferenceLine x={chartData[15].date} stroke="currentColor" strokeOpacity={0.3} strokeDasharray="3 3" label={{ position: 'insideTopLeft', value: 'Hoje', fill: 'currentColor', fontSize: 10, opacity: 0.5 }} />
+                    <Line 
+                      type="monotone" 
+                      dataKey="historico" 
+                      stroke="currentColor" 
+                      strokeWidth={2} 
+                      dot={false}
+                      activeDot={{ r: 4, fill: "currentColor" }}
+                      className="text-foreground"
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="previsao" 
+                      stroke="#0ea5e9" 
+                      strokeWidth={2.5} 
+                      strokeDasharray="5 5"
+                      dot={false}
+                      activeDot={{ r: 4, fill: "#0ea5e9" }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        {/* Inventory Stock alerts */}
         <Card className="bg-card border-border transition-colors duration-300">
           <CardHeader>
             <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
@@ -242,23 +326,23 @@ export default function DemandPage() {
               Cobertura de Estoque
             </CardTitle>
             <CardDescription className="text-[11px] text-muted-foreground">
-              Análise de estoque de segurança versus demanda mensal média projetada.
+              Análise de estoque de segurança.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3">
             {products.map((p) => (
-              <div key={p.id} className="p-2.5 rounded-lg bg-muted/40 border border-border text-xs flex flex-col gap-1">
+              <div key={p.id} className="p-2 rounded-lg bg-muted/40 border border-border text-xs flex flex-col gap-1">
                 <div className="flex justify-between font-bold text-foreground/80">
-                  <span>{p.name}</span>
-                  <span className="text-[10px] text-muted-foreground font-mono">Cód: {p.id}</span>
+                  <span className="truncate pr-2">{p.name}</span>
+                  <span className="text-[9px] text-muted-foreground font-mono shrink-0">{p.id}</span>
                 </div>
                 
-                <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
-                  <span>Qtd. em Estoque: <strong className="text-foreground">{p.stock} un.</strong></span>
-                  <span>Demanda Prev: <strong className="text-foreground">{p.monthlyDemand} un/mês</strong></span>
+                <div className="flex justify-between text-[10px] text-muted-foreground mt-0.5">
+                  <span>Estoque: <strong className="text-foreground">{p.stock} un.</strong></span>
+                  <span>Demanda: <strong className="text-foreground">{p.monthlyDemand}/mês</strong></span>
                 </div>
 
-                <div className="mt-1.5 flex justify-end">
+                <div className="mt-1 flex justify-end">
                   <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold border uppercase tracking-wider ${
                     p.risk === "high"
                       ? "bg-rose-500/10 text-rose-500 border-rose-500/20 animate-pulse"
@@ -266,7 +350,7 @@ export default function DemandPage() {
                       ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
                       : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
                   }`}>
-                    {p.risk === "high" ? "Alto Risco Ruptura" : p.risk === "medium" ? "Risco Moderado" : "Seguro"}
+                    {p.risk === "high" ? "Alto Risco" : p.risk === "medium" ? "Risco Moderado" : "Seguro"}
                   </span>
                 </div>
               </div>
@@ -275,7 +359,10 @@ export default function DemandPage() {
         </Card>
       </div>
 
-      {/* Ingestão de Dados Históricos */}
+      {activeModel && (
+        <FeatureImportanceChart data={mockFeatures} />
+      )}
+
       <CSVUploader />
     </div>
   );
