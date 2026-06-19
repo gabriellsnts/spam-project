@@ -1177,6 +1177,29 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
               </div>
             </div>
 
+            {/* Botão de Mock de Upload para Testes */}
+            <div className="flex justify-center mt-2">
+              <Button 
+                onClick={() => {
+                  setFileDetails({
+                    name: `dados_historicos_${activeDomain || 'teste'}.csv`,
+                    size: "45 KB",
+                    sizeBytes: 45000,
+                    rows: 150,
+                    encoding: "UTF-8",
+                    delimiter: ",",
+                    headers: expectedCols
+                  });
+                  setUploadStatus("success");
+                }}
+                variant="outline" 
+                className="text-[10px] font-bold h-7 border-dashed border-emerald-500/40 text-emerald-600 hover:bg-emerald-500/10"
+              >
+                <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+                Auto-Preencher com Dados de Teste (Modo Demo)
+              </Button>
+            </div>
+
             {/* Guia de Colunas Esperadas */}
             <div className="p-3.5 rounded-xl bg-muted/30 border border-border/80 text-[11px] space-y-2">
               <div className="font-bold text-foreground/80 flex items-center gap-1.5">
