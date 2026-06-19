@@ -184,6 +184,28 @@ export default function AdminUsersPage() {
     setSuccessMsg(`Usuário "${cleanUsername}" cadastrado com sucesso! As credenciais foram registradas e criptografadas de forma segura (SHA-256: ${hash.substring(0, 16)}...).`);
   };
 
+  const handleToggleStatus = (usernameToToggle: string) => {
+    if (currentUser && usernameToToggle === currentUser.username) {
+      alert("Por segurança, você não pode desativar a sua própria conta ativa de administrador.");
+      return;
+    }
+
+    const updatedUsers = users.map((u) => {
+      if (u.username === usernameToToggle) {
+        const nextStatus: "ativo" | "inativo" = u.status === "ativo" ? "inativo" : "ativo";
+        
+        // Registrar log de auditoria
+        addLog(`Status da conta '${u.username}' alterado para '${nextStatus}' pelo administrador '${currentUser.username}'.`);
+        
+        return { ...u, status: nextStatus };
+      }
+      return u;
+    });
+
+    localStorage.setItem("spam-users", JSON.stringify(updatedUsers));
+    setUsers(updatedUsers);
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground transition-colors duration-300 selection:bg-green-500/20 selection:text-green-400 relative overflow-hidden">
       <div className="absolute inset-0 grid-bg text-zinc-500/[0.04] dark:text-zinc-400/[0.02] pointer-events-none z-0" />
@@ -368,16 +390,83 @@ export default function AdminUsersPage() {
               </CardContent>
             </Card>
 
-            {/* Grid Coluna Tabela (Vazia/Carregando no Passo 1) */}
+            {/* Grid Coluna Tabela */}
             <div className="lg:col-span-2 space-y-6">
-              <Card className="border-border/80 bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-lg h-full flex flex-col justify-center items-center p-8 text-center min-h-[350px]">
-                <div className="h-10 w-10 rounded-full bg-zinc-800/80 border border-zinc-700/60 flex items-center justify-center text-zinc-400 mb-3">
-                  <User className="h-5 w-5" />
-                </div>
-                <span className="text-zinc-300 font-semibold text-sm">Visualização de Listagem</span>
-                <span className="text-zinc-500 text-xs max-w-xs mt-1.5 leading-relaxed">
-                  A listagem de usuários cadastrados e o controle de status ativo/inativo serão exibidos aqui após a conclusão das etapas de validação de segurança.
-                </span>
+              <Card className="border-border/80 bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-lg flex flex-col h-full overflow-hidden">
+                <CardHeader>
+                  <CardTitle className="text-base font-bold text-zinc-100 flex items-center gap-2">
+                    <User className="h-4.5 w-4.5 text-green-500" />
+                    Usuários Cadastrados
+                  </CardTitle>
+                  <CardDescription className="text-xs text-zinc-500">
+                    Lista completa de contas cadastradas e controle de status.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="flex-1 overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-zinc-800 text-[10px] uppercase font-bold text-zinc-400">
+                        <th className="py-3 px-4 font-bold">Nome</th>
+                        <th className="py-3 px-4 font-bold">Usuário</th>
+                        <th className="py-3 px-4 font-bold">Perfil</th>
+                        <th className="py-3 px-4 font-bold">Status</th>
+                        <th className="py-3 px-4 font-bold text-right">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {users.map((user) => (
+                        <tr key={user.username} className="border-b border-zinc-850 hover:bg-zinc-950/40 transition duration-150">
+                          <td className="py-3.5 px-4 font-medium text-zinc-200">{user.fullName}</td>
+                          <td className="py-3.5 px-4 text-zinc-400 font-mono">@{user.username}</td>
+                          <td className="py-3.5 px-4 text-zinc-300">
+                            <div>{user.profileName}</div>
+                            <div className="text-[9px] text-zinc-500">{user.accessProfile}</div>
+                          </td>
+                          <td className="py-3.5 px-4">
+                            {user.status === "ativo" ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/25">
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                Ativo
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-500/10 text-red-400 border border-red-500/25">
+                                <span className="h-1.5 w-1.5 rounded-full bg-red-400" />
+                                Inativo
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-4 text-right">
+                            {user.username === currentUser.username ? (
+                              <span className="text-[10px] text-zinc-600 font-bold italic mr-2 select-none">
+                                Sua Conta (Ativa)
+                              </span>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleToggleStatus(user.username)}
+                                className={`text-[10px] font-bold h-7 py-1 px-3.5 rounded-md transition duration-200 border ${
+                                  user.status === "ativo"
+                                    ? "text-red-400 hover:text-red-300 hover:bg-red-500/10 border-red-500/10 hover:border-red-500/20"
+                                    : "text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 border-emerald-500/10 hover:border-emerald-500/20"
+                                }`}
+                              >
+                                {user.status === "ativo" ? "Desativar" : "Reativar"}
+                              </Button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                      {users.length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="py-8 text-center text-zinc-500 italic">
+                            Nenhum usuário cadastrado no sistema.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </CardContent>
               </Card>
             </div>
           </div>

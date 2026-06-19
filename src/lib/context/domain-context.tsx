@@ -902,8 +902,8 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
       const savedUsers = localStorage.getItem("spam-users");
       if (savedUsers) {
         try {
-          const list = JSON.parse(savedUsers);
-          const currentInDb = list.find((u: any) => u.username === currentUser.username);
+          const list: User[] = JSON.parse(savedUsers);
+          const currentInDb = list.find((u) => u.username === currentUser.username);
           if (currentInDb && currentInDb.status === "inativo") {
             logout("inactivity");
             alert("Acesso interrompido: Sua conta foi desativada pelo administrador.");
