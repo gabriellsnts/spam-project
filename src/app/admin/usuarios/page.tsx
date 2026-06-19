@@ -42,7 +42,7 @@ const checkPasswordStrength = (pass: string) => {
 };
 
 export default function AdminUsersPage() {
-  const { currentUser, isAuthLoading } = useDomain();
+  const { currentUser, isAuthLoading, users, setUsers, addLog } = useDomain();
   const router = useRouter();
 
   // Estados do formulário
@@ -111,8 +111,10 @@ export default function AdminUsersPage() {
     setSuccessMsg(null);
     setSimulatedHash(null);
 
+    const cleanUsername = username.trim().toLowerCase();
+
     // Validações básicas (CA01: Bloquear vazios)
-    if (!fullName.trim() || !username.trim() || !password.trim() || !confirmPassword.trim()) {
+    if (!fullName.trim() || !cleanUsername || !password.trim() || !confirmPassword.trim()) {
       setErrorMsg("Todos os campos do formulário são de preenchimento obrigatório.");
       return;
     }
@@ -128,11 +130,58 @@ export default function AdminUsersPage() {
       return;
     }
 
+    // Validar duplicado (CA01: Bloquear duplicados)
+    const userExists = users.some((u) => u.username === cleanUsername);
+    if (userExists) {
+      setErrorMsg(`O nome de usuário "${cleanUsername}" já está cadastrado no sistema.`);
+      return;
+    }
+
     // Simula a criptografia da senha antes de armazenar (CA02)
     const hash = await sha256(password);
     setSimulatedHash(hash);
 
-    setSuccessMsg(`Validações e criptografia simulada com sucesso!\nSHA-256 gerado: ${hash}`);
+    // Mapear perfis de acesso
+    let profileName = "Analista";
+    let accessProfile = "Analista de Dados";
+    let department = "Negócios";
+
+    if (profile === "Super Admin") {
+      profileName = "Administrador";
+      accessProfile = "Super Admin";
+      department = "TI & Infraestrutura";
+    } else if (profile === "Gestor Analítico") {
+      profileName = "Gestor de Operações";
+      accessProfile = "Gestor Analítico";
+      department = "Operações";
+    }
+
+    const newUser = {
+      username: cleanUsername,
+      fullName: fullName.trim(),
+      profileName,
+      accessProfile,
+      department,
+      passwordHash: hash,
+      lastLogin: new Date().toISOString(),
+      status: "ativo" as const,
+    };
+
+    const updatedUsers = [...users, newUser];
+    localStorage.setItem("spam-users", JSON.stringify(updatedUsers));
+    setUsers(updatedUsers);
+
+    // Registro automático no log de auditoria (CA03)
+    addLog(`Cadastro de Usuário: Novo perfil '${cleanUsername}' (${profileName}) registrado pelo administrador '${currentUser.username}'.`);
+
+    // Limpar campos
+    setFullName("");
+    setUsername("");
+    setPassword("");
+    setConfirmPassword("");
+    setProfile("Gestor Analítico");
+
+    setSuccessMsg(`Usuário "${cleanUsername}" cadastrado com sucesso! As credenciais foram registradas e criptografadas de forma segura (SHA-256: ${hash.substring(0, 16)}...).`);
   };
 
   return (
