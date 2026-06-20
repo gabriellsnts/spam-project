@@ -6,14 +6,14 @@ import {
   Wrench, 
   Settings, 
   AlertTriangle, 
-  BarChart3, 
+  Download, 
+  Sparkles,
+  BarChart3,
   Radio,
   Sliders,
   RotateCcw,
   ClipboardCopy,
-  Download,
-  Check,
-  Sparkles
+  Check
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,11 +21,14 @@ import { CSVUploader, ResidualsPlotView } from "@/components/shared/csv-uploader
 import { DescriptiveStats } from "@/components/shared/descriptive-stats";
 import { FeatureImportanceChart } from "@/components/shared/feature-importance-chart";
 import { calculateMachineRUL, BASE_RULS } from "@/lib/predictive-engine";
+import { AlertThresholdSettings } from "@/components/shared/alert-threshold-settings";
 
 export default function MaintenancePage() {
-  const { addLog, isTraining, trainedModels } = useDomain();
+  const { addLog, isTraining, trainedModels, alertThresholds } = useDomain();
   const activeModel = trainedModels["maintenance"];
   const [horizon, setHorizon] = useState<7 | 30 | 90>(30);
+
+  const threshold = alertThresholds["maintenance"] !== undefined ? alertThresholds["maintenance"] : 30;
   
   const [csvFileDetails, setCsvFileDetails] = useState<{
     name: string;
@@ -94,18 +97,39 @@ export default function MaintenancePage() {
   const [simulatedSpecs, setSimulatedSpecs] = useState<Record<string, { temp: number; vibration: number; oee: number }>>({});
   const [reportCopied, setReportCopied] = useState(false);
 
-  const activeAlerts = useMemo(() => {
+  const activeAlertsList = useMemo(() => {
+    const list: { id: string; name: string; value: number; threshold: number; details?: string }[] = [];
+    machines.forEach((m) => {
+      const simOverride = simulatedSpecs[m.id];
+      const currentSpecs = simOverride || { temp: m.temp, vibration: m.vibration, oee: m.oee };
+      const { rul } = calculateMachineRUL(m.id, currentSpecs.temp, currentSpecs.vibration, currentSpecs.oee);
+      if (rul <= threshold * 24) {
+        list.push({
+          id: m.id,
+          name: m.name,
+          value: Math.ceil(rul / 24),
+          threshold: threshold,
+          details: `Vida útil restante estimada em ${Math.ceil(rul / 24)} dias, menor ou igual ao limiar de segurança de ${threshold} dias.`,
+        });
+      }
+    });
+    return list;
+  }, [machines, simulatedSpecs, threshold]);
+
+
+
+  const calculateCriticalCount = (t: number) => {
     let count = 0;
     machines.forEach((m) => {
       const simOverride = simulatedSpecs[m.id];
       const currentSpecs = simOverride || { temp: m.temp, vibration: m.vibration, oee: m.oee };
       const { rul } = calculateMachineRUL(m.id, currentSpecs.temp, currentSpecs.vibration, currentSpecs.oee);
-      if (rul <= horizon * 24) {
+      if (rul <= t * 24) {
         count++;
       }
     });
     return count;
-  }, [machines, simulatedSpecs, horizon]);
+  };
 
   const selectedMachine = machines.find((m) => m.id === selectedMachineId) || machines[0];
   const hasOverrides = !!simulatedSpecs[selectedMachine.id];
@@ -304,17 +328,17 @@ ${
         <Card className="bg-card border-border transition-colors duration-300">
           <CardHeader className="pb-2">
             <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
-              Alertas Ativos
+              Alertas Ativos (Limiar)
             </CardDescription>
             <CardTitle className={`text-2xl font-black transition-colors ${
-              activeAlerts > 0 ? "text-rose-500 animate-pulse" : "text-amber-500"
+              activeAlertsList.length > 0 ? "text-rose-500 animate-pulse" : "text-amber-500"
             }`}>
-              {activeAlerts}
+              {activeAlertsList.length}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-[10px] text-muted-foreground">
-              {activeAlerts > 0 ? `${activeAlerts} falhas previstas em ${horizon} dias` : "Nenhuma falha prevista neste horizonte"}
+              {activeAlertsList.length > 0 ? `${activeAlertsList.length} falhas previstas no limiar` : "Nenhuma falha prevista no limiar"}
             </div>
           </CardContent>
         </Card>
@@ -349,6 +373,17 @@ ${
             : "A linha de produção apresenta estabilidade geral. Recomenda-se realizar lubrificação no Braço Robotizado A (preventiva)."}
         </div>
       </div>
+
+      <AlertThresholdSettings
+        domain="maintenance"
+        title="Limiar de Vida Útil Crítica de Equipamentos (RUL)"
+        min={0}
+        max={90}
+        unit="dias"
+        totalCount={machines.length}
+        calculateCriticalCount={calculateCriticalCount}
+        activeAlerts={activeAlertsList}
+      />
 
       {/* Main Panel Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -385,7 +420,7 @@ ${
                 const simOverride = simulatedSpecs[m.id];
                 const currentSpecs = simOverride || { temp: m.temp, vibration: m.vibration, oee: m.oee };
                 const { rul } = calculateMachineRUL(m.id, currentSpecs.temp, currentSpecs.vibration, currentSpecs.oee);
-                const requiresMaintenance = rul <= horizon * 24;
+                const requiresMaintenance = rul <= threshold * 24;
 
                 return (
                   <div

@@ -189,6 +189,10 @@ interface DomainContextProps {
   previousTrainedModels: Record<DomainType, TrainedModel | null>;
   hyperparameterHistory: Record<DomainType, RetrainingCycle[]>;
   clearHyperparameterHistory: (domain: DomainType) => void;
+  alertThresholds: Record<DomainType, number>;
+  updateAlertThreshold: (domain: DomainType, value: number) => void;
+  resetAlertThreshold: (domain: DomainType) => void;
+  updateDashboardAlertCount: (domain: DomainType, count: number) => void;
 }
 
 const DomainContext = createContext<DomainContextProps | undefined>(undefined);
@@ -224,6 +228,13 @@ const DEFAULT_USERS: User[] = [
   },
 ];
 
+const DEFAULT_THRESHOLDS: Record<DomainType, number> = {
+  maintenance: 30,
+  demand: 15,
+  churn: 80,
+  "credit-risk": 60
+};
+
 export function DomainProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -235,6 +246,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
   const [confirmSwitchOpen, setConfirmSwitchOpen] = useState(false);
   const [pendingDomain, setPendingDomain] = useState<DomainType | null>(null);
   const [theme, setThemeState] = useState<"light" | "dark" | "auto">("dark");
+  const [alertThresholds, setAlertThresholds] = useState<Record<DomainType, number>>(DEFAULT_THRESHOLDS);
 
   // Auth states
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -374,6 +386,15 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         setHyperparameterHistory(JSON.parse(savedHistory));
       } catch (e) {
         console.error("Erro ao carregar histórico de hiperparâmetros:", e);
+      }
+    }
+
+    const savedThresholds = localStorage.getItem("spam-alert-thresholds");
+    if (savedThresholds) {
+      try {
+        setAlertThresholds(JSON.parse(savedThresholds));
+      } catch (e) {
+        console.error("Erro ao carregar limiares de alerta:", e);
       }
     }
 
@@ -1070,6 +1091,68 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     addLog(`[Model History] Limpo histórico de ciclos de retreinamento para o módulo '${DOMAINS[domain].name}'.`);
   }, [addLog]);
 
+  const updateAlertThreshold = useCallback((domain: DomainType, value: number) => {
+    let oldVal = 0;
+    setAlertThresholds(prev => {
+      oldVal = prev[domain];
+      const next = { ...prev, [domain]: value };
+      localStorage.setItem("spam-alert-thresholds", JSON.stringify(next));
+      return next;
+    });
+    
+    const userName = currentUser ? `${currentUser.fullName} (${currentUser.username})` : "Visitante";
+    const domainName = DOMAINS[domain].name;
+    const unit = domain === "maintenance" || domain === "demand" ? " dias" : "%";
+    addLog(`[Alert Configuration] Limiar de alerta do domínio '${domainName}' alterado de ${oldVal}${unit} para ${value}${unit} por ${userName}.`);
+  }, [currentUser, addLog]);
+
+  const resetAlertThreshold = useCallback((domain: DomainType) => {
+    let oldVal = 0;
+    const defaultVal = DEFAULT_THRESHOLDS[domain];
+    setAlertThresholds(prev => {
+      oldVal = prev[domain];
+      const next = { ...prev, [domain]: defaultVal };
+      localStorage.setItem("spam-alert-thresholds", JSON.stringify(next));
+      return next;
+    });
+    
+    const userName = currentUser ? `${currentUser.fullName} (${currentUser.username})` : "Visitante";
+    const domainName = DOMAINS[domain].name;
+    const unit = domain === "maintenance" || domain === "demand" ? " dias" : "%";
+    addLog(`[Alert Configuration] Limiar de alerta do domínio '${domainName}' restaurado para o padrão de ${defaultVal}${unit} (era ${oldVal}${unit}) por ${userName}.`);
+  }, [currentUser, addLog]);
+
+  const updateDashboardAlertCount = useCallback((domain: DomainType, count: number) => {
+    setDashboardStatus(prev => {
+      if (prev[domain].activeAlertsCount === count) return prev;
+      const updated = {
+        ...prev,
+        [domain]: {
+          ...prev[domain],
+          activeAlertsCount: count
+        }
+      };
+      
+      // Update system health dynamically
+      let totalAlerts = 0;
+      let domainsWithAlerts = 0;
+      Object.values(updated).forEach(status => {
+        totalAlerts += status.activeAlertsCount;
+        if (status.activeAlertsCount > 0) domainsWithAlerts++;
+      });
+      
+      let newHealth: SystemHealth = { status: "healthy", message: "Todos os sistemas operando normalmente." };
+      if (totalAlerts > 20) {
+        newHealth = { status: "critical", message: `${totalAlerts} alertas críticos em ${domainsWithAlerts} domínios.` };
+      } else if (totalAlerts > 0) {
+        newHealth = { status: "warning", message: `${totalAlerts} alertas ativos em ${domainsWithAlerts} domínios requerem atenção.` };
+      }
+      setSystemHealth(newHealth);
+      
+      return updated;
+    });
+  }, []);
+
   return (
     <DomainContext.Provider
       value={{
@@ -1120,6 +1203,10 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         previousTrainedModels,
         hyperparameterHistory,
         clearHyperparameterHistory,
+        alertThresholds,
+        updateAlertThreshold,
+        resetAlertThreshold,
+        updateDashboardAlertCount,
       }}
     >
       {children}

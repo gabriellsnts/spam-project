@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useDomain } from "@/lib/context/domain-context";
 import { TrendingUp, AlertTriangle, Coins, Percent, FileCheck, BarChart3, Lock, History, Printer, Loader2, Search, ChevronDown, ChevronUp, AlertCircle, Sparkles } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +9,7 @@ import { CSVUploader, ConfusionMatrixView, DOMAIN_SCHEMAS } from "@/components/s
 import { predictCreditRisk } from "@/lib/predictive-engine";
 import { FeatureImportanceChart } from "@/components/shared/feature-importance-chart";
 import { Input } from "@/components/ui/input";
+import { AlertThresholdSettings } from "@/components/shared/alert-threshold-settings";
 
 type RiskLevel = "all" | "high" | "medium" | "low";
 
@@ -23,13 +24,15 @@ interface ProposalData {
 }
 
 export default function CreditRiskPage() {
-  const { addLog, isTraining, trainedModels } = useDomain();
+  const { addLog, isTraining, trainedModels, alertThresholds } = useDomain();
   const activeModel = trainedModels["credit-risk"];
   const [stressActive, setStressActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [riskFilter, setRiskFilter] = useState<RiskLevel>("all");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
+
+  const threshold = alertThresholds["credit-risk"] !== undefined ? alertThresholds["credit-risk"] : 60;
 
   // Form schemas and fields for credit-risk manual input (CA01)
   const schema = DOMAIN_SCHEMAS["credit-risk"] || [];
@@ -180,10 +183,27 @@ export default function CreditRiskPage() {
     { label: "D", count: 3, percentage: 2, color: "bg-rose-500" },
   ]);
 
-  const getRiskLevel = (score: number) => {
+  const getRiskLevel = useCallback((score: number, probability: number) => {
+    if (probability >= threshold) return "high";
     if (score < 550) return "high";
     if (score <= 700) return "medium";
     return "low";
+  }, [threshold]);
+
+  const activeAlerts = useMemo(() => {
+    return proposals
+      .filter((p) => p.probability >= threshold)
+      .map((p) => ({
+        id: p.id,
+        name: p.applicant,
+        value: p.probability,
+        threshold: threshold,
+        details: `Score de crédito: ${p.score} pts. Fatores: ${p.influentialFactors}`,
+      }));
+  }, [proposals, threshold]);
+
+  const calculateCriticalCount = (t: number) => {
+    return proposals.filter((p) => p.probability >= t).length;
   };
 
   const filteredAndSortedProposals = useMemo(() => {
@@ -195,7 +215,7 @@ export default function CreditRiskPage() {
     }
     
     if (riskFilter !== "all") {
-      result = result.filter(p => getRiskLevel(p.score) === riskFilter);
+      result = result.filter(p => getRiskLevel(p.score, p.probability) === riskFilter);
     }
     
     result.sort((a, b) => {
@@ -204,7 +224,7 @@ export default function CreditRiskPage() {
     });
     
     return result;
-  }, [proposals, searchQuery, riskFilter, sortOrder]);
+  }, [proposals, searchQuery, riskFilter, sortOrder, getRiskLevel]);
 
   const triggerStressSimulation = () => {
     if (!activeModel) {
@@ -406,9 +426,11 @@ export default function CreditRiskPage() {
         <Card className="bg-card border-border transition-colors duration-300">
           <CardHeader className="pb-2">
             <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
-              Propostas Pendentes
+              Propostas Críticas (Limiar)
             </CardDescription>
-            <CardTitle className="text-2xl font-black text-foreground">{metrics.proposalsPending}</CardTitle>
+            <CardTitle className={`text-2xl font-black ${activeAlerts.length > 0 ? "text-rose-500 animate-pulse" : "text-foreground"}`}>
+              {activeAlerts.length}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-[10px] text-muted-foreground">Aguardando decisão do modelo</div>
@@ -702,6 +724,17 @@ export default function CreditRiskPage() {
             : "Carteira de crédito saudável. A maior exposição de risco está no setor de Transportes. Distribuidora de Bebidas União demonstrou score excepcional."}
         </div>
       </div>
+
+      <AlertThresholdSettings
+        domain="credit-risk"
+        title="Limiar de Probabilidade de Default (Crédito)"
+        min={0}
+        max={100}
+        unit="%"
+        totalCount={proposals.length}
+        calculateCriticalCount={calculateCriticalCount}
+        activeAlerts={activeAlerts}
+      />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2 bg-card border-border transition-colors duration-300 flex flex-col">
           <CardHeader className="pb-4">
@@ -769,7 +802,7 @@ export default function CreditRiskPage() {
                   <div className="p-8 text-center text-muted-foreground text-xs">Nenhum registro atende aos filtros atuais.</div>
                 )}
                 {filteredAndSortedProposals.map((p) => {
-                  const risk = getRiskLevel(p.score);
+                  const risk = getRiskLevel(p.score, p.probability);
                   const isExpanded = expandedRow === p.id;
                   
                   return (

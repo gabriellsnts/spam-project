@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { useDomain } from "@/lib/context/domain-context";
 import { Users, UserMinus, AlertCircle, Sparkles, Star, HeartHandshake, BarChart3, ChevronDown, ChevronUp } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CSVUploader, ConfusionMatrixView } from "@/components/shared/csv-uploader";
 import { FeatureImportanceChart } from "@/components/shared/feature-importance-chart";
+import { AlertThresholdSettings } from "@/components/shared/alert-threshold-settings";
 
 type RiskLevel = "all" | "high" | "medium" | "low";
 
@@ -20,12 +21,14 @@ interface ClientData {
 }
 
 export default function ChurnPage() {
-  const { addLog, isTraining, trainedModels } = useDomain();
+  const { addLog, isTraining, trainedModels, alertThresholds } = useDomain();
   const activeModel = trainedModels["churn"];
   const [churnSimulated, setChurnSimulated] = useState(false);
   const [riskFilter, setRiskFilter] = useState<RiskLevel>("all");
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
+
+  const threshold = alertThresholds["churn"] !== undefined ? alertThresholds["churn"] : 80;
   
   const [metrics, setMetrics] = useState({
     churnRate: "2.1%",
@@ -45,10 +48,32 @@ export default function ChurnPage() {
 
   const [clients, setClients] = useState<ClientData[]>(initialClients);
 
-  const getRiskLevel = (score: number) => {
-    if (score >= 80) return "high";
+  const getRiskLevel = useCallback((score: number) => {
+    if (score >= threshold) return "high";
     if (score >= 60) return "medium";
     return "low";
+  }, [threshold]);
+
+  const activeAlerts = useMemo(() => {
+    return clients
+      .filter((c) => c.score >= threshold)
+      .map((c) => ({
+        id: c.id,
+        name: c.name,
+        value: c.score,
+        threshold: threshold,
+        details: c.factor,
+      }));
+  }, [clients, threshold]);
+
+  const dynamicAtRisk = useMemo(() => {
+    const criticalCount = clients.filter((c) => c.score >= threshold).length;
+    const factor = churnSimulated ? 222 : 252;
+    return Math.round((criticalCount / clients.length) * factor);
+  }, [clients, threshold, churnSimulated]);
+
+  const calculateCriticalCount = (t: number) => {
+    return clients.filter((c) => c.score >= t).length;
   };
 
   const filteredAndSortedClients = useMemo(() => {
@@ -66,7 +91,7 @@ export default function ChurnPage() {
     });
     
     return result;
-  }, [clients, riskFilter, sortOrder]);
+  }, [clients, riskFilter, sortOrder, getRiskLevel]);
 
   const triggerChurnSimulation = () => {
     if (!activeModel) {
@@ -183,7 +208,7 @@ export default function ChurnPage() {
             <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
               Contas sob Alto Risco
             </CardDescription>
-            <CardTitle className="text-2xl font-black text-foreground">{metrics.atRisk}</CardTitle>
+            <CardTitle className="text-2xl font-black text-foreground">{dynamicAtRisk}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-[10px] text-muted-foreground">Churn Score acima de 80%</div>
@@ -228,6 +253,17 @@ export default function ChurnPage() {
             : "A base apresenta estabilidade, mas clientes com LTV intermediário (R$15k-R$30k) têm mostrado leve aumento no risco nos últimos 15 dias. Uma campanha de engajamento é recomendada."}
         </div>
       </div>
+
+      <AlertThresholdSettings
+        domain="churn"
+        title="Limiar de Risco de Churn (Evasão)"
+        min={0}
+        max={100}
+        unit="%"
+        totalCount={clients.length}
+        calculateCriticalCount={calculateCriticalCount}
+        activeAlerts={activeAlerts}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2 bg-card border-border transition-colors duration-300 flex flex-col">
