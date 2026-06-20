@@ -85,13 +85,15 @@ export interface SystemHealth {
   message: string;
 }
 
-interface User {
+export interface User {
   username: string;
   profileName: string;
   fullName: string;
   accessProfile: string;
   department: string;
   lastLogin: string;
+  status: "ativo" | "inativo";
+  passwordHash?: string;
 }
 
 export interface TrainedModel {
@@ -159,6 +161,8 @@ interface DomainContextProps {
   logout: (reason?: string) => void;
   resetAttempts: (username: string) => void;
   isUserLocked: (username: string) => boolean;
+  users: User[];
+  setUsers: React.Dispatch<React.SetStateAction<User[]>>;
   // Training fields:
   isTraining: boolean;
   trainingProgress: number;
@@ -195,6 +199,29 @@ async function sha256(message: string): Promise<string> {
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+const DEFAULT_USERS: User[] = [
+  {
+    username: "admin",
+    profileName: "Administrador",
+    passwordHash: "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9", // admin123
+    fullName: "Administrador do Sistema",
+    accessProfile: "Super Admin",
+    department: "TI & Infraestrutura",
+    lastLogin: new Date().toISOString(),
+    status: "ativo",
+  },
+  {
+    username: "gestor",
+    profileName: "Gestor de Operações",
+    passwordHash: "db05065fff4dff901e0cf548ee0a478770a3074516026ff01021a3c0a7a917a4", // spam2026
+    fullName: "João Silva",
+    accessProfile: "Gestor Analítico",
+    department: "Operações",
+    lastLogin: new Date().toISOString(),
+    status: "ativo",
+  },
+];
+
 export function DomainProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -210,6 +237,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
   // Auth states
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [users, setUsers] = useState<User[]>([]);
 
   const userProfile = currentUser ? currentUser.profileName : "Visitante";
 
@@ -322,6 +350,19 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
       } catch (e) {
         console.error("Erro ao carregar usuário salvo:", e);
       }
+    }
+
+    const savedUsers = localStorage.getItem("spam-users");
+    if (savedUsers) {
+      try {
+        setUsers(JSON.parse(savedUsers));
+      } catch (e) {
+        console.error("Erro ao carregar usuários salvos:", e);
+        setUsers(DEFAULT_USERS);
+      }
+    } else {
+      setUsers(DEFAULT_USERS);
+      localStorage.setItem("spam-users", JSON.stringify(DEFAULT_USERS));
     }
 
     const savedHistory = localStorage.getItem("spam-hyperparameter-history");
@@ -731,38 +772,39 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
       };
     }
 
-    // Hash das senhas pré-cadastradas para conformidade com CA05
-    const USERS_DB: Record<string, { profileName: string; passwordHash: string; fullName: string; accessProfile: string; department: string; lastLogin: string }> = {
-      admin: {
-        profileName: "Administrador",
-        passwordHash: "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9", // admin123
-        fullName: "Administrador do Sistema",
-        accessProfile: "Super Admin",
-        department: "TI & Infraestrutura",
-        lastLogin: new Date().toISOString()
-      },
-      gestor: {
-        profileName: "Gestor de Operações",
-        passwordHash: "db05065fff4dff901e0cf548ee0a478770a3074516026ff01021a3c0a7a917a4", // spam2026
-        fullName: "João Silva",
-        accessProfile: "Gestor Analítico",
-        department: "Operações",
-        lastLogin: new Date().toISOString()
-      },
-    };
+    const savedUsers = localStorage.getItem("spam-users");
+    const currentUsersList: User[] = savedUsers ? JSON.parse(savedUsers) : DEFAULT_USERS;
+    const user = currentUsersList.find((u) => u.username === cleanUsername);
 
-    const user = USERS_DB[cleanUsername];
+    if (user && user.status === "inativo") {
+      const logMsg = `Tentativa de login bloqueada para o usuário inativo '${username}'.`;
+      addLogWithProfile("Sistema", logMsg);
+      return {
+        success: false,
+        message: "Esta conta está desativada. Por favor, entre em contato com o administrador.",
+      };
+    }
+
     const passwordHash = await sha256(password);
     
     if (user && user.passwordHash === passwordHash) {
-      const loggedUser = { 
+      const loggedUser: User = { 
         username: cleanUsername, 
         profileName: user.profileName,
         fullName: user.fullName,
         accessProfile: user.accessProfile,
         department: user.department,
-        lastLogin: user.lastLogin
+        lastLogin: new Date().toISOString(),
+        status: user.status
       };
+      
+      // Atualizar o lastLogin na base
+      const updatedUsersList = currentUsersList.map(u => 
+        u.username === cleanUsername ? { ...u, lastLogin: loggedUser.lastLogin } : u
+      );
+      localStorage.setItem("spam-users", JSON.stringify(updatedUsersList));
+      setUsers(updatedUsersList);
+
       setCurrentUser(loggedUser);
       sessionStorage.setItem("spam-user", JSON.stringify(loggedUser));
       localStorage.removeItem("spam-inactivity-test-time");
@@ -792,7 +834,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
 
       return { success: false, message };
     }
-  }, [isUserLocked, addLogWithProfile]);
+  }, [isUserLocked, addLogWithProfile, setUsers]);
 
   const logout = useCallback((reason?: string) => {
     const oldProfile = currentUser ? currentUser.profileName : "Visitante";
@@ -850,6 +892,29 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         window.removeEventListener(event, handleActivity);
       });
     };
+  }, [currentUser, logout]);
+
+  // Monitoramento de inativação imediata (CA06)
+  useEffect(() => {
+    if (!currentUser) return;
+    
+    const interval = setInterval(() => {
+      const savedUsers = localStorage.getItem("spam-users");
+      if (savedUsers) {
+        try {
+          const list: User[] = JSON.parse(savedUsers);
+          const currentInDb = list.find((u) => u.username === currentUser.username);
+          if (currentInDb && currentInDb.status === "inativo") {
+            logout("inactivity");
+            alert("Acesso interrompido: Sua conta foi desativada pelo administrador.");
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }, 2000);
+    
+    return () => clearInterval(interval);
   }, [currentUser, logout]);
 
   // Sincronizar o domínio ativo baseado na URL na inicialização ou reload
@@ -955,6 +1020,8 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         logout,
         resetAttempts,
         isUserLocked,
+        users,
+        setUsers,
         // Training value:
         isTraining,
         trainingProgress,

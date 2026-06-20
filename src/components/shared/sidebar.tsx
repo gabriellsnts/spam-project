@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useDomain, DOMAINS, DomainType } from "@/lib/context/domain-context";
 import {
   Wrench,
@@ -24,8 +25,9 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 
 export function Sidebar() {
-  const { activeDomain, initiateDomainSwitch, logs } = useDomain();
+  const { activeDomain, initiateDomainSwitch, logs, currentUser } = useDomain();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const pathname = usePathname();
 
   const getDomainColorClass = (type: DomainType, isActive: boolean) => {
     if (!isActive) return "text-muted-foreground hover:text-foreground hover:bg-muted/40";
@@ -197,20 +199,18 @@ export function Sidebar() {
             <div className="px-3 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest animate-in fade-in duration-300 mb-2">
               Painel Geral
             </div>
-          )}
-
-          <Link href="/" passHref legacyBehavior>
+          )}          <Link href="/" passHref legacyBehavior>
             <a
               className={cn(
                 "flex items-center gap-3 p-2.5 rounded-xl text-xs font-semibold transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-transparent relative",
-                !activeDomain ? "text-green-500 bg-green-500/10 border-green-500/20" : ""
+                pathname === "/" ? "text-green-500 bg-green-500/10 border-green-500/20" : ""
               )}
               title={isCollapsed ? "Painel Inicial" : undefined}
             >
               <div
                 className={cn(
                   "absolute left-0 top-0 bottom-0 w-1 transition-all duration-200",
-                  !activeDomain
+                  pathname === "/"
                     ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"
                     : "bg-transparent"
                 )}
@@ -224,6 +224,34 @@ export function Sidebar() {
               )}
             </a>
           </Link>
+ 
+          {currentUser && currentUser.profileName === "Administrador" && (
+            <Link href="/admin/usuarios" passHref legacyBehavior>
+              <a
+                className={cn(
+                  "flex items-center gap-3 p-2.5 rounded-xl text-xs font-semibold transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-transparent relative",
+                  pathname.startsWith("/admin/usuarios") ? "text-green-500 bg-green-500/10 border-green-500/20" : ""
+                )}
+                title={isCollapsed ? "Gerenciar Usuários" : undefined}
+              >
+                <div
+                  className={cn(
+                    "absolute left-0 top-0 bottom-0 w-1 transition-all duration-200",
+                    pathname.startsWith("/admin/usuarios")
+                      ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"
+                      : "bg-transparent"
+                  )}
+                  style={{ borderRadius: "0 4px 4px 0" }}
+                />
+                <Users className="h-4.5 w-4.5 shrink-0 ml-1" />
+                {!isCollapsed && (
+                  <span className="truncate animate-in fade-in slide-in-from-left-2 duration-300">
+                    Gerenciar Usuários
+                  </span>
+                )}
+              </a>
+            </Link>
+          )}
         </div>
       </div>
 

@@ -266,6 +266,21 @@ export function Header() {
                 </div>
 
                 <div className="flex flex-col gap-2">
+                  {currentUser.profileName === "Administrador" && (
+                    <Link href="/admin/usuarios" passHref legacyBehavior>
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="sm"
+                        className="w-full text-xs h-8 text-green-500 border-green-500/20 hover:bg-green-500/10 cursor-pointer"
+                      >
+                        <a>
+                          <Users className="h-3.5 w-3.5 mr-2" />
+                          Gerenciar Usuários
+                        </a>
+                      </Button>
+                    </Link>
+                  )}
                   <Button
                     variant="outline"
                     size="sm"
