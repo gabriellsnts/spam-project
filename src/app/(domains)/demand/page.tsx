@@ -68,7 +68,7 @@ export default function DemandPage() {
 
   const triggerSeasonalSimulation = () => {
     if (!activeModel) {
-      addLog("Erro: É necessário treinar um modelo primeiro para gerar previsões.", "error");
+      addLog("Erro: É necessário treinar um modelo primeiro para gerar previsões.");
       return;
     }
     setSeasonalActive(true);
@@ -288,7 +288,7 @@ export default function DemandPage() {
                       contentStyle={{ backgroundColor: 'hsl(var(--popover))', borderColor: 'hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
                       labelStyle={{ fontWeight: 'bold', color: 'hsl(var(--foreground))', marginBottom: '4px' }}
                       itemStyle={{ color: 'hsl(var(--foreground))' }}
-                      formatter={(value: any, name: string) => [
+                      formatter={(value: number, name: string) => [
                         `${Number(value).toFixed(0)} un`, 
                         name === 'historico' ? 'Histórico Real' : 'Previsão Estimada'
                       ]}

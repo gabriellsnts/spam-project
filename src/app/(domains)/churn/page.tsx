@@ -70,7 +70,7 @@ export default function ChurnPage() {
 
   const triggerChurnSimulation = () => {
     if (!activeModel) {
-      addLog("Erro: É necessário treinar um modelo primeiro para gerar predições de Churn.", "error");
+      addLog("Erro: É necessário treinar um modelo primeiro para gerar predições de Churn.");
       return;
     }
     setChurnSimulated(true);

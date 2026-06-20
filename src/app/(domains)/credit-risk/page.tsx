@@ -208,7 +208,7 @@ export default function CreditRiskPage() {
 
   const triggerStressSimulation = () => {
     if (!activeModel) {
-      addLog("Erro: É necessário treinar um modelo primeiro para gerar predições de Crédito.", "error");
+      addLog("Erro: É necessário treinar um modelo primeiro para gerar predições de Crédito.");
       return;
     }
     setStressActive(true);
@@ -428,7 +428,7 @@ export default function CreditRiskPage() {
         </Card>
       </div>
 
-<<<<<<< HEAD
+
       {/* Seção de Predição Individual Manual (RF15) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Form Card */}
