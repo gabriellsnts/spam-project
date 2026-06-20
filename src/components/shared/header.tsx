@@ -25,6 +25,7 @@ import {
   User,
   Sun,
   Moon,
+  Laptop,
 } from "lucide-react";
 
 export function Header() {
@@ -196,12 +197,20 @@ export function Header() {
             size="icon"
             onClick={toggleTheme}
             className="h-9 w-9 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900 border border-transparent hover:border-zinc-800 transition"
-            title={theme === "dark" ? "Ativar Modo Claro" : "Ativar Modo Escuro"}
+            title={
+              theme === "dark" 
+                ? "Ativar Modo Automático (Sistema)" 
+                : theme === "light" 
+                ? "Ativar Modo Escuro" 
+                : "Ativar Modo Claro"
+            }
           >
             {theme === "dark" ? (
+              <Moon className="h-5 w-5 text-violet-400 animate-in spin-in-12 duration-500" />
+            ) : theme === "light" ? (
               <Sun className="h-5 w-5 text-amber-400 animate-in spin-in-12 duration-500" />
             ) : (
-              <Moon className="h-5 w-5 text-violet-400 animate-in spin-in-12 duration-500" />
+              <Laptop className="h-5 w-5 text-emerald-400 animate-in spin-in-12 duration-500" />
             )}
           </Button>
 

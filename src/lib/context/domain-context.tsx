@@ -94,6 +94,7 @@ export interface User {
   lastLogin: string;
   status: "ativo" | "inativo";
   passwordHash?: string;
+  theme?: "light" | "dark" | "auto";
 }
 
 export interface TrainedModel {
@@ -147,8 +148,9 @@ interface DomainContextProps {
   confirmSwitchOpen: boolean;
   pendingDomain: DomainType | null;
   userProfile: string;
-  theme: "light" | "dark";
+  theme: "light" | "dark" | "auto";
   toggleTheme: () => void;
+  setTheme: (theme: "light" | "dark" | "auto") => void;
   initiateDomainSwitch: (domain: DomainType) => void;
   confirmDomainSwitch: () => void;
   cancelDomainSwitch: () => void;
@@ -187,6 +189,10 @@ interface DomainContextProps {
   previousTrainedModels: Record<DomainType, TrainedModel | null>;
   hyperparameterHistory: Record<DomainType, RetrainingCycle[]>;
   clearHyperparameterHistory: (domain: DomainType) => void;
+  alertThresholds: Record<DomainType, number>;
+  updateAlertThreshold: (domain: DomainType, value: number) => void;
+  resetAlertThreshold: (domain: DomainType) => void;
+  updateDashboardAlertCount: (domain: DomainType, count: number) => void;
 }
 
 const DomainContext = createContext<DomainContextProps | undefined>(undefined);
@@ -222,6 +228,13 @@ const DEFAULT_USERS: User[] = [
   },
 ];
 
+const DEFAULT_THRESHOLDS: Record<DomainType, number> = {
+  maintenance: 30,
+  demand: 15,
+  churn: 80,
+  "credit-risk": 60
+};
+
 export function DomainProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -232,7 +245,8 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
   const [targetDomain, setTargetDomain] = useState<DomainType | null>(null);
   const [confirmSwitchOpen, setConfirmSwitchOpen] = useState(false);
   const [pendingDomain, setPendingDomain] = useState<DomainType | null>(null);
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const [theme, setThemeState] = useState<"light" | "dark" | "auto">("dark");
+  const [alertThresholds, setAlertThresholds] = useState<Record<DomainType, number>>(DEFAULT_THRESHOLDS);
 
   // Auth states
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -335,22 +349,23 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
 
   // Carregar tema e sessão do localStorage/sessionStorage no cliente
   useEffect(() => {
-    const savedTheme = localStorage.getItem("spam-theme") as "light" | "dark" | null;
-    if (savedTheme) {
-      setTheme(savedTheme);
-    } else {
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      setTheme(prefersDark ? "dark" : "light");
-    }
-
     const savedUser = sessionStorage.getItem("spam-user");
+    let initialUser: User | null = null;
     if (savedUser) {
       try {
-        setCurrentUser(JSON.parse(savedUser));
+        initialUser = JSON.parse(savedUser);
+        setCurrentUser(initialUser);
       } catch (e) {
         console.error("Erro ao carregar usuário salvo:", e);
       }
     }
+
+    const savedTheme = localStorage.getItem("spam-theme") as "light" | "dark" | "auto" | null;
+    const userTheme = initialUser?.theme;
+    
+    // Prioridade: Tema do usuário logado -> Tema salvo no localStorage -> Padrão (dark)
+    const finalTheme = userTheme || savedTheme || "dark";
+    setThemeState(finalTheme);
 
     const savedUsers = localStorage.getItem("spam-users");
     if (savedUsers) {
@@ -374,6 +389,15 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
+    const savedThresholds = localStorage.getItem("spam-alert-thresholds");
+    if (savedThresholds) {
+      try {
+        setAlertThresholds(JSON.parse(savedThresholds));
+      } catch (e) {
+        console.error("Erro ao carregar limiares de alerta:", e);
+      }
+    }
+
     setIsAuthLoading(false);
   }, []);
 
@@ -392,12 +416,52 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
   // Efeito para aplicar a classe no elemento html
   useEffect(() => {
     const root = window.document.documentElement;
-    if (theme === "dark") {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
+    
+    const applyTheme = () => {
+      let isDark = false;
+      if (theme === "dark") {
+        isDark = true;
+      } else if (theme === "light") {
+        isDark = false;
+      } else if (theme === "auto") {
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        const currentHour = new Date().getHours();
+        // Modo escuro ativado automaticamente entre 18:00 e 06:00, ou se preferência global for escuro
+        const isNight = currentHour >= 18 || currentHour < 6;
+        isDark = prefersDark || isNight;
+      }
+      
+      if (isDark) {
+        root.classList.add("dark");
+      } else {
+        root.classList.remove("dark");
+      }
+    };
+
+    applyTheme();
     localStorage.setItem("spam-theme", theme);
+
+    if (theme === "auto") {
+      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+      const listener = () => applyTheme();
+      
+      if (mediaQuery.addEventListener) {
+        mediaQuery.addEventListener("change", listener);
+      } else {
+        mediaQuery.addListener(listener);
+      }
+      
+      const timeInterval = setInterval(applyTheme, 60000);
+      
+      return () => {
+        if (mediaQuery.removeEventListener) {
+          mediaQuery.removeEventListener("change", listener);
+        } else {
+          mediaQuery.removeListener(listener);
+        }
+        clearInterval(timeInterval);
+      };
+    }
   }, [theme]);
 
   // Função auxiliar para registrar logs de auditoria com um perfil customizado (CA06)
@@ -739,14 +803,42 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const toggleTheme = () => {
-    setTheme((prev) => {
-      const next = prev === "dark" ? "light" : "dark";
-      const logMsg = `Tema alterado para modo ${next === "dark" ? "escuro" : "claro"}`;
-      addLogWithProfile(userProfile, logMsg);
+  const setTheme = useCallback((newTheme: "light" | "dark" | "auto") => {
+    setThemeState(newTheme);
+    localStorage.setItem("spam-theme", newTheme);
+    
+    // Atualizar no perfil do usuário logado (CA04)
+    if (currentUser) {
+      const updatedUser = { ...currentUser, theme: newTheme };
+      setCurrentUser(updatedUser);
+      sessionStorage.setItem("spam-user", JSON.stringify(updatedUser));
+      
+      setUsers((prevUsers) => {
+        const nextUsers = prevUsers.map((u) => 
+          u.username === currentUser.username ? { ...u, theme: newTheme } : u
+        );
+        localStorage.setItem("spam-users", JSON.stringify(nextUsers));
+        return nextUsers;
+      });
+    }
+
+    const logMsg = `Tema alterado para modo ${
+      newTheme === "dark" ? "escuro" : newTheme === "light" ? "claro" : "automático"
+    }`;
+    addLogWithProfile(userProfile, logMsg);
+  }, [currentUser, userProfile, addLogWithProfile, setUsers]);
+
+  const toggleTheme = useCallback(() => {
+    setThemeState((prev) => {
+      let next: "light" | "dark" | "auto" = "dark";
+      if (prev === "light") next = "dark";
+      else if (prev === "dark") next = "auto";
+      else if (prev === "auto") next = "light";
+
+      setTheme(next);
       return next;
     });
-  };
+  }, [setTheme]);
 
   const isUserLocked = useCallback((username: string): boolean => {
     const cleanUsername = username.trim().toLowerCase();
@@ -795,8 +887,11 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         accessProfile: user.accessProfile,
         department: user.department,
         lastLogin: new Date().toISOString(),
-        status: user.status
+        status: user.status,
+        theme: user.theme || "dark"
       };
+      
+      setThemeState(user.theme || "dark");
       
       // Atualizar o lastLogin na base
       const updatedUsersList = currentUsersList.map(u => 
@@ -996,6 +1091,68 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     addLog(`[Model History] Limpo histórico de ciclos de retreinamento para o módulo '${DOMAINS[domain].name}'.`);
   }, [addLog]);
 
+  const updateAlertThreshold = useCallback((domain: DomainType, value: number) => {
+    let oldVal = 0;
+    setAlertThresholds(prev => {
+      oldVal = prev[domain];
+      const next = { ...prev, [domain]: value };
+      localStorage.setItem("spam-alert-thresholds", JSON.stringify(next));
+      return next;
+    });
+    
+    const userName = currentUser ? `${currentUser.fullName} (${currentUser.username})` : "Visitante";
+    const domainName = DOMAINS[domain].name;
+    const unit = domain === "maintenance" || domain === "demand" ? " dias" : "%";
+    addLog(`[Alert Configuration] Limiar de alerta do domínio '${domainName}' alterado de ${oldVal}${unit} para ${value}${unit} por ${userName}.`);
+  }, [currentUser, addLog]);
+
+  const resetAlertThreshold = useCallback((domain: DomainType) => {
+    let oldVal = 0;
+    const defaultVal = DEFAULT_THRESHOLDS[domain];
+    setAlertThresholds(prev => {
+      oldVal = prev[domain];
+      const next = { ...prev, [domain]: defaultVal };
+      localStorage.setItem("spam-alert-thresholds", JSON.stringify(next));
+      return next;
+    });
+    
+    const userName = currentUser ? `${currentUser.fullName} (${currentUser.username})` : "Visitante";
+    const domainName = DOMAINS[domain].name;
+    const unit = domain === "maintenance" || domain === "demand" ? " dias" : "%";
+    addLog(`[Alert Configuration] Limiar de alerta do domínio '${domainName}' restaurado para o padrão de ${defaultVal}${unit} (era ${oldVal}${unit}) por ${userName}.`);
+  }, [currentUser, addLog]);
+
+  const updateDashboardAlertCount = useCallback((domain: DomainType, count: number) => {
+    setDashboardStatus(prev => {
+      if (prev[domain].activeAlertsCount === count) return prev;
+      const updated = {
+        ...prev,
+        [domain]: {
+          ...prev[domain],
+          activeAlertsCount: count
+        }
+      };
+      
+      // Update system health dynamically
+      let totalAlerts = 0;
+      let domainsWithAlerts = 0;
+      Object.values(updated).forEach(status => {
+        totalAlerts += status.activeAlertsCount;
+        if (status.activeAlertsCount > 0) domainsWithAlerts++;
+      });
+      
+      let newHealth: SystemHealth = { status: "healthy", message: "Todos os sistemas operando normalmente." };
+      if (totalAlerts > 20) {
+        newHealth = { status: "critical", message: `${totalAlerts} alertas críticos em ${domainsWithAlerts} domínios.` };
+      } else if (totalAlerts > 0) {
+        newHealth = { status: "warning", message: `${totalAlerts} alertas ativos em ${domainsWithAlerts} domínios requerem atenção.` };
+      }
+      setSystemHealth(newHealth);
+      
+      return updated;
+    });
+  }, []);
+
   return (
     <DomainContext.Provider
       value={{
@@ -1008,6 +1165,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         userProfile,
         theme,
         toggleTheme,
+        setTheme,
         initiateDomainSwitch,
         confirmDomainSwitch,
         cancelDomainSwitch,
@@ -1045,6 +1203,10 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         previousTrainedModels,
         hyperparameterHistory,
         clearHyperparameterHistory,
+        alertThresholds,
+        updateAlertThreshold,
+        resetAlertThreshold,
+        updateDashboardAlertCount,
       }}
     >
       {children}

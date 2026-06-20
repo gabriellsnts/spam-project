@@ -127,14 +127,32 @@ export const getDomainTheme = (domain: string): DomainTheme => {
 };
 
 export function ResidualsPlotView({ model, theme: customTheme }: { model: TrainedModel; theme?: DomainTheme }) {
+  const { theme: currentThemeMode } = useDomain();
   const [selectedPoint, setSelectedPoint] = useState<ResidualPoint | null>(null);
   const [hoveredPoint, setHoveredPoint] = useState<ResidualPoint | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
+
+  // Determinar se está em modo escuro
+  const isDarkMode = React.useMemo(() => {
+    if (currentThemeMode === "dark") return true;
+    if (currentThemeMode === "light") return false;
+    if (typeof window !== "undefined") {
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const currentHour = new Date().getHours();
+      return prefersDark || (currentHour >= 18 || currentHour < 6);
+    }
+    return true;
+  }, [currentThemeMode]);
 
   const points = (model.residuals || []) as ResidualPoint[];
   if (points.length === 0) return null;
 
   const domainTheme = customTheme || getDomainTheme(model.domain);
+
+  const bgColor = isDarkMode ? "#09090b" : "#ffffff";
+  const gridColor = isDarkMode ? "#27272a" : "#e4e4e7";
+  const textColor = isDarkMode ? "#a1a1aa" : "#27272a";
+  const textMutedColor = isDarkMode ? "#71717a" : "#71717a";
 
   // CA05 - Auto scale axes
   const predictedVals = points.map((p) => p.predicted);
@@ -202,7 +220,7 @@ export function ResidualsPlotView({ model, theme: customTheme }: { model: Traine
         canvas.height = height * 2;
         const context = canvas.getContext("2d");
         if (context) {
-          context.fillStyle = "#09090b"; // zinc-950 dark background for premium export
+          context.fillStyle = bgColor; // background for premium export based on theme
           context.fillRect(0, 0, canvas.width, canvas.height);
           context.scale(2, 2); // scale context to draw at high res
           context.drawImage(image, 0, 0);
@@ -238,7 +256,7 @@ export function ResidualsPlotView({ model, theme: customTheme }: { model: Traine
         canvas.height = height * 2;
         const context = canvas.getContext("2d");
         if (context) {
-          context.fillStyle = "#09090b";
+          context.fillStyle = bgColor;
           context.fillRect(0, 0, canvas.width, canvas.height);
           context.scale(2, 2);
           context.drawImage(image, 0, 0);
@@ -306,7 +324,7 @@ export function ResidualsPlotView({ model, theme: customTheme }: { model: Traine
             width="100%"
             height="100%"
             className="text-foreground overflow-visible"
-            style={{ backgroundColor: "#09090b" }}
+            style={{ backgroundColor: bgColor }}
           >
             {/* Grid Lines Y */}
             {Array.from({ length: yTicks }).map((_, i) => {
@@ -319,14 +337,14 @@ export function ResidualsPlotView({ model, theme: customTheme }: { model: Traine
                     y1={y}
                     x2={width - padding.right}
                     y2={y}
-                    stroke="#27272a"
+                    stroke={gridColor}
                     strokeWidth={0.5}
                   />
                   <text
                     x={padding.left - 8}
                     y={y + 3}
                     textAnchor="end"
-                    fill="#71717a"
+                    fill={textMutedColor}
                     fontSize="9px"
                     fontFamily="monospace"
                   >
@@ -347,14 +365,14 @@ export function ResidualsPlotView({ model, theme: customTheme }: { model: Traine
                     y1={padding.top}
                     x2={x}
                     y2={height - padding.bottom}
-                    stroke="#27272a"
+                    stroke={gridColor}
                     strokeWidth={0.5}
                   />
                   <text
                     x={x}
                     y={height - padding.bottom + 14}
                     textAnchor="middle"
-                    fill="#71717a"
+                    fill={textMutedColor}
                     fontSize="9px"
                     fontFamily="monospace"
                   >
@@ -391,7 +409,7 @@ export function ResidualsPlotView({ model, theme: customTheme }: { model: Traine
               x={padding.left + plotWidth / 2}
               y={height - 10}
               textAnchor="middle"
-              fill="#a1a1aa"
+              fill={textColor}
               fontSize="10px"
               fontWeight="bold"
               fontFamily="sans-serif"
@@ -402,7 +420,7 @@ export function ResidualsPlotView({ model, theme: customTheme }: { model: Traine
             <text
               transform={`rotate(-90) translate(${-padding.top - plotHeight / 2}, 14)`}
               textAnchor="middle"
-              fill="#a1a1aa"
+              fill={textColor}
               fontSize="10px"
               fontWeight="bold"
               fontFamily="sans-serif"
@@ -524,10 +542,23 @@ export function ResidualsPlotView({ model, theme: customTheme }: { model: Traine
 }
 
 export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
+  const { theme: currentThemeMode } = useDomain();
   const svgRef = useRef<SVGSVGElement>(null);
   const [hoveredCell, setHoveredCell] = useState<"tp" | "tn" | "fp" | "fn" | null>(null);
   const [selectedCell, setSelectedCell] = useState<"tp" | "tn" | "fp" | "fn" | null>(null);
   
+  // Determinar se está em modo escuro
+  const isDarkMode = React.useMemo(() => {
+    if (currentThemeMode === "dark") return true;
+    if (currentThemeMode === "light") return false;
+    if (typeof window !== "undefined") {
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const currentHour = new Date().getHours();
+      return prefersDark || (currentHour >= 18 || currentHour < 6);
+    }
+    return true;
+  }, [currentThemeMode]);
+
   const matrix = model.confusionMatrix;
   if (!matrix) return null;
   
@@ -535,6 +566,11 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
   if (total === 0) return null;
 
   const pct = (val: number) => ((val / total) * 100).toFixed(1);
+
+  const bgColor = isDarkMode ? "#09090b" : "#ffffff";
+  const textColor = isDarkMode ? "#a1a1aa" : "#27272a";
+  const textMutedColor = isDarkMode ? "#71717a" : "#71717a";
+  const strokeColor = isDarkMode ? "#27272a" : "#e4e4e7";
 
   // SVG Setup
   const width = 400;
@@ -573,7 +609,7 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
         canvas.height = height * 2;
         const context = canvas.getContext("2d");
         if (context) {
-          context.fillStyle = "#09090b";
+          context.fillStyle = bgColor;
           context.fillRect(0, 0, canvas.width, canvas.height);
           context.scale(2, 2);
           context.drawImage(image, 0, 0);
@@ -609,7 +645,7 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
         canvas.height = height * 2;
         const context = canvas.getContext("2d");
         if (context) {
-          context.fillStyle = "#09090b";
+          context.fillStyle = bgColor;
           context.fillRect(0, 0, canvas.width, canvas.height);
           context.scale(2, 2);
           context.drawImage(image, 0, 0);
@@ -774,14 +810,14 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
             width="100%"
             height="100%"
             className="text-foreground overflow-visible"
-            style={{ backgroundColor: "#09090b" }}
+            style={{ backgroundColor: bgColor }}
           >
             {/* Outer title */}
             <text
               x={200}
               y={25}
               textAnchor="middle"
-              fill="#a1a1aa"
+              fill={textColor}
               fontSize="11px"
               fontWeight="bold"
               fontFamily="sans-serif"
@@ -793,7 +829,7 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
             <text
               transform="rotate(-90) translate(-140, 20)"
               textAnchor="middle"
-              fill="#a1a1aa"
+              fill={textColor}
               fontSize="11px"
               fontWeight="bold"
               fontFamily="sans-serif"
@@ -802,12 +838,12 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
             </text>
 
             {/* Columns Header (Predicted) */}
-            <text x={172.5} y={50} textAnchor="middle" fill="#71717a" fontSize="9px" fontWeight="bold" fontFamily="monospace">NEGATIVO (0)</text>
-            <text x={282.5} y={50} textAnchor="middle" fill="#71717a" fontSize="9px" fontWeight="bold" fontFamily="monospace">POSITIVO (1)</text>
+            <text x={172.5} y={50} textAnchor="middle" fill={textMutedColor} fontSize="9px" fontWeight="bold" fontFamily="monospace">NEGATIVO (0)</text>
+            <text x={282.5} y={50} textAnchor="middle" fill={textMutedColor} fontSize="9px" fontWeight="bold" fontFamily="monospace">POSITIVO (1)</text>
 
             {/* Rows Header (Actual) */}
-            <text x={110} y={115} textAnchor="end" fill="#71717a" fontSize="9px" fontWeight="bold" fontFamily="monospace">NEGATIVO (0)</text>
-            <text x={110} y={225} textAnchor="end" fill="#71717a" fontSize="9px" fontWeight="bold" fontFamily="monospace">POSITIVO (1)</text>
+            <text x={110} y={115} textAnchor="end" fill={textMutedColor} fontSize="9px" fontWeight="bold" fontFamily="monospace">NEGATIVO (0)</text>
+            <text x={110} y={225} textAnchor="end" fill={textMutedColor} fontSize="9px" fontWeight="bold" fontFamily="monospace">POSITIVO (1)</text>
 
             {/* TN: Real 0, Pred 0 */}
             <g 
@@ -823,7 +859,7 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
                 height={105}
                 fill="#10b981"
                 fillOpacity={0.15 + (matrix.tn / total) * 0.6}
-                stroke={activeCell === "tn" ? "#ffffff" : "#27272a"}
+                stroke={activeCell === "tn" ? (isDarkMode ? "#ffffff" : "#09090b") : strokeColor}
                 strokeWidth={activeCell === "tn" ? 2 : 1}
                 className="transition-all duration-150"
               />
@@ -846,7 +882,7 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
                 height={105}
                 fill="#f43f5e"
                 fillOpacity={0.1 + (matrix.fp / total) * 0.75}
-                stroke={activeCell === "fp" ? "#ffffff" : "#27272a"}
+                stroke={activeCell === "fp" ? (isDarkMode ? "#ffffff" : "#09090b") : strokeColor}
                 strokeWidth={activeCell === "fp" ? 2 : 1}
                 className="transition-all duration-150"
               />
@@ -869,7 +905,7 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
                 height={105}
                 fill="#f43f5e"
                 fillOpacity={0.1 + (matrix.fn / total) * 0.75}
-                stroke={activeCell === "fn" ? "#ffffff" : "#27272a"}
+                stroke={activeCell === "fn" ? (isDarkMode ? "#ffffff" : "#09090b") : strokeColor}
                 strokeWidth={activeCell === "fn" ? 2 : 1}
                 className="transition-all duration-150"
               />
@@ -892,7 +928,7 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
                 height={105}
                 fill="#10b981"
                 fillOpacity={0.15 + (matrix.tp / total) * 0.6}
-                stroke={activeCell === "tp" ? "#ffffff" : "#27272a"}
+                stroke={activeCell === "tp" ? (isDarkMode ? "#ffffff" : "#09090b") : strokeColor}
                 strokeWidth={activeCell === "tp" ? 2 : 1}
                 className="transition-all duration-150"
               />

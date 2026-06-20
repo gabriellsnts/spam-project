@@ -8,12 +8,15 @@ import { Button } from "@/components/ui/button";
 import { CSVUploader, ResidualsPlotView } from "@/components/shared/csv-uploader";
 import { FeatureImportanceChart } from "@/components/shared/feature-importance-chart";
 import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts";
+import { AlertThresholdSettings } from "@/components/shared/alert-threshold-settings";
 
 export default function DemandPage() {
-  const { addLog, isTraining, trainedModels } = useDomain();
+  const { addLog, isTraining, trainedModels, alertThresholds } = useDomain();
   const activeModel = trainedModels["demand"];
   const [seasonalActive, setSeasonalActive] = useState(false);
   const [horizon, setHorizon] = useState<7 | 30 | 90>(30);
+
+  const threshold = alertThresholds["demand"] !== undefined ? alertThresholds["demand"] : 15;
   
   const [metrics, setMetrics] = useState({
     accuracy: "93.8%",
@@ -28,6 +31,42 @@ export default function DemandPage() {
     { id: "P03", name: "Chapa Metálica 2mm", stock: 350, leadTime: 15, monthlyDemand: 300, risk: "medium" },
     { id: "P04", name: "Pernos de Fixação Hexagonal", stock: 2400, leadTime: 5, monthlyDemand: 2500, risk: "medium" },
   ]);
+
+  const productsWithRisk = useMemo(() => {
+    return products.map((p) => {
+      const dailyDemand = p.monthlyDemand / 30;
+      const coverage = dailyDemand > 0 ? p.stock / dailyDemand : 999;
+      
+      let risk: "high" | "medium" | "none" = "none";
+      if (coverage <= threshold) {
+        risk = "high";
+      } else if (coverage <= threshold * 1.5) {
+        risk = "medium";
+      }
+      
+      return { ...p, coverage, risk };
+    });
+  }, [products, threshold]);
+
+  const activeAlerts = useMemo(() => {
+    return productsWithRisk
+      .filter((p) => p.risk === "high")
+      .map((p) => ({
+        id: p.id,
+        name: p.name,
+        value: Math.round(p.coverage),
+        threshold: threshold,
+        details: `Cobertura de estoque de apenas ${Math.round(p.coverage)} dias, abaixo do limiar de segurança de ${threshold} dias.`,
+      }));
+  }, [productsWithRisk, threshold]);
+
+  const calculateCriticalCount = (t: number) => {
+    return products.filter((p) => {
+      const dailyDemand = p.monthlyDemand / 30;
+      const coverage = dailyDemand > 0 ? p.stock / dailyDemand : 999;
+      return coverage <= t;
+    }).length;
+  };
 
   const generateChartData = (days: number, isSeasonal: boolean) => {
     const data: { date: string; historico: number | null; previsao: number | null; isFuture: boolean }[] = [];
@@ -202,8 +241,8 @@ export default function DemandPage() {
             <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
               Itens sob Risco de Ruptura
             </CardDescription>
-            <CardTitle className={`text-2xl font-black ${Number(metrics.criticalItems) > 5 ? "text-rose-500 animate-pulse" : "text-amber-500"}`}>
-              {metrics.criticalItems}
+            <CardTitle className={`text-2xl font-black ${activeAlerts.length > 0 ? "text-rose-500 animate-pulse" : "text-amber-500"}`}>
+              {activeAlerts.length}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -234,6 +273,17 @@ export default function DemandPage() {
         </div>
       </div>
 
+      <AlertThresholdSettings
+        domain="demand"
+        title="Limiar de Segurança de Estoque (Cobertura)"
+        min={0}
+        max={60}
+        unit="dias"
+        totalCount={products.length}
+        calculateCriticalCount={calculateCriticalCount}
+        activeAlerts={activeAlerts}
+      />
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2 bg-card border-border transition-colors duration-300">
           <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between pb-2">
@@ -246,19 +296,17 @@ export default function DemandPage() {
                 Unidade: Quantidade Estimada de Vendas (un) | Domínio: Previsão de Demanda
               </CardDescription>
             </div>
-            <div className="flex gap-2">
-              {[7, 30, 90].map((h) => (
-                <Button
-                  key={h}
-                  variant={horizon === h ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setHorizon(h as 7 | 30 | 90)}
-                  className="h-7 text-[10px] px-2"
-                  disabled={!activeModel}
-                >
-                  {h} Dias
-                </Button>
-              ))}
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Horizonte:</span>
+              <select
+                value={horizon}
+                onChange={(e) => setHorizon(Number(e.target.value) as 7 | 30 | 90)}
+                className="bg-background border border-border text-foreground rounded-lg text-xs px-2 py-1 focus:ring-1 focus:ring-sky-500 focus:outline-none cursor-pointer font-sans"
+              >
+                <option value={7}>7 Dias</option>
+                <option value={30}>30 Dias</option>
+                <option value={90}>90 Dias</option>
+              </select>
             </div>
           </CardHeader>
           <CardContent>
@@ -331,7 +379,7 @@ export default function DemandPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            {products.map((p) => (
+            {productsWithRisk.map((p) => (
               <div key={p.id} className="p-2 rounded-lg bg-muted/40 border border-border text-xs flex flex-col gap-1">
                 <div className="flex justify-between font-bold text-foreground/80">
                   <span className="truncate pr-2">{p.name}</span>
@@ -340,7 +388,7 @@ export default function DemandPage() {
                 
                 <div className="flex justify-between text-[10px] text-muted-foreground mt-0.5">
                   <span>Estoque: <strong className="text-foreground">{p.stock} un.</strong></span>
-                  <span>Demanda: <strong className="text-foreground">{p.monthlyDemand}/mês</strong></span>
+                  <span>Cobertura: <strong className="text-foreground">{Math.round(p.coverage)} dias</strong></span>
                 </div>
 
                 <div className="mt-1 flex justify-end">
