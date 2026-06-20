@@ -246,19 +246,17 @@ export default function DemandPage() {
                 Unidade: Quantidade Estimada de Vendas (un) | Domínio: Previsão de Demanda
               </CardDescription>
             </div>
-            <div className="flex gap-2">
-              {[7, 30, 90].map((h) => (
-                <Button
-                  key={h}
-                  variant={horizon === h ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setHorizon(h as 7 | 30 | 90)}
-                  className="h-7 text-[10px] px-2"
-                  disabled={!activeModel}
-                >
-                  {h} Dias
-                </Button>
-              ))}
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Horizonte:</span>
+              <select
+                value={horizon}
+                onChange={(e) => setHorizon(Number(e.target.value) as 7 | 30 | 90)}
+                className="bg-background border border-border text-foreground rounded-lg text-xs px-2 py-1 focus:ring-1 focus:ring-sky-500 focus:outline-none cursor-pointer font-sans"
+              >
+                <option value={7}>7 Dias</option>
+                <option value={30}>30 Dias</option>
+                <option value={90}>90 Dias</option>
+              </select>
             </div>
           </CardHeader>
           <CardContent>

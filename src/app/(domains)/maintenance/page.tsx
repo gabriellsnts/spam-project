@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useDomain } from "@/lib/context/domain-context";
 import { 
   Wrench, 
@@ -25,6 +25,8 @@ import { calculateMachineRUL, BASE_RULS } from "@/lib/predictive-engine";
 export default function MaintenancePage() {
   const { addLog, isTraining, trainedModels } = useDomain();
   const activeModel = trainedModels["maintenance"];
+  const [horizon, setHorizon] = useState<7 | 30 | 90>(30);
+  
   const [csvFileDetails, setCsvFileDetails] = useState<{
     name: string;
     size: string;
@@ -91,6 +93,19 @@ export default function MaintenancePage() {
   const [selectedMachineId, setSelectedMachineId] = useState<string>("M01");
   const [simulatedSpecs, setSimulatedSpecs] = useState<Record<string, { temp: number; vibration: number; oee: number }>>({});
   const [reportCopied, setReportCopied] = useState(false);
+
+  const activeAlerts = useMemo(() => {
+    let count = 0;
+    machines.forEach((m) => {
+      const simOverride = simulatedSpecs[m.id];
+      const currentSpecs = simOverride || { temp: m.temp, vibration: m.vibration, oee: m.oee };
+      const { rul } = calculateMachineRUL(m.id, currentSpecs.temp, currentSpecs.vibration, currentSpecs.oee);
+      if (rul <= horizon * 24) {
+        count++;
+      }
+    });
+    return count;
+  }, [machines, simulatedSpecs, horizon]);
 
   const selectedMachine = machines.find((m) => m.id === selectedMachineId) || machines[0];
   const hasOverrides = !!simulatedSpecs[selectedMachine.id];
@@ -292,14 +307,14 @@ ${
               Alertas Ativos
             </CardDescription>
             <CardTitle className={`text-2xl font-black transition-colors ${
-              simulationActive ? "text-rose-500 animate-pulse" : "text-amber-500"
+              activeAlerts > 0 ? "text-rose-500 animate-pulse" : "text-amber-500"
             }`}>
-              {simulationActive ? "2" : "1"}
+              {activeAlerts}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-[10px] text-muted-foreground">
-              {simulationActive ? "1 anomalia grave detectada!" : "Manutenção agendada pendente"}
+              {activeAlerts > 0 ? `${activeAlerts} falhas previstas em ${horizon} dias` : "Nenhuma falha prevista neste horizonte"}
             </div>
           </CardContent>
         </Card>
@@ -339,20 +354,39 @@ ${
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Machine Status List */}
         <Card className="lg:col-span-2 bg-card border-border transition-colors duration-300">
-          <CardHeader>
-            <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
-              <Settings className="h-4 w-4 text-muted-foreground/60" />
-              Equipamentos sob Monitoramento
-            </CardTitle>
-            <CardDescription className="text-[11px] text-muted-foreground">
-              Sensores acoplados monitorando vibração (mm/s RMS) e temperatura (°C) em tempo real. Clique em um equipamento para simular cenários de falha.
-            </CardDescription>
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+            <div className="space-y-1">
+              <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                <Settings className="h-4 w-4 text-muted-foreground/60" />
+                Equipamentos sob Monitoramento
+              </CardTitle>
+              <CardDescription className="text-[11px] text-muted-foreground">
+                Sensores acoplados monitorando vibração (mm/s RMS) e temperatura (°C) em tempo real. Clique em um equipamento para simular cenários de falha.
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Horizonte:</span>
+              <select
+                value={horizon}
+                onChange={(e) => setHorizon(Number(e.target.value) as 7 | 30 | 90)}
+                className="bg-background border border-border text-foreground rounded-lg text-xs px-2 py-1 focus:ring-1 focus:ring-amber-500 focus:outline-none cursor-pointer font-sans"
+              >
+                <option value={7}>7 Dias</option>
+                <option value={30}>30 Dias</option>
+                <option value={90}>90 Dias</option>
+              </select>
+            </div>
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y divide-border border-t border-border">
               {machines.map((m) => {
                 const isSelected = m.id === selectedMachineId;
                 const isMachineSimulated = !!simulatedSpecs[m.id];
+                const simOverride = simulatedSpecs[m.id];
+                const currentSpecs = simOverride || { temp: m.temp, vibration: m.vibration, oee: m.oee };
+                const { rul } = calculateMachineRUL(m.id, currentSpecs.temp, currentSpecs.vibration, currentSpecs.oee);
+                const requiresMaintenance = rul <= horizon * 24;
+
                 return (
                   <div
                     key={m.id}
@@ -410,7 +444,14 @@ ${
                       </div>
                     </div>
 
-                    <div className="flex justify-end">
+                    <div className="flex items-center justify-end gap-2">
+                      <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold border uppercase tracking-wider ${
+                        requiresMaintenance
+                          ? "bg-rose-500/10 text-rose-500 border-rose-500/20 animate-pulse"
+                          : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                      }`}>
+                        {requiresMaintenance ? `Manut. em < ${Math.ceil(rul / 24)}d` : "Seguro"}
+                      </span>
                       <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border ${
                         m.status === "ok"
                           ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/25"
