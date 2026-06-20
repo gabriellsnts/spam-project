@@ -12,12 +12,14 @@ import {
   RotateCcw,
   ClipboardCopy,
   Download,
-  Check
+  Check,
+  Sparkles
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CSVUploader, ResidualsPlotView } from "@/components/shared/csv-uploader";
 import { DescriptiveStats } from "@/components/shared/descriptive-stats";
+import { FeatureImportanceChart } from "@/components/shared/feature-importance-chart";
 import { calculateMachineRUL, BASE_RULS } from "@/lib/predictive-engine";
 
 export default function MaintenancePage() {
@@ -200,6 +202,18 @@ ${
     addLog(`Relatório de impacto simulado baixado como arquivo texto (${selectedMachine.name}).`);
   };
 
+  const handleExport = () => {
+    window.print();
+    addLog("Relatório consolidado exportado para PDF via impressão.");
+  };
+
+  const mockFeatures = [
+    { name: "Vibração RMS", weight: 0.45, description: "Desgaste de rolamentos e desbalanceamento mecânico." },
+    { name: "Temperatura do Eixo", weight: 0.35, description: "Aquecimento excessivo por atrito ou falta de lubrificação." },
+    { name: "OEE Operacional", weight: 0.12, description: "Quedas de eficiência micro-paradas indicativas de falha iminente." },
+    { name: "Horas de Uso (Contínuas)", weight: 0.08, description: "Fator de degradação por fadiga do material ao longo do tempo." },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Module Title Banner */}
@@ -218,7 +232,10 @@ ${
           </p>
         </div>
 
-        <div className="flex items-center gap-2 relative z-10">
+        <div className="flex flex-col sm:flex-row items-center gap-2 relative z-10">
+          <Button variant="outline" size="sm" onClick={handleExport} className="text-xs">
+            Exportar Relatório (PDF)
+          </Button>
           {simulationActive ? (
             <Button
               onClick={resetSimulation}
@@ -306,6 +323,16 @@ ${
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg text-sm text-foreground flex gap-3">
+        <Sparkles className="h-5 w-5 text-amber-500 shrink-0" />
+        <div>
+          <strong className="text-amber-500 block mb-1">Insight Automático:</strong>
+          {simulationActive 
+            ? "O alerta crítico foi disparado. Observamos anomalia severa de vibração e temperatura no Torno CNC 01. Sugere-se parada de máquina imediata."
+            : "A linha de produção apresenta estabilidade geral. Recomenda-se realizar lubrificação no Braço Robotizado A (preventiva)."}
+        </div>
       </div>
 
       {/* Main Panel Grid */}
@@ -698,6 +725,10 @@ ${
           </Card>
         </div>
       </div>
+
+      {activeModel && (
+        <FeatureImportanceChart data={mockFeatures} title="Preditores de Falha (Manutenção)" />
+      )}
 
       {/* Ingestão de Dados Históricos */}
       <div className="space-y-6">

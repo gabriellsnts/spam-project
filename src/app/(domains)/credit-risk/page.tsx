@@ -1,17 +1,35 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useDomain } from "@/lib/context/domain-context";
-import { TrendingUp, AlertTriangle, Coins, Percent, FileCheck, BarChart3, Lock, History, Printer, Loader2 } from "lucide-react";
+import { TrendingUp, AlertTriangle, Coins, Percent, FileCheck, BarChart3, Lock, History, Printer, Loader2, Search, ChevronDown, ChevronUp, AlertCircle, Sparkles } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CSVUploader, ConfusionMatrixView, DOMAIN_SCHEMAS } from "@/components/shared/csv-uploader";
 import { predictCreditRisk } from "@/lib/predictive-engine";
+import { FeatureImportanceChart } from "@/components/shared/feature-importance-chart";
+import { Input } from "@/components/ui/input";
+
+type RiskLevel = "all" | "high" | "medium" | "low";
+
+interface ProposalData {
+  id: string;
+  applicant: string;
+  amount: string;
+  score: number;
+  probability: number;
+  action: string;
+  influentialFactors: string;
+}
 
 export default function CreditRiskPage() {
   const { addLog, isTraining, trainedModels } = useDomain();
   const activeModel = trainedModels["credit-risk"];
   const [stressActive, setStressActive] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [riskFilter, setRiskFilter] = useState<RiskLevel>("all");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
   // Form schemas and fields for credit-risk manual input (CA01)
   const schema = DOMAIN_SCHEMAS["credit-risk"] || [];
@@ -142,12 +160,16 @@ export default function CreditRiskPage() {
     totalExposure: "R$ 1.2M",
   });
 
-  const [proposals, setProposals] = useState([
-    { id: "PROP-902", applicant: "Distribuidora de Bebidas União", amount: "R$ 250.000", score: 810, probability: 96, action: "Aprovar" },
-    { id: "PROP-905", applicant: "Gabriel Silva Alimentos", amount: "R$ 80.000", score: 620, probability: 74, action: "Análise Manual" },
-    { id: "PROP-909", applicant: "Construções e Incorporações Fortes", amount: "R$ 600.000", score: 580, probability: 61, action: "Revisar Garantia" },
-    { id: "PROP-912", applicant: "Comércio Eletrodomésticos Luz", amount: "R$ 120.000", score: 450, probability: 38, action: "Rejeitar" },
-  ]);
+  const initialProposals: ProposalData[] = [
+    { id: "PROP-912", applicant: "Comércio Eletrodomésticos Luz", amount: "R$ 120.000", score: 450, probability: 88, action: "Rejeitar", influentialFactors: "Histórico de atrasos (peso: 40%). Comprometimento de renda > 50% (peso: 35%)." },
+    { id: "PROP-909", applicant: "Construções e Incorporações Fortes", amount: "R$ 600.000", score: 580, probability: 61, action: "Revisar Garantia", influentialFactors: "Garantia insuficiente para o valor solicitado (peso: 45%)." },
+    { id: "PROP-905", applicant: "Gabriel Silva Alimentos", amount: "R$ 80.000", score: 620, probability: 44, action: "Análise Manual", influentialFactors: "Tempo de constituição da empresa (peso: 30%). Setor de atuação com volatilidade (peso: 25%)." },
+    { id: "PROP-902", applicant: "Distribuidora de Bebidas União", amount: "R$ 250.000", score: 810, probability: 12, action: "Aprovar", influentialFactors: "Bom histórico de pagamentos (peso: 50%). Patrimônio líquido elevado (peso: 20%)." },
+    { id: "PROP-918", applicant: "Tech Solutions Brasil", amount: "R$ 1.500.000", score: 890, probability: 5, action: "Aprovar", influentialFactors: "Liquidez corrente muito alta (peso: 60%)." },
+    { id: "PROP-922", applicant: "Transportes Velocidade Máxima", amount: "R$ 350.000", score: 520, probability: 75, action: "Rejeitar", influentialFactors: "Dívidas ativas em aberto (peso: 70%)." },
+  ];
+
+  const [proposals, setProposals] = useState<ProposalData[]>(initialProposals);
 
   const [ratings, setRatings] = useState([
     { label: "AAA", count: 48, percentage: 35, color: "bg-emerald-500" },
@@ -158,7 +180,37 @@ export default function CreditRiskPage() {
     { label: "D", count: 3, percentage: 2, color: "bg-rose-500" },
   ]);
 
+  const getRiskLevel = (score: number) => {
+    if (score < 550) return "high";
+    if (score <= 700) return "medium";
+    return "low";
+  };
+
+  const filteredAndSortedProposals = useMemo(() => {
+    let result = [...proposals];
+    
+    if (searchQuery.trim() !== "") {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(p => p.id.toLowerCase().includes(q) || p.applicant.toLowerCase().includes(q));
+    }
+    
+    if (riskFilter !== "all") {
+      result = result.filter(p => getRiskLevel(p.score) === riskFilter);
+    }
+    
+    result.sort((a, b) => {
+      if (sortOrder === "asc") return a.score - b.score; 
+      return b.score - a.score;
+    });
+    
+    return result;
+  }, [proposals, searchQuery, riskFilter, sortOrder]);
+
   const triggerStressSimulation = () => {
+    if (!activeModel) {
+      addLog("Erro: É necessário treinar um modelo primeiro para gerar predições de Crédito.", "error");
+      return;
+    }
     setStressActive(true);
     setMetrics({
       defaultRate: "4.35%",
@@ -169,12 +221,12 @@ export default function CreditRiskPage() {
     setProposals((prev) =>
       prev.map((p) => {
         if (p.id === "PROP-905") {
-          return { ...p, score: 510, probability: 48, action: "Rejeitar" };
+          return { ...p, score: 510, probability: 78, action: "Rejeitar" };
         }
         if (p.id === "PROP-909") {
-          return { ...p, score: 480, probability: 32, action: "Rejeitar" };
+          return { ...p, score: 480, probability: 85, action: "Rejeitar" };
         }
-        return { ...p, score: Math.max(p.score - 80, 300), probability: Math.max(p.probability - 15, 5) };
+        return { ...p, score: Math.max(p.score - 80, 300), probability: Math.min(p.probability + 15, 99) };
       })
     );
     setRatings([
@@ -185,7 +237,7 @@ export default function CreditRiskPage() {
       { label: "C", count: 25, percentage: 18, color: "bg-amber-500/80" },
       { label: "D", count: 10, percentage: 7, color: "bg-rose-500" },
     ]);
-    addLog("Simulação de estresse de mercado ativada (Recessão / Alta de Inadimplência). Scores reclassificados.");
+    addLog("Simulação de estresse de mercado ativada. Scores reclassificados.");
   };
 
   const resetSimulation = () => {
@@ -196,12 +248,7 @@ export default function CreditRiskPage() {
       proposalsPending: "15",
       totalExposure: "R$ 1.2M",
     });
-    setProposals([
-      { id: "PROP-902", applicant: "Distribuidora de Bebidas União", amount: "R$ 250.000", score: 810, probability: 96, action: "Aprovar" },
-      { id: "PROP-905", applicant: "Gabriel Silva Alimentos", amount: "R$ 80.000", score: 620, probability: 74, action: "Análise Manual" },
-      { id: "PROP-909", applicant: "Construções e Incorporações Fortes", amount: "R$ 600.000", score: 580, probability: 61, action: "Revisar Garantia" },
-      { id: "PROP-912", applicant: "Comércio Eletrodomésticos Luz", amount: "R$ 120.000", score: 450, probability: 38, action: "Rejeitar" },
-    ]);
+    setProposals(initialProposals);
     setRatings([
       { label: "AAA", count: 48, percentage: 35, color: "bg-emerald-500" },
       { label: "AA", count: 32, percentage: 23, color: "bg-emerald-500/80" },
@@ -210,7 +257,7 @@ export default function CreditRiskPage() {
       { label: "C", count: 10, percentage: 7, color: "bg-amber-500/80" },
       { label: "D", count: 3, percentage: 2, color: "bg-rose-500" },
     ]);
-    addLog("Simulação de estresse desativada. Coeficientes de liquidez e default restaurados.");
+    addLog("Simulação de estresse desativada. Coeficientes restaurados.");
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -268,9 +315,20 @@ export default function CreditRiskPage() {
     }, 600);
   };
 
+  const handleExport = () => {
+    window.print();
+    addLog("Relatório consolidado exportado para PDF via impressão.");
+  };
+
+  const mockFeatures = [
+    { name: "Histórico de Pagamentos", weight: 0.40, description: "Frequência e atrasos em pagamentos de créditos anteriores." },
+    { name: "Comprometimento de Renda", weight: 0.25, description: "Porcentagem da receita já comprometida com outras dívidas." },
+    { name: "Patrimônio Líquido", weight: 0.15, description: "Garantias reais e bens no nome da empresa/indivíduo." },
+    { name: "Tempo de Mercado", weight: 0.12, description: "Tempo de constituição do CNPJ." },
+    { name: "Setor de Atuação", weight: 0.08, description: "Risco associado à volatilidade do setor econômico atual." },
+  ];
   return (
     <div className="space-y-6">
-      {/* Module Title Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-card border border-border shadow-md relative overflow-hidden transition-colors duration-300">
         <div className="absolute top-0 right-0 h-40 w-40 bg-emerald-500/5 blur-3xl rounded-full" />
         <div className="space-y-1 relative z-10">
@@ -286,8 +344,16 @@ export default function CreditRiskPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 relative z-10">
-          {stressActive ? (
+        <div className="flex flex-col sm:flex-row items-center gap-2 relative z-10">
+          <Button variant="outline" size="sm" onClick={handleExport} className="text-xs">
+            Exportar Relatório (PDF)
+          </Button>
+          {!activeModel ? (
+            <div className="flex items-center gap-2 text-amber-500 bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-500/20 text-xs font-semibold">
+              <AlertCircle className="h-4 w-4" />
+              Treine um modelo primeiro
+            </div>
+          ) : stressActive ? (
             <Button
               onClick={resetSimulation}
               disabled={isTraining}
@@ -308,7 +374,6 @@ export default function CreditRiskPage() {
         </div>
       </div>
 
-      {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-card border-border transition-colors duration-300">
           <CardHeader className="pb-2">
@@ -363,6 +428,7 @@ export default function CreditRiskPage() {
         </Card>
       </div>
 
+<<<<<<< HEAD
       {/* Seção de Predição Individual Manual (RF15) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Form Card */}
@@ -627,69 +693,151 @@ export default function CreditRiskPage() {
       </div>
 
       {/* Main Content Grid */}
+      <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-sm text-foreground flex gap-3">
+        <Sparkles className="h-5 w-5 text-emerald-500 shrink-0" />
+        <div>
+          <strong className="text-emerald-500 block mb-1">Insight Automático:</strong>
+          {stressActive 
+            ? "O cenário de estresse elevou a probabilidade de inadimplência (PD) geral para 4.35%. Recomenda-se aumentar as garantias exigidas nas novas propostas em análise."
+            : "Carteira de crédito saudável. A maior exposição de risco está no setor de Transportes. Distribuidora de Bebidas União demonstrou score excepcional."}
+        </div>
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Credit Proposals List */}
-        <Card className="lg:col-span-2 bg-card border-border transition-colors duration-300">
-          <CardHeader>
-            <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
-              <FileCheck className="h-4 w-4 text-muted-foreground/60" />
-              Propostas de Crédito em Análise ({activeModel ? activeModel.algorithm : "Deep Neural Network"})
-            </CardTitle>
-            <CardDescription className="text-[11px] text-muted-foreground">
-              {activeModel ? (
-                <>Modelo ativo: <strong>{activeModel.modelId}</strong> com Acurácia de <strong>{((activeModel.metrics.accuracy || 0) * 100).toFixed(1)}%</strong>.</>
-              ) : (
-                "Score preditivo de adimplência e probabilidade estatística de retorno do valor financiado."
-              )}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="divide-y divide-border border-t border-border">
-              {proposals.map((p) => (
-                <div
-                  key={p.id}
-                  className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-muted/30 transition"
-                >
-                  <div className="space-y-1">
-                    <div className="text-xs font-bold text-foreground">{p.applicant}</div>
-                    <div className="text-[10px] text-muted-foreground flex items-center gap-2">
-                      <span className="font-mono">{p.id}</span>
-                      <span>•</span>
-                      <span>Valor: <strong className="text-muted-foreground/90">{p.amount}</strong></span>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-8 text-right sm:max-w-[150px]">
-                    <div>
-                      <div className="text-[9px] text-muted-foreground font-semibold uppercase">Score</div>
-                      <div className={`text-xs font-bold font-mono ${
-                        p.score > 700 ? "text-emerald-500" : p.score > 550 ? "text-amber-500" : "text-rose-500"
-                      }`}>{p.score}</div>
-                    </div>
-                    <div>
-                      <div className="text-[9px] text-muted-foreground font-semibold uppercase">Confiança</div>
-                      <div className="text-xs font-bold font-mono text-foreground/80">{p.probability}%</div>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end">
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
-                      p.action === "Aprovar"
-                        ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/25"
-                        : p.action === "Análise Manual" || p.action === "Revisar Garantia"
-                        ? "bg-amber-500/10 text-amber-500 border-amber-500/25"
-                        : "bg-rose-500/10 text-rose-500 border-rose-500/25"
-                    }`}>
-                      {p.action}
-                    </span>
-                  </div>
+        <Card className="lg:col-span-2 bg-card border-border transition-colors duration-300 flex flex-col">
+          <CardHeader className="pb-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                  <FileCheck className="h-4 w-4 text-muted-foreground/60" />
+                  Propostas de Crédito em Análise
+                </CardTitle>
+                <CardDescription className="text-[11px] text-muted-foreground mt-1">
+                  {activeModel ? (
+                    <>Modelo ativo: <strong>{activeModel.modelId}</strong> com Acurácia de <strong>{((activeModel.metrics.accuracy || 0) * 100).toFixed(1)}%</strong>.</>
+                  ) : (
+                    "Score preditivo de adimplência e probabilidade estatística de default."
+                  )}
+                </CardDescription>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row items-center gap-2">
+                <div className="relative">
+                  <Search className="absolute left-2 top-2 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    type="text" 
+                    placeholder="Buscar ID ou Solicitante..." 
+                    className="h-8 pl-8 text-xs w-[200px]"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
                 </div>
-              ))}
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setSortOrder(prev => prev === "desc" ? "asc" : "desc")}
+                  className="text-[10px] h-8"
+                  title="Ordenar por Risco"
+                >
+                  {sortOrder === "asc" ? <ChevronUp className="h-3 w-3 mr-1" /> : <ChevronDown className="h-3 w-3 mr-1" />}
+                  Risco
+                </Button>
+                
+                <div className="flex bg-muted p-1 rounded-md">
+                  {(["all", "high", "medium", "low"] as RiskLevel[]).map(level => (
+                    <button
+                      key={level}
+                      onClick={() => setRiskFilter(level)}
+                      className={`px-2 py-1 text-[10px] rounded capitalize ${riskFilter === level ? "bg-background shadow font-bold text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                    >
+                      {level === "all" ? "Todos" : level === "high" ? "Alto" : level === "medium" ? "Méd" : "Baixo"}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
+          </CardHeader>
+          <CardContent className="p-0 flex-1">
+            {!activeModel ? (
+               <div className="h-[280px] w-full flex flex-col items-center justify-center text-muted-foreground border-t border-border bg-muted/5">
+                 <AlertCircle className="h-8 w-8 mb-2 opacity-50" />
+                 <p className="text-sm">Predições não disponíveis.</p>
+                 <p className="text-xs opacity-70">Treine o modelo de Risco de Crédito para gerar o scoring.</p>
+               </div>
+            ) : (
+              <div className="divide-y divide-border border-t border-border">
+                {filteredAndSortedProposals.length === 0 && (
+                  <div className="p-8 text-center text-muted-foreground text-xs">Nenhum registro atende aos filtros atuais.</div>
+                )}
+                {filteredAndSortedProposals.map((p) => {
+                  const risk = getRiskLevel(p.score);
+                  const isExpanded = expandedRow === p.id;
+                  
+                  return (
+                    <div key={p.id} className="flex flex-col transition-colors hover:bg-muted/20">
+                      <div 
+                        className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer"
+                        onClick={() => setExpandedRow(isExpanded ? null : p.id)}
+                      >
+                        <div className="space-y-1 min-w-[200px]">
+                          <div className="text-xs font-bold text-foreground flex items-center gap-2">
+                            {p.applicant}
+                            <span className={`w-2 h-2 rounded-full ${risk === 'high' ? 'bg-rose-500' : risk === 'medium' ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+                          </div>
+                          <div className="text-[10px] text-muted-foreground flex items-center gap-2">
+                            <span className="font-mono">{p.id}</span>
+                            <span>•</span>
+                            <span>Valor: <strong className="text-muted-foreground/90">{p.amount}</strong></span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-6 sm:ml-auto">
+                          <div className="grid grid-cols-2 gap-8 text-right sm:max-w-[150px]">
+                            <div>
+                              <div className="text-[9px] text-muted-foreground font-semibold uppercase">Score</div>
+                              <div className={`text-xs font-bold font-mono ${
+                                risk === 'high' ? "text-rose-500" : risk === 'medium' ? "text-amber-500" : "text-emerald-500"
+                              }`}>{p.score}</div>
+                            </div>
+                            <div>
+                              <div className="text-[9px] text-muted-foreground font-semibold uppercase">Probab. Default</div>
+                              <div className="text-xs font-bold font-mono text-foreground/80">{p.probability}%</div>
+                            </div>
+                          </div>
+                          
+                          <div className="w-[100px] text-right">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
+                              risk === 'low'
+                                ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/25"
+                                : risk === 'medium'
+                                ? "bg-amber-500/10 text-amber-500 border-amber-500/25"
+                                : "bg-rose-500/10 text-rose-500 border-rose-500/25"
+                            }`}>
+                              {p.action}
+                            </span>
+                          </div>
+                          
+                          {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground ml-2" /> : <ChevronDown className="h-4 w-4 text-muted-foreground ml-2" />}
+                        </div>
+                      </div>
+                      
+                      {isExpanded && (
+                        <div className="px-4 pb-4 pt-1 bg-muted/10 border-t border-border/50 animate-in slide-in-from-top-2">
+                          <div>
+                            <div className="text-[10px] text-muted-foreground font-semibold uppercase mb-1">Variáveis Mais Influentes na Decisão (Explicabilidade Local)</div>
+                            <p className="text-xs text-foreground/90 bg-background p-2.5 rounded border border-border/60">
+                              {p.influentialFactors}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        {/* Rating Distribution Card */}
         <Card className="bg-card border-border transition-colors duration-300">
           <CardHeader>
             <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
@@ -728,23 +876,27 @@ export default function CreditRiskPage() {
         </Card>
       </div>
 
-      {/* Ingestão de Dados Históricos */}
+      {/* Ingestão de Dados Históricos e Diagnósticos */}
       <div className="space-y-6">
         {activeModel && (
-          <Card className="bg-card border-border transition-colors duration-300">
-            <CardHeader>
-              <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
-                <BarChart3 className="h-4 w-4 text-emerald-500" />
-                Diagnóstico Visual do Modelo (RF13)
-              </CardTitle>
-              <CardDescription className="text-[11px] text-muted-foreground">
-                Matriz de confusão interativa mapeando acertos e erros de classificação do modelo.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ConfusionMatrixView model={activeModel} />
-            </CardContent>
-          </Card>
+          <>
+            <Card className="bg-card border-border transition-colors duration-300">
+              <CardHeader>
+                <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                  <BarChart3 className="h-4 w-4 text-emerald-500" />
+                  Diagnóstico Visual do Modelo (RF13)
+                </CardTitle>
+                <CardDescription className="text-[11px] text-muted-foreground">
+                  Matriz de confusão interativa mapeando acertos e erros de classificação do modelo.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ConfusionMatrixView model={activeModel} />
+              </CardContent>
+            </Card>
+
+            <FeatureImportanceChart data={mockFeatures} title="Preditores de Risco de Crédito" />
+          </>
         )}
 
         <CSVUploader />
