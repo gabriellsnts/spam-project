@@ -116,7 +116,7 @@ export function FeatureImportanceChart({
               <Bar
                 dataKey="weight"
                 radius={[0, 4, 4, 0]}
-                onClick={(data) => setSelectedFeature(data as FeatureData)}
+                onClick={(data) => setSelectedFeature(data as unknown as FeatureData)}
                 className="cursor-pointer transition-opacity hover:opacity-80"
               >
                 {processedData.map((entry, index) => (

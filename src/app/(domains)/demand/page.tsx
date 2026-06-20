@@ -30,7 +30,7 @@ export default function DemandPage() {
   ]);
 
   const generateChartData = (days: number, isSeasonal: boolean) => {
-    const data = [];
+    const data: { date: string; historico: number | null; previsao: number | null; isFuture: boolean }[] = [];
     const today = new Date();
     for (let i = -15; i <= 0; i++) {
       const d = new Date(today);
@@ -288,7 +288,8 @@ export default function DemandPage() {
                       contentStyle={{ backgroundColor: 'hsl(var(--popover))', borderColor: 'hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
                       labelStyle={{ fontWeight: 'bold', color: 'hsl(var(--foreground))', marginBottom: '4px' }}
                       itemStyle={{ color: 'hsl(var(--foreground))' }}
-                      formatter={(value: number, name: string) => [
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      formatter={(value: any, name: any) => [
                         `${Number(value).toFixed(0)} un`, 
                         name === 'historico' ? 'Histórico Real' : 'Previsão Estimada'
                       ]}
