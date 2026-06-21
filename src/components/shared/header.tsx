@@ -33,7 +33,6 @@ export function Header() {
   const {
     activeDomain,
     initiateDomainSwitch,
-    logs,
     theme,
     toggleTheme,
     currentUser,
@@ -227,11 +226,6 @@ export function Header() {
             title="Logs de Auditoria"
           >
             <ShieldCheck className="h-5 w-5" />
-            {logs.length > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-600 text-[9px] font-bold text-white shadow-sm ring-1 ring-zinc-900">
-                {logs.length}
-              </span>
-            )}
           </Button>
 
           {/* Identificação do Usuário e Painel Expandido (RF36) */}

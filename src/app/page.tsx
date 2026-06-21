@@ -3,7 +3,7 @@
 import React from "react";
 import { useDomain, DOMAINS, DomainType } from "@/lib/context/domain-context";
 import { Header } from "@/components/shared/header";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Wrench, TrendingUp, Users, ShieldAlert, ArrowRight, CheckCircle2, AlertTriangle, AlertCircle, Clock, Activity, RefreshCcw } from "lucide-react";
 
@@ -57,9 +57,9 @@ export default function Home() {
 
   const getHealthStyle = () => {
     switch (systemHealth.status) {
-      case "healthy": return "border-emerald-500/30 bg-emerald-500/5 text-emerald-500";
-      case "warning": return "border-amber-500/30 bg-amber-500/5 text-amber-500";
-      case "critical": return "border-red-500/30 bg-red-500/5 text-red-500";
+      case "healthy": return "border-emerald-500/20 bg-emerald-500/[0.02] text-emerald-500/90";
+      case "warning": return "border-amber-500/20 bg-amber-500/[0.02] text-amber-500/90";
+      case "critical": return "border-red-500/20 bg-red-500/[0.02] text-red-500/90";
     }
   };
 
@@ -86,15 +86,15 @@ export default function Home() {
           </div>
 
           {/* Indicador Geral de Saúde (CA04) */}
-          <div className={`flex items-center gap-4 px-5 py-3 rounded-2xl border backdrop-blur-sm shadow-sm ${getHealthStyle()}`}>
-            <div className="flex items-center justify-center">
+          <div className={`flex items-center gap-3 px-4 py-2 rounded-xl border backdrop-blur-md shadow-sm transition-all duration-300 ${getHealthStyle()}`}>
+            <div className="flex items-center justify-center scale-90">
               {getHealthIcon()}
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] font-bold uppercase tracking-wider opacity-80">
+              <span className="text-[9px] font-bold uppercase tracking-wider opacity-60">
                 Saúde do Sistema
               </span>
-              <span className="text-sm font-semibold mt-0.5">
+              <span className="text-xs font-semibold mt-0.5 tracking-tight leading-none">
                 {systemHealth.message}
               </span>
             </div>
@@ -133,9 +133,6 @@ export default function Home() {
                       <CardTitle className="text-lg font-bold tracking-tight text-foreground transition">
                         {domain.name}
                       </CardTitle>
-                      <CardDescription className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
-                        {domain.description}
-                      </CardDescription>
                     </div>
                   </div>
                   {isActive && (
@@ -150,9 +147,9 @@ export default function Home() {
                   )}
                 </CardHeader>
                 
-                <CardContent className="space-y-4 relative z-10 flex-1 pt-4">
+                <CardContent className="space-y-7 relative z-10 flex-1 pt-5">
                   {/* Status Grid */}
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-3 gap-3">
                     {/* Modelo */}
                     <div className="flex flex-col gap-1 p-2.5 rounded-lg bg-background/50 border border-border/40">
                       <span className="text-[10px] uppercase text-muted-foreground font-semibold flex items-center gap-1">
@@ -185,11 +182,11 @@ export default function Home() {
                   </div>
 
                   {/* Histórico Resumido (CA05) */}
-                  <div className="pt-2">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">
+                  <div className="pt-4 border-t border-border/25">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-3 block">
                       Últimas Atividades
                     </span>
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       {status.recentActivities.length > 0 ? (
                         status.recentActivities.slice(0, 2).map((activity) => (
                           <div key={activity.id} className="flex items-start gap-2 text-xs">
