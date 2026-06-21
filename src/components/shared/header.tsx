@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { useDomain, DOMAINS, DomainType } from "@/lib/context/domain-context";
 import {
@@ -12,8 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { AuditLogsDrawer } from "@/components/shared/audit-logs-drawer";
-import { AlertsMenu } from "@/components/shared/alerts-menu";
+import { UtilityDrawer } from "@/components/shared/utility-drawer";
 import {
   Activity,
   Wrench,
@@ -27,7 +26,9 @@ import {
   Sun,
   Moon,
   Laptop,
+  Bell,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export function Header() {
   const {
@@ -39,7 +40,12 @@ export function Header() {
     logout,
     trainingFinishedAlert,
     dismissFinishedAlert,
+    alerts,
+    activeUtilityPanel,
+    setActiveUtilityPanel,
   } = useDomain();
+
+  const unrecognizedAlertsCount = alerts.filter((a) => !a.recognized).length;
 
   // Play discrete notification sound on completion (CA05)
   React.useEffect(() => {
@@ -77,8 +83,6 @@ export function Header() {
       }
     }
   }, [trainingFinishedAlert]);
-
-  const [logsOpen, setLogsOpen] = useState(false);
 
   const getDomainIcon = (type: DomainType) => {
     switch (type) {
@@ -215,13 +219,31 @@ export function Header() {
           </Button>
 
           {/* Alertas e Notificações (RF22) */}
-          <AlertsMenu />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setActiveUtilityPanel(activeUtilityPanel === "alerts" ? null : "alerts")}
+            className="relative h-9 w-9 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900 border border-transparent hover:border-zinc-800 transition"
+            title="Alertas e Notificações"
+          >
+            <Bell className="h-5 w-5" />
+            {unrecognizedAlertsCount > 0 && (
+              <span className={cn(
+                "absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full text-[8px] font-bold text-white shadow-sm ring-1 ring-zinc-900 transition-all",
+                unrecognizedAlertsCount > 9 
+                  ? "bg-rose-500/70 text-zinc-100" 
+                  : "bg-rose-650/90 text-white"
+              )}>
+                {unrecognizedAlertsCount}
+              </span>
+            )}
+          </Button>
 
           {/* Audit Logs Trigger */}
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setLogsOpen(true)}
+            onClick={() => setActiveUtilityPanel(activeUtilityPanel === "logs" ? null : "logs")}
             className="relative h-9 w-9 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900 border border-transparent hover:border-zinc-800 transition"
             title="Logs de Auditoria"
           >
@@ -405,8 +427,8 @@ export function Header() {
         </div>
       </header>
 
-      {/* Audit Logs Sidebar Panel */}
-      <AuditLogsDrawer isOpen={logsOpen} onClose={() => setLogsOpen(false)} />
+      {/* Unified Utility Panel (RF22) */}
+      <UtilityDrawer />
     </>
   );
 }

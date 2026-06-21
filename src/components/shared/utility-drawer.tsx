@@ -12,23 +12,31 @@ import {
   TrendingUp,
   Users,
   ShieldAlert,
-  X
+  X,
+  ShieldCheck,
+  Clock,
+  User as UserIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function AlertsMenu() {
+export function UtilityDrawer() {
   const {
+    activeUtilityPanel,
+    setActiveUtilityPanel,
     alerts,
     recognizeAlert,
     clearAlerts,
-    initiateDomainSwitch
+    initiateDomainSwitch,
+    logs,
+    clearLogs
   } = useDomain();
 
-  const [isOpen, setIsOpen] = useState(false);
   const [filter, setFilter] = useState<"all" | "unrecognized">("unrecognized");
 
+  if (!activeUtilityPanel) return null;
+
   const unrecognizedAlerts = alerts.filter((a) => !a.recognized);
-  const displayedAlerts = alerts; // keeping recognized alerts visible in Ativos as requested
+  const displayedAlerts = alerts; // Keep recognized alerts visible in both tabs as per the layout adjustment
 
   const getDomainIcon = (type: DomainType) => {
     switch (type) {
@@ -56,58 +64,53 @@ export function AlertsMenu() {
     }
   };
 
+  const handleClose = () => setActiveUtilityPanel(null);
+
+  const isAlerts = activeUtilityPanel === "alerts";
+  const isLogs = activeUtilityPanel === "logs";
+
   return (
     <>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => setIsOpen(true)}
-        className="relative h-9 w-9 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900 border border-transparent hover:border-zinc-800 transition"
-        title="Alertas e Notificações"
-      >
-        <Bell className="h-5 w-5" />
-        {unrecognizedAlerts.length > 0 && (
-          <span className={cn(
-            "absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full text-[8px] font-bold text-white shadow-sm ring-1 ring-zinc-900 transition-all",
-            unrecognizedAlerts.length > 9 
-              ? "bg-rose-500/70 text-zinc-100" 
-              : "bg-rose-650/90 text-white"
-          )}>
-            {unrecognizedAlerts.length}
-          </span>
-        )}
-      </Button>
+      {/* Backdrop with blur */}
+      <div
+        className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm transition-opacity animate-in fade-in"
+        onClick={handleClose}
+      />
 
-      {isOpen && (
-        <>
-          {/* Backdrop with blur */}
-          <div
-            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity animate-in fade-in"
-            onClick={() => setIsOpen(false)}
-          />
-
-          {/* Drawer Panel */}
-          <div className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-md bg-background/95 border-l border-border shadow-2xl flex flex-col transition-transform duration-300 animate-in slide-in-from-right">
-            {/* Header */}
-            <div className="p-5 border-b border-border flex items-center justify-between bg-muted/30 backdrop-blur-md">
-              <div className="flex items-center gap-2">
+      {/* Drawer Panel */}
+      <div className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-md bg-zinc-950 border-l border-border/30 shadow-2xl flex flex-col p-6 transition-transform duration-300 animate-in slide-in-from-right">
+        {/* Header */}
+        <div className="pb-5 border-b border-border/20 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            {isAlerts ? (
+              <>
                 <Bell className="h-5 w-5 text-zinc-400" />
                 <h2 className="text-md font-semibold text-foreground">Alertas do Sistema</h2>
-              </div>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
+              </>
+            ) : (
+              <>
+                <ShieldCheck className="h-5 w-5 text-emerald-500" />
+                <h2 className="text-md font-semibold text-foreground">Log de Auditoria Interna</h2>
+              </>
+            )}
+          </div>
+          <button
+            onClick={handleClose}
+            className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-zinc-900 transition"
+          >
+            <X className="h-4.5 w-4.5" />
+          </button>
+        </div>
 
+        {/* Dynamic Content */}
+        {isAlerts && (
+          <>
             {/* Tab Filters */}
-            <div className="flex border-b border-border/45 bg-zinc-950/40 shrink-0">
+            <div className="flex border-b border-border/10 bg-zinc-950/40 shrink-0 mt-3">
               <button
                 onClick={() => setFilter("unrecognized")}
                 className={cn(
-                  "flex-1 py-3 text-[10px] font-bold uppercase border-b-2 tracking-wide transition-all",
+                  "flex-1 py-2 text-[10px] font-bold uppercase border-b-2 tracking-wide transition-all",
                   filter === "unrecognized"
                     ? "border-green-500 text-green-500 bg-green-500/[0.02]"
                     : "border-transparent text-muted-foreground hover:text-foreground"
@@ -118,7 +121,7 @@ export function AlertsMenu() {
               <button
                 onClick={() => setFilter("all")}
                 className={cn(
-                  "flex-1 py-3 text-[10px] font-bold uppercase border-b-2 tracking-wide transition-all",
+                  "flex-1 py-2 text-[10px] font-bold uppercase border-b-2 tracking-wide transition-all",
                   filter === "all"
                     ? "border-green-500 text-green-500 bg-green-500/[0.02]"
                     : "border-transparent text-muted-foreground hover:text-foreground"
@@ -129,7 +132,7 @@ export function AlertsMenu() {
             </div>
 
             {/* Alerts List */}
-            <div className="flex-1 overflow-y-auto p-5 space-y-4 select-none scrollbar-thin">
+            <div className="flex-1 overflow-y-auto py-5 space-y-4 select-none scrollbar-thin">
               {displayedAlerts.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-center p-6 text-muted-foreground">
                   <Bell className="h-10 w-10 text-muted-foreground/40 mb-2 stroke-[1.5]" />
@@ -194,7 +197,7 @@ export function AlertsMenu() {
                       {/* Value and Metric Description */}
                       <div className="flex items-center justify-between bg-zinc-950/20 dark:bg-zinc-950/50 px-2.5 py-1.5 rounded-lg border border-border/20 text-[10px]">
                         <span className="text-zinc-500 dark:text-zinc-400/80 text-[10px] font-medium">{alert.metric}:</span>
-                        <span className={cn("font-mono font-bold text-[10px]", isHigh ? "text-rose-450 dark:text-rose-400" : "text-amber-450 dark:text-amber-400")}>
+                        <span className={cn("font-mono font-bold text-[10px]", isHigh ? "text-rose-400" : "text-amber-400")}>
                           {alert.value}
                         </span>
                       </div>
@@ -235,7 +238,7 @@ export function AlertsMenu() {
                             variant="ghost"
                             onClick={() => {
                               initiateDomainSwitch(alert.domain);
-                              setIsOpen(false);
+                              handleClose();
                             }}
                             className="h-6 w-6 p-0 text-zinc-500 hover:text-primary hover:bg-primary/5 transition"
                             title={`Ir para o painel de ${domainInfo.name}`}
@@ -251,7 +254,7 @@ export function AlertsMenu() {
             </div>
 
             {/* Footer Actions */}
-            <div className="p-4 border-t border-border bg-muted/20 backdrop-blur-md flex items-center justify-between shrink-0">
+            <div className="pt-4 border-t border-border/20 bg-transparent flex items-center justify-between shrink-0">
               <span className="text-xs text-muted-foreground font-mono">
                 Alertas ativos: {unrecognizedAlerts.length}
               </span>
@@ -267,9 +270,78 @@ export function AlertsMenu() {
                 </Button>
               )}
             </div>
-          </div>
-        </>
-      )}
+          </>
+        )}
+
+        {isLogs && (
+          <>
+            {/* Logs Content */}
+            <div className="flex-1 overflow-y-auto py-5 space-y-4 select-none scrollbar-thin">
+              {logs.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-center p-6 text-muted-foreground">
+                  <ShieldCheck className="h-10 w-10 text-muted-foreground/40 mb-2 stroke-[1.5]" />
+                  <p className="text-sm">Nenhum evento registrado no log.</p>
+                  <p className="text-xs text-muted-foreground/60 mt-1">Selecione ou alterne domínios para gerar logs.</p>
+                </div>
+              ) : (
+                logs.map((log) => (
+                  <div
+                    key={log.id}
+                    className="p-4 rounded-lg bg-card/60 border border-border/40 hover:border-muted-foreground/30 transition flex flex-col gap-2 relative overflow-hidden"
+                  >
+                    {/* ID Tag */}
+                    <div className="absolute top-2 right-2 text-[9px] font-mono text-muted-foreground/80 bg-background px-1.5 py-0.5 rounded border border-border/40">
+                      ID: {log.id}
+                    </div>
+
+                    {/* Action/Description */}
+                    <div className="text-xs text-foreground font-medium pr-16 line-clamp-2">
+                      {log.action}
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-[10px] text-muted-foreground">
+                      {/* User Profile */}
+                      <div className="flex items-center gap-1">
+                        <UserIcon className="h-3 w-3 text-muted-foreground/60" />
+                        <span className="font-semibold text-foreground/80">{log.profile}</span>
+                      </div>
+
+                      {/* Millisecond Timestamp (CA05 requirement) */}
+                      <div className="flex items-center gap-1 font-mono">
+                        <Clock className="h-3 w-3 text-muted-foreground/60" />
+                        <span>{log.timestamp} ms</span>
+                      </div>
+                    </div>
+
+                    {/* Human readable date */}
+                    <div className="text-[9px] text-muted-foreground/50 italic">
+                      {new Date(log.timestamp).toLocaleString("pt-BR")}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Footer Actions */}
+            <div className="pt-4 border-t border-border/20 bg-transparent flex items-center justify-between shrink-0">
+              <span className="text-xs text-muted-foreground font-mono">
+                Registros ativos: {logs.length}
+              </span>
+              {logs.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearLogs}
+                  className="h-7 text-xs text-rose-500 hover:text-rose-455 hover:bg-rose-500/5 font-bold transition flex items-center gap-1.5"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Limpar Logs
+                </Button>
+              )}
+            </div>
+          </>
+        )}
+      </div>
     </>
   );
 }
