@@ -24,7 +24,7 @@ interface ProposalData {
 }
 
 export default function CreditRiskPage() {
-  const { addLog, isTraining, trainedModels, alertThresholds } = useDomain();
+  const { addLog, isTraining, trainedModels, alertThresholds, addAlert } = useDomain();
   const activeModel = trainedModels["credit-risk"];
   const [stressActive, setStressActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -315,6 +315,19 @@ export default function CreditRiskPage() {
 
       setPredictionResult(newPrediction);
       setIsPredicting(false);
+      
+      // Emit alert in real time if default probability exceeds the threshold
+      const defaultProb = 100 - result.probabilidadeRetorno;
+      if (defaultProb >= threshold) {
+        addAlert({
+          domain: "credit-risk",
+          item: `Proposta ${formData.proposta_id} (${formData.cliente})`,
+          value: `${defaultProb}%`,
+          metric: "Probabilidade de Default",
+          criticality: defaultProb >= 80 ? "high" : "medium"
+        });
+      }
+
       addLog(`[Individual Prediction] Predição realizada para '${formData.cliente}' (${formData.proposta_id}). Resultado: ${result.acao} (${result.probabilidadeRetorno}% de retorno).`);
       
       const newPredictionItem: HistoryItem = {

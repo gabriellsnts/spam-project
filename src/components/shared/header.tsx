@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { AuditLogsDrawer } from "@/components/shared/audit-logs-drawer";
+import { AlertsMenu } from "@/components/shared/alerts-menu";
 import {
   Activity,
   Wrench,
@@ -213,6 +214,9 @@ export function Header() {
               <Laptop className="h-5 w-5 text-emerald-400 animate-in spin-in-12 duration-500" />
             )}
           </Button>
+
+          {/* Alertas e Notificações (RF22) */}
+          <AlertsMenu />
 
           {/* Audit Logs Trigger */}
           <Button

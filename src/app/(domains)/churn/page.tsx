@@ -21,7 +21,7 @@ interface ClientData {
 }
 
 export default function ChurnPage() {
-  const { addLog, isTraining, trainedModels, alertThresholds } = useDomain();
+  const { addLog, isTraining, trainedModels, alertThresholds, addAlert } = useDomain();
   const activeModel = trainedModels["churn"];
   const [churnSimulated, setChurnSimulated] = useState(false);
   const [riskFilter, setRiskFilter] = useState<RiskLevel>("all");
@@ -113,6 +113,13 @@ export default function ChurnPage() {
         return { ...c, score: Math.min(c.score + 10, 99) };
       })
     );
+    addAlert({
+      domain: "churn",
+      item: "Tecnologia Avançada Beta (C551)",
+      value: "91%",
+      metric: "Churn Score",
+      criticality: "high"
+    });
     addLog("Simulação de desligamento repentino de clientes ativada. Alerta de Churn de Contas de Alto LTV.");
   };
 

@@ -24,7 +24,7 @@ import { calculateMachineRUL, BASE_RULS } from "@/lib/predictive-engine";
 import { AlertThresholdSettings } from "@/components/shared/alert-threshold-settings";
 
 export default function MaintenancePage() {
-  const { addLog, isTraining, trainedModels, alertThresholds } = useDomain();
+  const { addLog, isTraining, trainedModels, alertThresholds, addAlert } = useDomain();
   const activeModel = trainedModels["maintenance"];
   const [horizon, setHorizon] = useState<7 | 30 | 90>(30);
 
@@ -77,6 +77,13 @@ export default function MaintenancePage() {
           : m
       )
     );
+    addAlert({
+      domain: "maintenance",
+      item: "Torno CNC 01 (M01)",
+      value: "Vibração: 8.5 mm/s, Temp: 92°C",
+      metric: "Telemetria Física",
+      criticality: "high"
+    });
     addLog("Simulação de anomalia crítica iniciada: Vibração excessiva no Torno CNC 01.");
   };
 

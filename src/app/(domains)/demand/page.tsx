@@ -11,7 +11,7 @@ import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveCo
 import { AlertThresholdSettings } from "@/components/shared/alert-threshold-settings";
 
 export default function DemandPage() {
-  const { addLog, isTraining, trainedModels, alertThresholds } = useDomain();
+  const { addLog, isTraining, trainedModels, alertThresholds, addAlert } = useDomain();
   const activeModel = trainedModels["demand"];
   const [seasonalActive, setSeasonalActive] = useState(false);
   const [horizon, setHorizon] = useState<7 | 30 | 90>(30);
@@ -125,6 +125,13 @@ export default function DemandPage() {
         return p;
       })
     );
+    addAlert({
+      domain: "demand",
+      item: "Bobina de Aço Galvanizado (P01)",
+      value: "4 dias de cobertura",
+      metric: "Cobertura de Estoque",
+      criticality: "high"
+    });
     addLog("Simulação de sazonalidade de alta demanda ativada. Alerta de ruptura de estoque disparado.");
   };
 

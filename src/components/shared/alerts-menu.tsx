@@ -1,0 +1,255 @@
+"use client";
+
+import React, { useState } from "react";
+import { useDomain, DOMAINS, DomainType, Alert } from "@/lib/context/domain-context";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import {
+  Bell,
+  Check,
+  ExternalLink,
+  Trash2,
+  Wrench,
+  TrendingUp,
+  Users,
+  ShieldAlert,
+  AlertTriangle,
+  AlertCircle
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+
+export function AlertsMenu() {
+  const {
+    alerts,
+    recognizeAlert,
+    clearAlerts,
+    initiateDomainSwitch
+  } = useDomain();
+
+  const [filter, setFilter] = useState<"all" | "unrecognized">("unrecognized");
+
+  const unrecognizedAlerts = alerts.filter((a) => !a.recognized);
+  const displayedAlerts = filter === "unrecognized" ? unrecognizedAlerts : alerts;
+
+  const getDomainIcon = (type: DomainType) => {
+    switch (type) {
+      case "maintenance":
+        return <Wrench className="h-3.5 w-3.5" />;
+      case "demand":
+        return <TrendingUp className="h-3.5 w-3.5" />;
+      case "churn":
+        return <Users className="h-3.5 w-3.5" />;
+      case "credit-risk":
+        return <ShieldAlert className="h-3.5 w-3.5" />;
+    }
+  };
+
+  const getDomainColorClass = (type: DomainType) => {
+    switch (type) {
+      case "maintenance":
+        return "text-amber-500 bg-amber-500/10 border-amber-500/20";
+      case "demand":
+        return "text-sky-500 bg-sky-500/10 border-sky-500/20";
+      case "churn":
+        return "text-violet-500 bg-violet-500/10 border-violet-500/20";
+      case "credit-risk":
+        return "text-emerald-500 bg-emerald-500/10 border-emerald-500/20";
+    }
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative h-9 w-9 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900 border border-transparent hover:border-zinc-800 transition"
+          title="Alertas e Notificações"
+        >
+          <Bell className="h-5 w-5" />
+          {unrecognizedAlerts.length > 0 && (
+            <span className="absolute -top-1 -right-1 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-rose-600 text-[9px] font-black text-white shadow-sm ring-1 ring-zinc-900 animate-pulse">
+              {unrecognizedAlerts.length}
+            </span>
+          )}
+        </Button>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent
+        align="end"
+        className="w-80 sm:w-96 bg-popover/95 border-border text-popover-foreground shadow-2xl backdrop-blur-md z-50 p-0 overflow-hidden"
+      >
+        <div className="p-3.5 border-b border-border/60 flex items-center justify-between bg-muted/20">
+          <div className="flex items-center gap-2">
+            <Bell className="h-4.5 w-4.5 text-zinc-400" />
+            <DropdownMenuLabel className="p-0 text-xs font-black tracking-wider uppercase">
+              Alertas do Sistema
+            </DropdownMenuLabel>
+          </div>
+          {alerts.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearAlerts}
+              className="h-7 text-[10px] text-zinc-500 hover:text-rose-500 hover:bg-rose-500/5 font-bold transition flex items-center gap-1"
+            >
+              <Trash2 className="h-3 w-3" />
+              Limpar Tudo
+            </Button>
+          )}
+        </div>
+
+        {/* Tab Filters */}
+        <div className="flex border-b border-border/45 bg-zinc-950/40">
+          <button
+            onClick={() => setFilter("unrecognized")}
+            className={cn(
+              "flex-1 py-2 text-[10px] font-bold uppercase border-b-2 tracking-wide transition-all",
+              filter === "unrecognized"
+                ? "border-green-500 text-green-500 bg-green-500/[0.02]"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            )}
+          >
+            Ativos ({unrecognizedAlerts.length})
+          </button>
+          <button
+            onClick={() => setFilter("all")}
+            className={cn(
+              "flex-1 py-2 text-[10px] font-bold uppercase border-b-2 tracking-wide transition-all",
+              filter === "all"
+                ? "border-green-500 text-green-500 bg-green-500/[0.02]"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            )}
+          >
+            Histórico ({alerts.length})
+          </button>
+        </div>
+
+        {/* Alerts List */}
+        <div className="max-h-[350px] overflow-y-auto divide-y divide-border/40 select-none scrollbar-thin">
+          {displayedAlerts.length === 0 ? (
+            <div className="p-8 text-center text-muted-foreground text-xs italic">
+              Nenhum alerta {filter === "unrecognized" ? "ativo" : "no histórico"} encontrado.
+            </div>
+          ) : (
+            displayedAlerts.map((alert) => {
+              const domainInfo = DOMAINS[alert.domain];
+              const isHigh = alert.criticality === "high";
+
+              return (
+                <div
+                  key={alert.id}
+                  className={cn(
+                    "p-3.5 flex flex-col gap-2.5 transition-all duration-300 relative border-l-4",
+                    isHigh
+                      ? alert.recognized
+                        ? "border-rose-500/30 bg-rose-500/[0.01]"
+                        : "border-rose-500 bg-rose-500/[0.03]"
+                      : alert.recognized
+                      ? "border-amber-500/30 bg-amber-500/[0.01]"
+                      : "border-amber-500 bg-amber-500/[0.03]",
+                    alert.recognized && "opacity-60 grayscale-[40%]"
+                  )}
+                >
+                  {/* Alert Header Info */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-1 min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span
+                          className={cn(
+                            "flex items-center gap-1 px-2 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-wider border",
+                            getDomainColorClass(alert.domain)
+                          )}
+                        >
+                          {getDomainIcon(alert.domain)}
+                          {domainInfo.name.split(" ")[0]}
+                        </span>
+                        
+                        <span
+                          className={cn(
+                            "px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider",
+                            isHigh
+                              ? "bg-rose-500/10 text-rose-500 border border-rose-500/20"
+                              : "bg-amber-500/10 text-amber-500 border border-amber-500/20"
+                          )}
+                        >
+                          {isHigh ? "Crítico (Alto)" : "Atenção (Médio)"}
+                        </span>
+                      </div>
+                      
+                      <h4 className="text-xs font-bold text-foreground leading-snug mt-1 truncate">
+                        {alert.item}
+                      </h4>
+                    </div>
+
+                    <span className="text-[9px] font-mono text-muted-foreground/60 shrink-0">
+                      {alert.id.substring(4, 11)}
+                    </span>
+                  </div>
+
+                  {/* Value and Metric Description */}
+                  <div className="flex items-center justify-between bg-zinc-950/40 p-2 rounded-lg border border-border/30 text-[10px] font-mono">
+                    <span className="text-muted-foreground font-sans font-medium">{alert.metric}:</span>
+                    <span className={cn("font-bold", isHigh ? "text-rose-500" : "text-amber-500")}>
+                      {alert.value}
+                    </span>
+                  </div>
+
+                  {/* Action Controls */}
+                  <div className="flex items-center justify-between gap-3 pt-1 border-t border-border/20">
+                    <span className="text-[9px] text-muted-foreground font-mono">
+                      {new Date(alert.timestamp).toLocaleTimeString("pt-BR", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit"
+                      })}
+                    </span>
+
+                    <div className="flex items-center gap-2">
+                      {/* 1-Click Recognize Button */}
+                      {!alert.recognized ? (
+                        <Button
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            recognizeAlert(alert.id);
+                          }}
+                          className="h-6 text-[9px] font-black bg-zinc-900 border border-border/80 hover:bg-green-550/10 hover:border-green-500 hover:text-green-500 text-foreground transition-all duration-200 px-2 flex items-center gap-1"
+                        >
+                          <Check className="h-3 w-3" />
+                          Reconhecer
+                        </Button>
+                      ) : (
+                        <span className="text-[9px] text-green-500 font-bold bg-green-500/10 border border-green-500/20 px-2 py-0.5 rounded flex items-center gap-0.5 select-none">
+                          <Check className="h-3 w-3" />
+                          Reconhecido
+                        </span>
+                      )}
+
+                      {/* Shortcut to domain dashboard */}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => initiateDomainSwitch(alert.domain)}
+                        className="h-6 w-6 p-0 text-zinc-500 hover:text-primary hover:bg-primary/5 transition"
+                        title={`Ir para o painel de ${domainInfo.name}`}
+                      >
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
