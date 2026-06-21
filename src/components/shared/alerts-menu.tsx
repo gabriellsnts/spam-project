@@ -32,7 +32,7 @@ export function AlertsMenu() {
   const [filter, setFilter] = useState<"all" | "unrecognized">("unrecognized");
 
   const unrecognizedAlerts = alerts.filter((a) => !a.recognized);
-  const displayedAlerts = filter === "unrecognized" ? unrecognizedAlerts : alerts;
+  const displayedAlerts = alerts;
 
   const getDomainIcon = (type: DomainType) => {
     switch (type) {
@@ -71,7 +71,12 @@ export function AlertsMenu() {
         >
           <Bell className="h-5 w-5" />
           {unrecognizedAlerts.length > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-rose-600 text-[9px] font-black text-white shadow-sm ring-1 ring-zinc-900 animate-pulse">
+            <span className={cn(
+              "absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full text-[8px] font-bold text-white shadow-sm ring-1 ring-zinc-900 transition-all",
+              unrecognizedAlerts.length > 9 
+                ? "bg-rose-500/70 text-zinc-100" 
+                : "bg-rose-650/90 text-white"
+            )}>
               {unrecognizedAlerts.length}
             </span>
           )}
@@ -129,10 +134,10 @@ export function AlertsMenu() {
         </div>
 
         {/* Alerts List */}
-        <div className="max-h-[350px] overflow-y-auto divide-y divide-border/40 select-none scrollbar-thin">
+        <div className="max-h-[380px] overflow-y-auto p-3.5 flex flex-col gap-3 select-none scrollbar-thin">
           {displayedAlerts.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground text-xs italic">
-              Nenhum alerta {filter === "unrecognized" ? "ativo" : "no histórico"} encontrado.
+              Nenhum alerta encontrado.
             </div>
           ) : (
             displayedAlerts.map((alert) => {
@@ -143,15 +148,15 @@ export function AlertsMenu() {
                 <div
                   key={alert.id}
                   className={cn(
-                    "p-3.5 flex flex-col gap-2.5 transition-all duration-300 relative border-l-4",
+                    "p-4.5 flex flex-col gap-3 transition-all duration-300 relative border border-border/30 border-l-4 rounded-xl shadow-sm",
                     isHigh
                       ? alert.recognized
-                        ? "border-rose-500/30 bg-rose-500/[0.01]"
-                        : "border-rose-500 bg-rose-500/[0.03]"
+                        ? "border-l-rose-500/30 bg-rose-500/[0.01]"
+                        : "border-l-rose-500 bg-rose-500/[0.03]"
                       : alert.recognized
-                      ? "border-amber-500/30 bg-amber-500/[0.01]"
-                      : "border-amber-500 bg-amber-500/[0.03]",
-                    alert.recognized && "opacity-60 grayscale-[40%]"
+                      ? "border-l-amber-500/30 bg-amber-500/[0.01]"
+                      : "border-l-amber-500 bg-amber-500/[0.03]",
+                    alert.recognized && "opacity-50 grayscale"
                   )}
                 >
                   {/* Alert Header Info */}
@@ -185,26 +190,25 @@ export function AlertsMenu() {
                       </h4>
                     </div>
 
-                    <span className="text-[9px] font-mono text-muted-foreground/60 shrink-0">
-                      {alert.id.substring(4, 11)}
+                    <span className="text-[8px] font-mono text-zinc-500/40 dark:text-zinc-600/40 tracking-wider shrink-0 select-none">
+                      #{alert.id.substring(4, 11)}
                     </span>
                   </div>
 
                   {/* Value and Metric Description */}
-                  <div className="flex items-center justify-between bg-zinc-950/40 p-2 rounded-lg border border-border/30 text-[10px] font-mono">
-                    <span className="text-muted-foreground font-sans font-medium">{alert.metric}:</span>
-                    <span className={cn("font-bold", isHigh ? "text-rose-500" : "text-amber-500")}>
+                  <div className="flex items-center justify-between bg-zinc-950/20 dark:bg-zinc-950/50 px-2.5 py-1.5 rounded-lg border border-border/20 text-[10px]">
+                    <span className="text-zinc-500 dark:text-zinc-400/80 text-[10px] font-medium">{alert.metric}:</span>
+                    <span className={cn("font-mono font-bold text-[10px]", isHigh ? "text-rose-450 dark:text-rose-400" : "text-amber-450 dark:text-amber-400")}>
                       {alert.value}
                     </span>
                   </div>
 
                   {/* Action Controls */}
                   <div className="flex items-center justify-between gap-3 pt-1 border-t border-border/20">
-                    <span className="text-[9px] text-muted-foreground font-mono">
+                    <span className="text-[9px] text-zinc-500/50 dark:text-zinc-550/50 font-mono select-none">
                       {new Date(alert.timestamp).toLocaleTimeString("pt-BR", {
                         hour: "2-digit",
-                        minute: "2-digit",
-                        second: "2-digit"
+                        minute: "2-digit"
                       })}
                     </span>
 
@@ -223,8 +227,8 @@ export function AlertsMenu() {
                           Reconhecer
                         </Button>
                       ) : (
-                        <span className="text-[9px] text-green-500 font-bold bg-green-500/10 border border-green-500/20 px-2 py-0.5 rounded flex items-center gap-0.5 select-none">
-                          <Check className="h-3 w-3" />
+                        <span className="text-[9px] text-zinc-500/60 dark:text-zinc-450/60 font-bold flex items-center gap-0.5 select-none py-0.5 px-1.5 bg-zinc-950/20 border border-border/20 rounded">
+                          <Check className="h-3 w-3 text-emerald-500/70" />
                           Reconhecido
                         </span>
                       )}
