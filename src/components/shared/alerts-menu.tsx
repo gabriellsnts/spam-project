@@ -1,12 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { useDomain, DOMAINS, DomainType, Alert } from "@/lib/context/domain-context";
+import { useDomain, DOMAINS, DomainType } from "@/lib/context/domain-context";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
@@ -18,9 +17,7 @@ import {
   Wrench,
   TrendingUp,
   Users,
-  ShieldAlert,
-  AlertTriangle,
-  AlertCircle
+  ShieldAlert
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
