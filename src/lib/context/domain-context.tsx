@@ -10,6 +10,17 @@ export interface AuditLog {
   action: string;
 }
 
+export interface Alert {
+  id: string;
+  domain: DomainType;
+  item: string;
+  value: string | number;
+  metric: string;
+  criticality: "medium" | "high";
+  timestamp: number;
+  recognized: boolean;
+}
+
 export type DomainType = "maintenance" | "demand" | "churn" | "credit-risk";
 
 export interface DomainMetadata {
@@ -193,6 +204,10 @@ interface DomainContextProps {
   updateAlertThreshold: (domain: DomainType, value: number) => void;
   resetAlertThreshold: (domain: DomainType) => void;
   updateDashboardAlertCount: (domain: DomainType, count: number) => void;
+  alerts: Alert[];
+  addAlert: (alert: Omit<Alert, "id" | "timestamp" | "recognized">) => void;
+  recognizeAlert: (id: string) => void;
+  clearAlerts: () => void;
 }
 
 const DomainContext = createContext<DomainContextProps | undefined>(undefined);
@@ -247,6 +262,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
   const [pendingDomain, setPendingDomain] = useState<DomainType | null>(null);
   const [theme, setThemeState] = useState<"light" | "dark" | "auto">("dark");
   const [alertThresholds, setAlertThresholds] = useState<Record<DomainType, number>>(DEFAULT_THRESHOLDS);
+  const [alerts, setAlerts] = useState<Alert[]>([]);
 
   // Auth states
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -392,10 +408,95 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     const savedThresholds = localStorage.getItem("spam-alert-thresholds");
     if (savedThresholds) {
       try {
+        setAlerts(JSON.parse(localStorage.getItem("spam-alerts") || "[]"));
         setAlertThresholds(JSON.parse(savedThresholds));
       } catch (e) {
         console.error("Erro ao carregar limiares de alerta:", e);
       }
+    }
+
+    const savedAlerts = localStorage.getItem("spam-alerts");
+    if (savedAlerts) {
+      try {
+        setAlerts(JSON.parse(savedAlerts));
+      } catch (e) {
+        console.error("Erro ao carregar alertas:", e);
+      }
+    } else {
+      const initialAlerts: Alert[] = [
+        {
+          id: "ALT-MNT-1",
+          domain: "maintenance",
+          item: "Prensa Hidráulica 04 (M04)",
+          value: "Vibração: 4.8 mm/s, Temp: 78°C",
+          metric: "Telemetria Física",
+          criticality: "medium",
+          timestamp: Date.now() - 3 * 3600000,
+          recognized: false
+        },
+        {
+          id: "ALT-MNT-2",
+          domain: "maintenance",
+          item: "Torno CNC 01 (M01)",
+          value: "Temperatura: 82°C",
+          metric: "Telemetria Física",
+          criticality: "high",
+          timestamp: Date.now() - 5 * 3600000,
+          recognized: false
+        },
+        {
+          id: "ALT-MNT-3",
+          domain: "maintenance",
+          item: "Braço Robotizado A (M02)",
+          value: "OEE: 74%",
+          metric: "Eficiência OEE",
+          criticality: "medium",
+          timestamp: Date.now() - 12 * 3600000,
+          recognized: false
+        },
+        {
+          id: "ALT-CHN-1",
+          domain: "churn",
+          item: "Indústrias Metalúrgicas Alfa (C104)",
+          value: "87%",
+          metric: "Churn Score",
+          criticality: "high",
+          timestamp: Date.now() - 1 * 3600000,
+          recognized: false
+        },
+        {
+          id: "ALT-CHN-2",
+          domain: "churn",
+          item: "Supermercados Ideal (C302)",
+          value: "72%",
+          metric: "Churn Score",
+          criticality: "medium",
+          timestamp: Date.now() - 2 * 3600000,
+          recognized: false
+        },
+        {
+          id: "ALT-CHN-3",
+          domain: "churn",
+          item: "Logística Expressa S.A. (C098)",
+          value: "68%",
+          metric: "Churn Score",
+          criticality: "medium",
+          timestamp: Date.now() - 4 * 3600000,
+          recognized: false
+        },
+        ...Array.from({ length: 9 }).map((_, idx) => ({
+          id: `ALT-CHN-MOCK-${idx}`,
+          domain: "churn" as DomainType,
+          item: `Cliente Enterprise Mock ${idx + 1}`,
+          value: `${65 + Math.floor(Math.random() * 20)}%`,
+          metric: "Churn Score",
+          criticality: (idx % 2 === 0 ? "high" : "medium") as "high" | "medium",
+          timestamp: Date.now() - (6 + idx) * 3600000,
+          recognized: false
+        }))
+      ];
+      setAlerts(initialAlerts);
+      localStorage.setItem("spam-alerts", JSON.stringify(initialAlerts));
     }
 
     setIsAuthLoading(false);
@@ -483,50 +584,107 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     addLogWithProfile(userProfile, action);
   }, [userProfile, addLogWithProfile]);
 
-  const simulateDashboardEvent = useCallback(() => {
-    setDashboardStatus(prev => {
-      const updated = { ...prev };
-      const domainKeys = Object.keys(updated) as DomainType[];
-      const randomDomain = domainKeys[Math.floor(Math.random() * domainKeys.length)];
-      
-      const newAlertCount = updated[randomDomain].activeAlertsCount + 1;
-      
-      updated[randomDomain] = {
-        ...updated[randomDomain],
-        activeAlertsCount: newAlertCount,
-        recentActivities: [
-          {
-            id: Math.random().toString(),
-            description: "Novo alerta preditivo detectado automaticamente",
-            timestamp: new Date().toISOString(),
-            type: "alert"
-          },
-          ...updated[randomDomain].recentActivities.slice(0, 4)
-        ]
-      };
-      
-      // Update system health dynamically
-      let totalAlerts = 0;
-      let domainsWithAlerts = 0;
-      Object.values(updated).forEach(status => {
-        totalAlerts += status.activeAlertsCount;
-        if (status.activeAlertsCount > 0) domainsWithAlerts++;
-      });
-      
-      let newHealth: SystemHealth = { status: "healthy", message: "Todos os sistemas operando normalmente." };
-      if (totalAlerts > 20) {
-        newHealth = { status: "critical", message: `${totalAlerts} alertas críticos em ${domainsWithAlerts} domínios.` };
-      } else if (totalAlerts > 0) {
-        newHealth = { status: "warning", message: `${totalAlerts} alertas ativos em ${domainsWithAlerts} domínios requerem atenção.` };
+  const addAlert = useCallback((newAlertData: Omit<Alert, "id" | "timestamp" | "recognized">) => {
+    const newAlert: Alert = {
+      ...newAlertData,
+      id: `ALT-${newAlertData.domain.substring(0, 3).toUpperCase()}-${Math.random().toString(36).substring(2, 9).toUpperCase()}-${Date.now()}`,
+      timestamp: Date.now(),
+      recognized: false
+    };
+    
+    setAlerts(prev => [newAlert, ...prev]);
+    
+    // Add to Audit Logs
+    const criticalityName = newAlertData.criticality === "high" ? "Alto" : "Médio";
+    addLog(`[Alert Triggered] Novo alerta preditivo (${criticalityName}) no domínio '${DOMAINS[newAlertData.domain].name}': ${newAlertData.item} - Valor: ${newAlertData.value}.`);
+  }, [addLog]);
+
+  const recognizeAlert = useCallback((id: string) => {
+    setAlerts(prev => 
+      prev.map(a => a.id === id ? { ...a, recognized: true } : a)
+    );
+    
+    // Find alert details for logging
+    setAlerts(prev => {
+      const alertItem = prev.find(a => a.id === id);
+      if (alertItem) {
+        addLog(`[Alert Recognized] Alerta no domínio '${DOMAINS[alertItem.domain].name}' (${alertItem.item}) marcado como reconhecido.`);
       }
-      
-      setSystemHealth(newHealth);
-      
-      return updated;
+      return prev;
+    });
+  }, [addLog]);
+
+  const clearAlerts = useCallback(() => {
+    setAlerts([]);
+    addLog("[Alert Cleanup] Todos os alertas foram limpos do histórico.");
+  }, [addLog]);
+
+  // Synchronize alerts state to localStorage and update dashboard / health states
+  useEffect(() => {
+    if (alerts.length === 0) return;
+    localStorage.setItem("spam-alerts", JSON.stringify(alerts));
+    
+    setDashboardStatus(prev => {
+      const next = { ...prev };
+      (Object.keys(next) as DomainType[]).forEach(d => {
+        next[d] = {
+          ...next[d],
+          activeAlertsCount: alerts.filter(a => a.domain === d && !a.recognized).length
+        };
+      });
+      return next;
+    });
+
+    const activeAlerts = alerts.filter(a => !a.recognized);
+    const totalAlerts = activeAlerts.length;
+    const domainsWithAlerts = new Set(activeAlerts.map(a => a.domain)).size;
+    
+    let newHealth: SystemHealth = { status: "healthy", message: "Todos os sistemas operando normalmente." };
+    if (totalAlerts > 20) {
+      newHealth = { status: "critical", message: `${totalAlerts} alertas críticos em ${domainsWithAlerts} domínios.` };
+    } else if (totalAlerts > 0) {
+      newHealth = { status: "warning", message: `${totalAlerts} alertas ativos em ${domainsWithAlerts} domínios requerem atenção.` };
+    }
+    setSystemHealth(newHealth);
+  }, [alerts]);
+
+  const simulateDashboardEvent = useCallback(() => {
+    const domains: DomainType[] = ["maintenance", "demand", "churn", "credit-risk"];
+    const randomDomain = domains[Math.floor(Math.random() * domains.length)];
+    
+    const items: Record<DomainType, { item: string; value: string | number; metric: string; criticality: "medium" | "high" }[]> = {
+      maintenance: [
+        { item: "Motor de Indução B-12 (M01)", value: "Vibração: 6.2 mm/s", metric: "Vibração RMS", criticality: "high" },
+        { item: "Esteira Transportadora (M03)", value: "Temperatura: 72°C", metric: "Temperatura Sensor", criticality: "medium" },
+        { item: "Prensa Hidráulica 04 (M04)", value: "OEE: 71%", metric: "Eficiência OEE", criticality: "medium" }
+      ],
+      demand: [
+        { item: "Cabos Elétricos de Cobre (P02)", value: "Estoque: 10 un (Prev: 80 un)", metric: "Risco Ruptura", criticality: "high" },
+        { item: "Chapa Metálica 2mm (P03)", value: "Estoque: 50 un (Prev: 300 un)", metric: "Risco Ruptura", criticality: "medium" }
+      ],
+      churn: [
+        { item: "Gabriel Silva Alimentos (C302)", value: "92%", metric: "Churn Score", criticality: "high" },
+        { item: "Indústrias Metalúrgicas Alfa (C104)", value: "78%", metric: "Churn Score", criticality: "medium" }
+      ],
+      "credit-risk": [
+        { item: "PROP-905 (Gabriel Silva)", value: "Score: 490", metric: "Risco de Crédito", criticality: "high" },
+        { item: "PROP-909 (Construções Fortes)", value: "Score: 590", metric: "Risco de Crédito", criticality: "medium" }
+      ]
+    };
+    
+    const candidates = items[randomDomain];
+    const picked = candidates[Math.floor(Math.random() * candidates.length)];
+    
+    addAlert({
+      domain: randomDomain,
+      item: picked.item,
+      value: picked.value,
+      metric: picked.metric,
+      criticality: picked.criticality
     });
     
-    addLogWithProfile("Sistema", "Atualização em tempo real recebida pelo motor preditivo.");
-  }, [addLogWithProfile]);
+    addLogWithProfile("Sistema", `Atualização em tempo real simulada no domínio '${DOMAINS[randomDomain].name}'.`);
+  }, [addAlert, addLogWithProfile]);
 
   const trainingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -1207,6 +1365,10 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         updateAlertThreshold,
         resetAlertThreshold,
         updateDashboardAlertCount,
+        alerts,
+        addAlert,
+        recognizeAlert,
+        clearAlerts,
       }}
     >
       {children}
