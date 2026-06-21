@@ -63,4 +63,6 @@ Este relatório documenta a implementação dos Requisitos Funcionais (RFs) do s
 - **Contraste de Textos Secundários:** O contraste de dados como ID do alerta (ex: `#ALT-MNT...` reduzido e na cor de baixo contraste `text-zinc-500/40`) e hora/minuto (segundos ocultados e na cor `text-zinc-550/50`) foi mitigado para destacar a legibilidade das informações principais (nome do item e métrica de disparo).
 - **Faxina nos Cards de Domínio:** Remoção de descrições textuais longas dos módulos do dashboard principal para conter a complexidade cognitiva.
 - **Suavização do Card de Saúde do Sistema:** Redução da altura (padding alterado para `px-4 py-2`), diminuição do tamanho da tipografia (de `text-sm` para `text-xs`) e substituição dos fundos berrantes de status por bordas sutis com alta transparência (`border-emerald-500/20 bg-emerald-500/[0.02]`), promovendo um visual elegante e integrado.
+- **Painel Lateral de Alertas (Format Drawer):** Refatoração completa do componente `AlertsMenu` de menu dropdown suspenso para formato Drawer lateral à direita (`alerts-menu.tsx`), incorporando um pano de fundo com desfoque (`bg-black/40 backdrop-blur-sm`) para isolar visualmente o foco de atenção e reduzir a fadiga cognitiva.
+
 
