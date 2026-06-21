@@ -3,14 +3,6 @@
 import React from "react";
 import Link from "next/link";
 import { useDomain, DOMAINS, DomainType } from "@/lib/context/domain-context";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { UtilityDrawer } from "@/components/shared/utility-drawer";
 import {
@@ -19,25 +11,14 @@ import {
   TrendingUp,
   Users,
   ShieldAlert,
-  ChevronDown,
-  ShieldCheck,
-  Home,
-  User,
-  Sun,
-  Moon,
-  Laptop,
   Bell,
+  Menu
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function Header() {
   const {
     activeDomain,
-    initiateDomainSwitch,
-    theme,
-    toggleTheme,
-    currentUser,
-    logout,
     trainingFinishedAlert,
     dismissFinishedAlert,
     alerts,
@@ -193,32 +174,9 @@ export function Header() {
           )}
         </div>
 
-        {/* User Info & Quick Switch Menu & Logs Trigger */}
+        {/* Quick Menu Trigger (Limpeza Radical - Sidebar Unificada) */}
         <div className="flex items-center gap-3">
-          {/* Theme Toggle Toggle */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleTheme}
-            className="h-9 w-9 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900 border border-transparent hover:border-zinc-800 transition"
-            title={
-              theme === "dark" 
-                ? "Ativar Modo Automático (Sistema)" 
-                : theme === "light" 
-                ? "Ativar Modo Escuro" 
-                : "Ativar Modo Claro"
-            }
-          >
-            {theme === "dark" ? (
-              <Moon className="h-5 w-5 text-violet-400 animate-in spin-in-12 duration-500" />
-            ) : theme === "light" ? (
-              <Sun className="h-5 w-5 text-amber-400 animate-in spin-in-12 duration-500" />
-            ) : (
-              <Laptop className="h-5 w-5 text-emerald-400 animate-in spin-in-12 duration-500" />
-            )}
-          </Button>
-
-          {/* Alertas e Notificações (RF22) */}
+          {/* Notification Quick Access (Keep the Bell out for easy access, or just inside? The instruction says 'Adicione um único botão de menu... para disparar a Sidebar') */}
           <Button
             variant="ghost"
             size="icon"
@@ -239,191 +197,16 @@ export function Header() {
             )}
           </Button>
 
-          {/* Audit Logs Trigger */}
+          {/* Unified Sidebar Hamburger Menu */}
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setActiveUtilityPanel(activeUtilityPanel === "logs" ? null : "logs")}
-            className="relative h-9 w-9 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900 border border-transparent hover:border-zinc-800 transition"
-            title="Logs de Auditoria"
+            onClick={() => setActiveUtilityPanel(activeUtilityPanel === "menu" ? null : "menu")}
+            className="h-9 w-9 text-zinc-400 hover:text-foreground hover:bg-zinc-900 border border-transparent hover:border-zinc-800 transition"
+            title="Menu Principal"
           >
-            <ShieldCheck className="h-5 w-5" />
+            <Menu className="h-5 w-5" />
           </Button>
-
-          {/* Identificação do Usuário e Painel Expandido (RF36) */}
-          {currentUser ? (
-            <div className="relative group flex items-center">
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted/40 border border-transparent hover:border-border transition cursor-default">
-                <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                  <User className="h-3.5 w-3.5" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-xs font-bold text-foreground leading-none">
-                    {currentUser.fullName}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground font-medium mt-0.5">
-                    {currentUser.accessProfile}
-                  </span>
-                </div>
-              </div>
-
-              {/* Hover Card Expandido (CA04) */}
-              <div className="absolute top-full right-0 mt-2 w-72 p-4 rounded-xl bg-popover border border-border shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
-                    <User className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-foreground">{currentUser.fullName}</h4>
-                    <p className="text-[10px] font-mono text-muted-foreground">@{currentUser.username}</p>
-                  </div>
-                </div>
-                
-                <div className="space-y-2 mb-4 bg-muted/30 p-3 rounded-lg border border-border/50">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">Perfil de Acesso:</span>
-                    <span className="font-semibold text-foreground">{currentUser.accessProfile}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">Departamento:</span>
-                    <span className="font-semibold text-foreground">{currentUser.department}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">Último Login:</span>
-                    <span className="font-semibold text-foreground">{new Date(currentUser.lastLogin).toLocaleTimeString()}</span>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  {currentUser.profileName === "Administrador" && (
-                    <Link href="/admin/usuarios" passHref legacyBehavior>
-                      <Button
-                        asChild
-                        variant="outline"
-                        size="sm"
-                        className="w-full text-xs h-8 text-green-500 border-green-500/20 hover:bg-green-500/10 cursor-pointer"
-                      >
-                        <a>
-                          <Users className="h-3.5 w-3.5 mr-2" />
-                          Gerenciar Usuários
-                        </a>
-                      </Button>
-                    </Link>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      localStorage.setItem("spam-inactivity-test-time", "10000");
-                      alert("Simulação de inatividade de 10 segundos ativada! Não interaja com a página por 10 segundos para ser desconectado.");
-                      window.dispatchEvent(new Event("mousemove"));
-                    }}
-                    className="w-full text-[10px] h-8 text-amber-500 border-amber-500/20 hover:bg-amber-500/10"
-                  >
-                    <Activity className="h-3 w-3 mr-2 animate-pulse" />
-                    Simular Inatividade (10s)
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => logout()}
-                    className="w-full text-xs font-bold h-8"
-                  >
-                    <User className="h-3.5 w-3.5 mr-2" />
-                    Encerrar Sessão (Sair)
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-md bg-muted/40 border border-border text-xs text-muted-foreground h-8">
-              <User className="h-3.5 w-3.5 opacity-60" />
-              <span>Visitante</span>
-            </div>
-          )}
-
-          {/* Quick Switch Dropdown (CA06 menu de atalho rápido) */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-9 gap-1 text-xs border-border bg-background text-foreground hover:bg-muted transition"
-              >
-                <span>Módulos</span>
-                <ChevronDown className="h-3.5 w-3.5 opacity-60" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="w-56 bg-popover border-border text-popover-foreground"
-            >
-              <DropdownMenuLabel className="text-muted-foreground text-[10px] tracking-wider uppercase font-bold">
-                Atalho Rápido (CA06)
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              
-              <DropdownMenuItem
-                onClick={() => initiateDomainSwitch("maintenance")}
-                className={`gap-2 text-xs cursor-pointer ${
-                  activeDomain === "maintenance" ? "text-amber-500 font-semibold" : ""
-                }`}
-              >
-                <Wrench className="h-3.5 w-3.5 text-amber-500" />
-                <span>Manutenção</span>
-              </DropdownMenuItem>
-
-              <DropdownMenuItem
-                onClick={() => initiateDomainSwitch("demand")}
-                className={`gap-2 text-xs cursor-pointer ${
-                  activeDomain === "demand" ? "text-sky-500 font-semibold" : ""
-                }`}
-              >
-                <TrendingUp className="h-3.5 w-3.5 text-sky-500" />
-                <span>Previsão de Demanda</span>
-              </DropdownMenuItem>
-
-              <DropdownMenuItem
-                onClick={() => initiateDomainSwitch("churn")}
-                className={`gap-2 text-xs cursor-pointer ${
-                  activeDomain === "churn" ? "text-violet-500 font-semibold" : ""
-                }`}
-              >
-                <Users className="h-3.5 w-3.5 text-violet-500" />
-                <span>Retenção de Clientes</span>
-              </DropdownMenuItem>
-
-              <DropdownMenuItem
-                onClick={() => initiateDomainSwitch("credit-risk")}
-                className={`gap-2 text-xs cursor-pointer ${
-                  activeDomain === "credit-risk" ? "text-emerald-500 font-semibold" : ""
-                }`}
-              >
-                <ShieldAlert className="h-3.5 w-3.5 text-emerald-500" />
-                <span>Risco de Crédito</span>
-              </DropdownMenuItem>
-
-              <DropdownMenuSeparator />
-              
-              <DropdownMenuItem asChild>
-                <Link
-                  href="/"
-                  className="w-full flex items-center gap-2 text-xs cursor-pointer"
-                >
-                  <Home className="h-3.5 w-3.5" />
-                  <span>Painel Inicial (Reset)</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => logout()}
-                className="flex items-center gap-2 text-xs cursor-pointer text-red-500 font-semibold"
-              >
-                <User className="h-3.5 w-3.5 text-red-500" />
-                <span>Sair da Conta (Logout)</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
       </header>
 

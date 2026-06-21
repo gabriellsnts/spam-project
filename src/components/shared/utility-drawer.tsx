@@ -15,7 +15,12 @@ import {
   X,
   ShieldCheck,
   Clock,
-  User as UserIcon
+  User as UserIcon,
+  Moon,
+  Sun,
+  LogOut,
+  Menu,
+  ChevronRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -28,7 +33,11 @@ export function UtilityDrawer() {
     clearAlerts,
     initiateDomainSwitch,
     logs,
-    clearLogs
+    clearLogs,
+    currentUser,
+    logout,
+    theme,
+    toggleTheme
   } = useDomain();
 
   const [filter, setFilter] = useState<"all" | "unrecognized">("unrecognized");
@@ -68,6 +77,7 @@ export function UtilityDrawer() {
 
   const isAlerts = activeUtilityPanel === "alerts";
   const isLogs = activeUtilityPanel === "logs";
+  const isMenu = activeUtilityPanel === "menu";
 
   return (
     <>
@@ -82,7 +92,12 @@ export function UtilityDrawer() {
         {/* Header */}
         <div className="pb-5 border-b border-border/20 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            {isAlerts ? (
+            {isMenu ? (
+              <>
+                <Menu className="h-5 w-5 text-zinc-400" />
+                <h2 className="text-md font-semibold text-foreground">Menu Principal</h2>
+              </>
+            ) : isAlerts ? (
               <>
                 <Bell className="h-5 w-5 text-zinc-400" />
                 <h2 className="text-md font-semibold text-foreground">Alertas do Sistema</h2>
@@ -103,6 +118,122 @@ export function UtilityDrawer() {
         </div>
 
         {/* Dynamic Content */}
+        {isMenu && (
+          <div className="flex flex-col h-full overflow-hidden pt-4">
+            {/* Topo: Perfil do Administrador */}
+            <div className="flex items-center gap-4 px-2 pb-6 border-b border-border/10 shrink-0">
+              <div className="h-12 w-12 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center shrink-0">
+                <UserIcon className="h-6 w-6 text-zinc-400" />
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-sm font-bold text-foreground truncate">
+                  {currentUser?.fullName || "Administrador"}
+                </span>
+                <span className="text-xs text-muted-foreground truncate mt-0.5">
+                  {currentUser?.accessProfile || "Super Admin"}
+                </span>
+                <span className="text-[10px] text-zinc-500/80 truncate mt-0.5">
+                  {currentUser?.department || "TI & Infraestrutura"}
+                </span>
+              </div>
+            </div>
+
+            {/* Corpo Central: Opções de Navegação */}
+            <div className="flex-1 overflow-y-auto py-6 space-y-6 select-none scrollbar-thin px-2">
+              <div className="space-y-1">
+                <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-3 px-2">
+                  Sistema
+                </h3>
+                <button
+                  onClick={() => setActiveUtilityPanel("alerts")}
+                  className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-zinc-900 text-muted-foreground hover:text-foreground transition-colors group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-1.5 rounded-md bg-zinc-900 group-hover:bg-zinc-800 transition-colors">
+                      <Bell className="h-4 w-4" />
+                    </div>
+                    <span className="text-sm font-medium">Alertas do Sistema</span>
+                  </div>
+                  {unrecognizedAlerts.length > 0 && (
+                    <span className="px-1.5 py-0.5 rounded-md bg-rose-500/10 text-rose-500 text-[10px] font-bold">
+                      {unrecognizedAlerts.length}
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={() => setActiveUtilityPanel("logs")}
+                  className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-zinc-900 text-muted-foreground hover:text-foreground transition-colors group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-1.5 rounded-md bg-zinc-900 group-hover:bg-zinc-800 transition-colors">
+                      <ShieldCheck className="h-4 w-4" />
+                    </div>
+                    <span className="text-sm font-medium">Log de Auditoria</span>
+                  </div>
+                  <ChevronRight className="h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity" />
+                </button>
+              </div>
+
+              <div className="h-px bg-border/10 w-full" />
+
+              <div className="space-y-1">
+                <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-3 px-2">
+                  Módulos de Domínio
+                </h3>
+                {(Object.keys(DOMAINS) as DomainType[]).map((domainType) => {
+                  const domain = DOMAINS[domainType];
+                  return (
+                    <button
+                      key={domainType}
+                      onClick={() => {
+                        initiateDomainSwitch(domainType);
+                        handleClose();
+                      }}
+                      className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-zinc-900 text-muted-foreground hover:text-foreground transition-colors group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="p-1.5 rounded-md bg-zinc-900 group-hover:bg-zinc-800 transition-colors">
+                          {getDomainIcon(domainType)}
+                        </div>
+                        <span className="text-sm font-medium">{domain.name}</span>
+                      </div>
+                      <ChevronRight className="h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity" />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Rodapé: Alternar Tema e Logout */}
+            <div className="pt-4 border-t border-border/10 shrink-0 space-y-2">
+              <button
+                onClick={toggleTheme}
+                className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-zinc-900 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <div className="p-1.5 rounded-md bg-zinc-900 transition-colors">
+                  {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                </div>
+                <span className="text-sm font-medium">
+                  Tema {theme === "dark" ? "Claro" : "Escuro"}
+                </span>
+              </button>
+              
+              <button
+                onClick={() => {
+                  handleClose();
+                  logout();
+                }}
+                className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-rose-500/10 text-muted-foreground hover:text-rose-500 transition-colors group"
+              >
+                <div className="p-1.5 rounded-md bg-zinc-900 group-hover:bg-rose-500/20 transition-colors">
+                  <LogOut className="h-4 w-4" />
+                </div>
+                <span className="text-sm font-medium">Sair</span>
+              </button>
+            </div>
+          </div>
+        )}
+
         {isAlerts && (
           <>
             {/* Tab Filters */}

@@ -208,8 +208,8 @@ interface DomainContextProps {
   addAlert: (alert: Omit<Alert, "id" | "timestamp" | "recognized">) => void;
   recognizeAlert: (id: string) => void;
   clearAlerts: () => void;
-  activeUtilityPanel: "alerts" | "logs" | null;
-  setActiveUtilityPanel: (panel: "alerts" | "logs" | null) => void;
+  activeUtilityPanel: "alerts" | "logs" | "menu" | null;
+  setActiveUtilityPanel: (panel: "alerts" | "logs" | "menu" | null) => void;
 }
 
 const DomainContext = createContext<DomainContextProps | undefined>(undefined);
@@ -265,7 +265,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<"light" | "dark" | "auto">("dark");
   const [alertThresholds, setAlertThresholds] = useState<Record<DomainType, number>>(DEFAULT_THRESHOLDS);
   const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [activeUtilityPanel, setActiveUtilityPanel] = useState<"alerts" | "logs" | null>(null);
+  const [activeUtilityPanel, setActiveUtilityPanel] = useState<"alerts" | "logs" | "menu" | null>(null);
 
   // Auth states
   const [currentUser, setCurrentUser] = useState<User | null>(null);
