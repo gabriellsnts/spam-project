@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Wrench, TrendingUp, Users, ShieldAlert, ArrowRight, AlertTriangle, Clock, Activity, RefreshCcw } from "lucide-react";
 
 export default function Home() {
-  const { activeDomain, initiateDomainSwitch, dashboardStatus, systemHealth, simulateDashboardEvent } = useDomain();
+  const { activeDomain, initiateDomainSwitch, dashboardStatus, simulateDashboardEvent } = useDomain();
 
   const getIcon = (type: DomainType) => {
     const size = "h-6 w-6";

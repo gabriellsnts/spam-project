@@ -20,7 +20,8 @@ import {
   Sun,
   LogOut,
   Menu,
-  ChevronRight
+  ChevronRight,
+  Download
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -45,8 +46,6 @@ export function UtilityDrawer() {
   } = useDomain();
 
   const [filter, setFilter] = useState<"all" | "unrecognized">("unrecognized");
-
-  if (!activeUtilityPanel) return null;
 
   const unrecognizedAlerts = alerts.filter((a) => !a.recognized);
   const displayedAlerts = React.useMemo(() => {
@@ -73,6 +72,8 @@ export function UtilityDrawer() {
       return true;
     });
   }, [alerts, filter, domainFilter, periodFilter, unrecognizedAlerts]);
+
+  if (!activeUtilityPanel) return null;
 
   const getDomainIcon = (type: DomainType) => {
     switch (type) {
@@ -105,6 +106,48 @@ export function UtilityDrawer() {
   const isAlerts = activeUtilityPanel === "alerts";
   const isLogs = activeUtilityPanel === "logs";
   const isMenu = activeUtilityPanel === "menu";
+
+  const exportToCSV = () => {
+    const headers = ["ID", "Dominio", "Item", "Metrica", "Valor", "Criticidade", "Data", "Horario", "Status"];
+    const rows = displayedAlerts.map(alert => {
+      const dateObj = new Date(alert.timestamp);
+      const dateStr = dateObj.toLocaleDateString("pt-BR");
+      const timeStr = dateObj.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+      const domainName = DOMAINS[alert.domain]?.name || alert.domain;
+      const statusStr = alert.recognized ? "Reconhecido" : "Pendente";
+      const criticalityStr = alert.criticality === "high" ? "Alto" : "Médio";
+      
+      const escape = (val: string | number) => {
+        const str = String(val);
+        if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+          return `"${str.replace(/"/g, '""')}"`;
+        }
+        return str;
+      };
+
+      return [
+        escape(alert.id),
+        escape(domainName),
+        escape(alert.item),
+        escape(alert.metric),
+        escape(alert.value),
+        escape(criticalityStr),
+        escape(dateStr),
+        escape(timeStr),
+        escape(statusStr)
+      ];
+    });
+
+    const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `historico_alertas_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <>
@@ -300,41 +343,53 @@ export function UtilityDrawer() {
             </div>
 
             {filter === "all" && (
-              <div className="flex items-center gap-2 p-3 bg-zinc-900/30 border border-border/10 rounded-xl mt-3 mx-1 shrink-0">
-                {/* Filtro de Domínio */}
-                <div className="flex-1 flex flex-col gap-1">
-                  <label className="text-[8px] uppercase tracking-wider font-extrabold text-zinc-500">
-                    Domínio
-                  </label>
-                  <select
-                    value={domainFilter}
-                    onChange={(e) => setDomainFilter(e.target.value as DomainType | "all")}
-                    className="bg-zinc-950 border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer"
-                  >
-                    <option value="all">Todos</option>
-                    <option value="maintenance">Manutenção</option>
-                    <option value="demand">Demanda</option>
-                    <option value="churn">Retenção</option>
-                    <option value="credit-risk">Crédito</option>
-                  </select>
+              <div className="flex flex-col gap-2.5 p-3 bg-zinc-900/30 border border-border/10 rounded-xl mt-3 mx-1 shrink-0">
+                <div className="flex items-center gap-2">
+                  {/* Filtro de Domínio */}
+                  <div className="flex-1 flex flex-col gap-1">
+                    <label className="text-[8px] uppercase tracking-wider font-extrabold text-zinc-500">
+                      Domínio
+                    </label>
+                    <select
+                      value={domainFilter}
+                      onChange={(e) => setDomainFilter(e.target.value as DomainType | "all")}
+                      className="bg-zinc-950 border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer"
+                    >
+                      <option value="all">Todos</option>
+                      <option value="maintenance">Manutenção</option>
+                      <option value="demand">Demanda</option>
+                      <option value="churn">Retenção</option>
+                      <option value="credit-risk">Crédito</option>
+                    </select>
+                  </div>
+
+                  {/* Filtro de Período */}
+                  <div className="flex-1 flex flex-col gap-1">
+                    <label className="text-[8px] uppercase tracking-wider font-extrabold text-zinc-500">
+                      Período
+                    </label>
+                    <select
+                      value={periodFilter}
+                      onChange={(e) => setPeriodFilter(e.target.value as "all" | "24h" | "7d" | "30d")}
+                      className="bg-zinc-950 border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer"
+                    >
+                      <option value="all">Todos</option>
+                      <option value="24h">Últimas 24h</option>
+                      <option value="7d">Últimos 7 dias</option>
+                      <option value="30d">Últimos 30 dias</option>
+                    </select>
+                  </div>
                 </div>
 
-                {/* Filtro de Período */}
-                <div className="flex-1 flex flex-col gap-1">
-                  <label className="text-[8px] uppercase tracking-wider font-extrabold text-zinc-500">
-                    Período
-                  </label>
-                  <select
-                    value={periodFilter}
-                    onChange={(e) => setPeriodFilter(e.target.value as "all" | "24h" | "7d" | "30d")}
-                    className="bg-zinc-950 border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer"
-                  >
-                    <option value="all">Todos</option>
-                    <option value="24h">Últimas 24h</option>
-                    <option value="7d">Últimos 7 dias</option>
-                    <option value="30d">Últimos 30 dias</option>
-                  </select>
-                </div>
+                {/* Export CSV Button */}
+                <Button
+                  size="sm"
+                  onClick={exportToCSV}
+                  className="w-full h-8 text-[11px] font-bold bg-green-500 hover:bg-green-600 text-zinc-950 transition-colors flex items-center justify-center gap-1.5 rounded-md"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  Exportar CSV
+                </Button>
               </div>
             )}
 

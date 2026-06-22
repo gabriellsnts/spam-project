@@ -57,6 +57,25 @@ Este relatório documenta a implementação dos Requisitos Funcionais (RFs) do s
 - **CA05 — Persistência Sem Desaparecer por Timer:** Os alertas ativos não expiram por tempo (não somem sozinhos via setTimeout ou timers). Ao clicar em "Reconhecer", o alerta permanece visível na aba "Ativos", aplicando apenas uma opacidade reduzida para 50%, desaturação total (`grayscale`) e transformando o botão em um selo sutil de "Reconhecido". O status "reconhecido" e a presença dos alertas são mantidos permanentemente no estado e em persistência (`localStorage`), permanecendo acessíveis no histórico até ação voluntária de exclusão ("Limpar Tudo").
 - **CA06 — Link de Atalho de Domínio:** Inclusão de um botão de link de atalho em cada card de alerta (ícone de link externo). Ao ser clicado, chama a função de transição `initiateDomainSwitch(domain)` redirecionando o usuário instantaneamente para o painel estatístico correspondente àquele domínio.
 
+---
+
+## RF23 — Registrar Histórico de Alertas
+- **Status:** Concluído
+- **Componentes Modificados/Criados:**
+  - `src/lib/context/domain-context.tsx` (Persistência, estados e lógica de filtros para o histórico)
+  - `src/components/shared/utility-drawer.tsx` (Filtros na UI, botão voltar, listagem cronológica com status e exportação CSV)
+  - `src/app/page.tsx` (Remoção do banner de Saúde do Sistema para faxina visual)
+
+### Mapeamento dos Critérios de Aceitação (CA)
+- **CA01 — Histórico Cronológico:** Exibição da lista de alertas na aba de histórico do painel em ordem estritamente cronológica, do mais recente para o mais antigo.
+- **CA02 — Detalhes da Ocorrência:** Cada card no histórico apresenta as informações completas do disparo: Domínio, Data, Horário formatado, Valor do disparo e a métrica correspondente.
+- **CA03 — Filtros Discretos:** Controles integrados no topo da aba de histórico permitindo filtrar a listagem dinamicamente por Domínio e por Período (Todos, Últimas 24h, Últimos 7 dias, Últimos 30 dias).
+- **CA04 — Status Visual Claro:** Cada item exibe um indicador visual claro do status atual ("Pendente" em laranja vibrante ou "Reconhecido" em tom sóbrio acinzentado).
+- **CA05 — Exportação CSV:** Botão "Exportar CSV" que gera um arquivo `.csv` legível contendo todas as colunas de dados dos alertas atualmente filtrados e aciona o download automático no navegador.
+- **CA06 — Persistência localStorage:** Persistência contínua e íntegra do histórico completo no `localStorage` sob a chave `spam-alerts`, sobrevivendo a recarregamentos de página e suportando o esvaziamento completo e imediato sem loops ou perdas de dados.
+
+---
+
 ### Melhorias Visuais e Redução de Ruído (Diretriz de Qualidade)
 - **Contadores Discretos:** Remoção do efeito de pulsação (`animate-pulse`) do ícone do sino e redução do tamanho do contador (`h-4 w-4`). Para contagens elevadas de alertas (> 9), a cor de fundo do contador é ajustada para um tom vermelho/rose mais suave e com menor contraste (`bg-rose-500/70`) para mitigar a fadiga visual. Remoção completa da badge numérica do ícone de escudo (Auditoria) no cabeçalho global, mantendo apenas a indicação numérica do sino.
 - **Espaçamento e Respiro:** Redesenho das notificações como cartões individuais com bordas suaves (`border border-border/30 rounded-xl`) e aumento do espaçamento interno (`p-4.5`) e externo (`gap-3`) para melhor legibilidade. No Dashboard Principal (`page.tsx`), foi implementada uma ampliação de padding e gap (`pt-5 space-y-7` no `CardContent`, e `pt-4 border-t` nas últimas atividades) para aumentar o respiro das informações e isolar visualmente os blocos.
