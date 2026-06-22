@@ -210,6 +210,10 @@ interface DomainContextProps {
   clearAlerts: () => void;
   activeUtilityPanel: "alerts" | "logs" | "menu" | null;
   setActiveUtilityPanel: (panel: "alerts" | "logs" | "menu" | null) => void;
+  domainFilter: DomainType | "all";
+  setDomainFilter: (filter: DomainType | "all") => void;
+  periodFilter: "all" | "24h" | "7d" | "30d";
+  setPeriodFilter: (filter: "all" | "24h" | "7d" | "30d") => void;
 }
 
 const DomainContext = createContext<DomainContextProps | undefined>(undefined);
@@ -266,6 +270,9 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
   const [alertThresholds, setAlertThresholds] = useState<Record<DomainType, number>>(DEFAULT_THRESHOLDS);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [activeUtilityPanel, setActiveUtilityPanel] = useState<"alerts" | "logs" | "menu" | null>(null);
+  const [domainFilter, setDomainFilter] = useState<DomainType | "all">("all");
+  const [periodFilter, setPeriodFilter] = useState<"all" | "24h" | "7d" | "30d">("all");
+  const isAlertsInitialized = useRef(false);
 
   // Auth states
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -501,7 +508,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
       setAlerts(initialAlerts);
       localStorage.setItem("spam-alerts", JSON.stringify(initialAlerts));
     }
-
+    isAlertsInitialized.current = true;
     setIsAuthLoading(false);
   }, []);
 
@@ -624,7 +631,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
 
   // Synchronize alerts state to localStorage and update dashboard / health states
   useEffect(() => {
-    if (alerts.length === 0) return;
+    if (!isAlertsInitialized.current) return;
     localStorage.setItem("spam-alerts", JSON.stringify(alerts));
     
     setDashboardStatus(prev => {
@@ -1374,6 +1381,10 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         clearAlerts,
         activeUtilityPanel,
         setActiveUtilityPanel,
+        domainFilter,
+        setDomainFilter,
+        periodFilter,
+        setPeriodFilter,
       }}
     >
       {children}
