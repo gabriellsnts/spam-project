@@ -92,6 +92,16 @@ export function UtilityDrawer() {
         {/* Header */}
         <div className="pb-5 border-b border-border/20 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
+            {!isMenu && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setActiveUtilityPanel("menu")}
+                className="h-7 text-xs text-muted-foreground hover:text-foreground hover:bg-zinc-900 transition px-2 py-1 flex items-center gap-1 mr-1.5"
+              >
+                ← Voltar
+              </Button>
+            )}
             {isMenu ? (
               <>
                 <Menu className="h-5 w-5 text-zinc-400" />
