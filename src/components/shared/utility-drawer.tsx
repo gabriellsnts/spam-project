@@ -37,7 +37,11 @@ export function UtilityDrawer() {
     currentUser,
     logout,
     theme,
-    toggleTheme
+    toggleTheme,
+    domainFilter,
+    setDomainFilter,
+    periodFilter,
+    setPeriodFilter
   } = useDomain();
 
   const [filter, setFilter] = useState<"all" | "unrecognized">("unrecognized");
@@ -45,7 +49,30 @@ export function UtilityDrawer() {
   if (!activeUtilityPanel) return null;
 
   const unrecognizedAlerts = alerts.filter((a) => !a.recognized);
-  const displayedAlerts = alerts; // Keep recognized alerts visible in both tabs as per the layout adjustment
+  const displayedAlerts = React.useMemo(() => {
+    if (filter === "unrecognized") {
+      return unrecognizedAlerts;
+    }
+    const sorted = [...alerts].sort((a, b) => b.timestamp - a.timestamp);
+    return sorted.filter((alert) => {
+      if (domainFilter !== "all" && alert.domain !== domainFilter) {
+        return false;
+      }
+      if (periodFilter !== "all") {
+        const now = Date.now();
+        const limit =
+          periodFilter === "24h"
+            ? 24 * 60 * 60 * 1000
+            : periodFilter === "7d"
+            ? 7 * 24 * 60 * 60 * 1000
+            : 30 * 24 * 60 * 60 * 1000;
+        if (alert.timestamp < now - limit) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [alerts, filter, domainFilter, periodFilter, unrecognizedAlerts]);
 
   const getDomainIcon = (type: DomainType) => {
     switch (type) {
@@ -272,6 +299,45 @@ export function UtilityDrawer() {
               </button>
             </div>
 
+            {filter === "all" && (
+              <div className="flex items-center gap-2 p-3 bg-zinc-900/30 border border-border/10 rounded-xl mt-3 mx-1 shrink-0">
+                {/* Filtro de Domínio */}
+                <div className="flex-1 flex flex-col gap-1">
+                  <label className="text-[8px] uppercase tracking-wider font-extrabold text-zinc-500">
+                    Domínio
+                  </label>
+                  <select
+                    value={domainFilter}
+                    onChange={(e) => setDomainFilter(e.target.value as DomainType | "all")}
+                    className="bg-zinc-950 border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer"
+                  >
+                    <option value="all">Todos</option>
+                    <option value="maintenance">Manutenção</option>
+                    <option value="demand">Demanda</option>
+                    <option value="churn">Retenção</option>
+                    <option value="credit-risk">Crédito</option>
+                  </select>
+                </div>
+
+                {/* Filtro de Período */}
+                <div className="flex-1 flex flex-col gap-1">
+                  <label className="text-[8px] uppercase tracking-wider font-extrabold text-zinc-500">
+                    Período
+                  </label>
+                  <select
+                    value={periodFilter}
+                    onChange={(e) => setPeriodFilter(e.target.value as "all" | "24h" | "7d" | "30d")}
+                    className="bg-zinc-950 border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer"
+                  >
+                    <option value="all">Todos</option>
+                    <option value="24h">Últimas 24h</option>
+                    <option value="7d">Últimos 7 dias</option>
+                    <option value="30d">Últimos 30 dias</option>
+                  </select>
+                </div>
+              </div>
+            )}
+
             {/* Alerts List */}
             <div className="flex-1 overflow-y-auto py-5 space-y-4 select-none scrollbar-thin">
               {displayedAlerts.length === 0 ? (
@@ -323,6 +389,18 @@ export function UtilityDrawer() {
                             >
                               {isHigh ? "Crítico (Alto)" : "Atenção (Médio)"}
                             </span>
+
+                            {/* Status Badge */}
+                            <span
+                              className={cn(
+                                "px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider",
+                                alert.recognized
+                                  ? "bg-zinc-800 text-zinc-400 border border-zinc-700/50"
+                                  : "bg-amber-500/15 text-amber-500 border border-amber-500/30 animate-pulse"
+                              )}
+                            >
+                              {alert.recognized ? "Reconhecido" : "Pendente"}
+                            </span>
                           </div>
                           
                           <h4 className="text-xs font-bold text-foreground leading-snug mt-1 truncate">
@@ -345,11 +423,17 @@ export function UtilityDrawer() {
 
                       {/* Action Controls */}
                       <div className="flex items-center justify-between gap-3 pt-1 border-t border-border/20">
-                        <span className="text-[9px] text-zinc-500/50 dark:text-zinc-550/50 font-mono select-none">
-                          {new Date(alert.timestamp).toLocaleTimeString("pt-BR", {
-                            hour: "2-digit",
-                            minute: "2-digit"
-                          })}
+                        <span className="text-[9px] text-zinc-500/55 dark:text-zinc-550/55 font-mono select-none flex items-center gap-1.5">
+                          <span>
+                            {new Date(alert.timestamp).toLocaleDateString("pt-BR")}
+                          </span>
+                          <span className="opacity-40">•</span>
+                          <span>
+                            {new Date(alert.timestamp).toLocaleTimeString("pt-BR", {
+                              hour: "2-digit",
+                              minute: "2-digit"
+                            })}
+                          </span>
                         </span>
 
                         <div className="flex items-center gap-2">
@@ -397,7 +481,7 @@ export function UtilityDrawer() {
             {/* Footer Actions */}
             <div className="pt-4 border-t border-border/20 bg-transparent flex items-center justify-between shrink-0">
               <span className="text-xs text-muted-foreground font-mono">
-                Alertas ativos: {unrecognizedAlerts.length}
+                {filter === "all" ? `Alertas exibidos: ${displayedAlerts.length}` : `Alertas ativos: ${unrecognizedAlerts.length}`}
               </span>
               {alerts.length > 0 && (
                 <Button
