@@ -160,38 +160,40 @@ export function UtilityDrawer() {
       {/* Drawer Panel */}
       <div className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-md bg-zinc-950 border-l border-border/30 shadow-2xl flex flex-col p-6 transition-transform duration-300 animate-in slide-in-from-right">
         {/* Header */}
-        <div className="pb-5 border-b border-border/20 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
+        <div className="pb-5 border-b border-border/20 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4 flex-1 min-w-0">
             {!isMenu && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setActiveUtilityPanel("menu")}
-                className="h-7 text-xs text-muted-foreground hover:text-foreground hover:bg-zinc-900 transition px-2 py-1 flex items-center gap-1 mr-1.5"
+                className="h-7 text-xs text-muted-foreground hover:text-foreground hover:bg-zinc-900 transition px-2 py-0 flex items-center justify-center gap-1 shrink-0 align-middle"
               >
                 ← Voltar
               </Button>
             )}
-            {isMenu ? (
-              <>
-                <Menu className="h-5 w-5 text-zinc-400" />
-                <h2 className="text-md font-semibold text-foreground">Menu Principal</h2>
-              </>
-            ) : isAlerts ? (
-              <>
-                <Bell className="h-5 w-5 text-zinc-400" />
-                <h2 className="text-md font-semibold text-foreground">Alertas do Sistema</h2>
-              </>
-            ) : (
-              <>
-                <ShieldCheck className="h-5 w-5 text-emerald-500" />
-                <h2 className="text-md font-semibold text-foreground">Log de Auditoria Interna</h2>
-              </>
-            )}
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              {isMenu ? (
+                <>
+                  <Menu className="h-5 w-5 text-zinc-400 shrink-0" />
+                  <h2 className="text-md font-semibold text-foreground truncate">Menu Principal</h2>
+                </>
+              ) : isAlerts ? (
+                <>
+                  <Bell className="h-5 w-5 text-zinc-400 shrink-0" />
+                  <h2 className="text-md font-semibold text-foreground truncate">Alertas do Sistema</h2>
+                </>
+              ) : (
+                <>
+                  <ShieldCheck className="h-5 w-5 text-emerald-500 shrink-0" />
+                  <h2 className="text-md font-semibold text-foreground truncate">Log de Auditoria Interna</h2>
+                </>
+              )}
+            </div>
           </div>
           <button
             onClick={handleClose}
-            className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-zinc-900 transition"
+            className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-zinc-900 transition shrink-0"
           >
             <X className="h-4.5 w-4.5" />
           </button>
@@ -492,24 +494,37 @@ export function UtilityDrawer() {
                         </span>
 
                         <div className="flex items-center gap-2">
-                          {/* 1-Click Recognize Button */}
-                          {!alert.recognized ? (
-                            <Button
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                recognizeAlert(alert.id);
-                              }}
-                              className="h-6 text-[9px] font-black bg-zinc-900 border border-border/80 hover:bg-green-550/10 hover:border-green-500 hover:text-green-500 text-foreground transition-all duration-200 px-2 flex items-center gap-1"
-                            >
-                              <Check className="h-3 w-3" />
-                              Reconhecer
-                            </Button>
+                          {filter === "unrecognized" ? (
+                            !alert.recognized ? (
+                              <Button
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  recognizeAlert(alert.id);
+                                }}
+                                className="h-6 text-[9px] font-black bg-zinc-900 border border-border/80 hover:bg-green-550/10 hover:border-green-500 hover:text-green-500 text-foreground transition-all duration-200 px-2 flex items-center gap-1"
+                              >
+                                <Check className="h-3 w-3" />
+                                Reconhecer
+                              </Button>
+                            ) : (
+                              <span className="text-[9px] text-zinc-500/60 dark:text-zinc-450/60 font-bold flex items-center gap-0.5 select-none py-0.5 px-1.5 bg-zinc-950/20 border border-border/20 rounded">
+                                <Check className="h-3 w-3 text-emerald-500/70" />
+                                Reconhecido
+                              </span>
+                            )
                           ) : (
-                            <span className="text-[9px] text-zinc-500/60 dark:text-zinc-450/60 font-bold flex items-center gap-0.5 select-none py-0.5 px-1.5 bg-zinc-950/20 border border-border/20 rounded">
-                              <Check className="h-3 w-3 text-emerald-500/70" />
-                              Reconhecido
-                            </span>
+                            // Read-only status badge in the HISTÓRICO tab
+                            alert.recognized ? (
+                              <span className="text-[9px] text-zinc-550 dark:text-zinc-500 font-bold flex items-center gap-0.5 select-none py-0.5 px-1.5 bg-zinc-950/20 border border-border/20 rounded">
+                                <Check className="h-3 w-3 text-emerald-500/70" />
+                                Reconhecido
+                              </span>
+                            ) : (
+                              <span className="text-[9px] text-amber-500/80 dark:text-amber-500/75 font-bold flex items-center gap-0.5 select-none py-0.5 px-1.5 bg-zinc-950/20 border border-border/20 rounded">
+                                Pendente
+                              </span>
+                            )
                           )}
 
                           {/* Shortcut to domain dashboard */}
