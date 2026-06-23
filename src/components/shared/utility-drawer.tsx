@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useDomain, DOMAINS, DomainType, AuditLog } from "@/lib/context/domain-context";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +15,6 @@ import {
   ShieldAlert,
   X,
   ShieldCheck,
-  Clock,
   User as UserIcon,
   Moon,
   Sun,
@@ -45,6 +45,7 @@ export function UtilityDrawer() {
     setPeriodFilter
   } = useDomain();
 
+  const router = useRouter();
   const [filter, setFilter] = useState<"all" | "unrecognized">("unrecognized");
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
   const [logUserFilter, setLogUserFilter] = useState<string>("all");
@@ -222,6 +223,41 @@ export function UtilityDrawer() {
     document.body.removeChild(link);
   };
 
+  const exportLogsToCSV = () => {
+    const headers = ["Data", "Horário", "Nome do Usuário", "Perfil de Acesso", "Descrição da Ação"];
+    const rows = displayedLogs.map(log => {
+      const dateObj = new Date(log.timestamp);
+      const dateStr = dateObj.toLocaleDateString("pt-BR");
+      const timeStr = dateObj.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+      
+      const escape = (val: string | number) => {
+        const str = String(val);
+        if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+          return `"${str.replace(/"/g, '""')}"`;
+        }
+        return str;
+      };
+
+      return [
+        escape(dateStr),
+        escape(timeStr),
+        escape(log.username),
+        escape(log.accessProfile),
+        escape(log.action)
+      ];
+    });
+
+    const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `log_auditoria_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <>
       {/* Backdrop with blur */}
@@ -290,6 +326,17 @@ export function UtilityDrawer() {
                 <span className="text-[10px] text-zinc-500/80 truncate mt-0.5">
                   {currentUser?.department || "TI & Infraestrutura"}
                 </span>
+                {(currentUser?.accessProfile === "Super Admin" || !currentUser) && (
+                  <button
+                    onClick={() => {
+                      router.push("/admin/usuarios");
+                      handleClose();
+                    }}
+                    className="text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1 mt-1 text-left w-fit"
+                  >
+                    ⚙️ Acessar Área Administrativa
+                  </button>
+                )}
               </div>
             </div>
 
@@ -726,20 +773,34 @@ export function UtilityDrawer() {
                 </div>
               </div>
               
-              {/* Reset Filters button */}
-              {(logUserFilter !== "all" || logStartDate !== "" || logEndDate !== "" || logActionType !== "all") && (
-                <button
-                  onClick={() => {
-                    setLogUserFilter("all");
-                    setLogStartDate("");
-                    setLogEndDate("");
-                    setLogActionType("all");
-                  }}
-                  className="text-[9px] font-bold text-rose-500 hover:text-rose-400 text-center pt-0.5 transition"
+              {/* Reset Filters and Export CSV buttons */}
+              <div className="flex items-center justify-between gap-3 pt-1">
+                {(logUserFilter !== "all" || logStartDate !== "" || logEndDate !== "" || logActionType !== "all") ? (
+                  <button
+                    onClick={() => {
+                      setLogUserFilter("all");
+                      setLogStartDate("");
+                      setLogEndDate("");
+                      setLogActionType("all");
+                    }}
+                    className="text-[9px] font-bold text-rose-500 hover:text-rose-400 transition"
+                  >
+                    Limpar Filtros Avançados
+                  </button>
+                ) : (
+                  <span />
+                )}
+                
+                <Button
+                  size="sm"
+                  onClick={exportLogsToCSV}
+                  disabled={displayedLogs.length === 0}
+                  className="h-7 text-[10px] font-bold bg-green-500 hover:bg-green-600 disabled:opacity-50 text-zinc-950 transition-colors flex items-center justify-center gap-1 px-3 rounded-md shrink-0 ml-auto"
                 >
-                  Limpar Filtros Avançados
-                </button>
-              )}
+                  <Download className="h-3 w-3" />
+                  Exportar CSV
+                </Button>
+              </div>
             </div>
 
             {/* Logs Content */}

@@ -76,6 +76,22 @@ Este relatório documenta a implementação dos Requisitos Funcionais (RFs) do s
 
 ---
 
+## RF38 — Exibir Log de Auditoria na Interface Administrativa
+- **Status:** Concluído
+- **Componentes Modificados/Criados:**
+  - `src/lib/context/domain-context.tsx` (Estruturação e carga inicial de logs de auditoria e enriquecimento de gravação)
+  - `src/components/shared/utility-drawer.tsx` (Interface de visualização dos logs, filtros avançados, exportação e painel de detalhes)
+  - `PROGRESS_REPORT.md` (Mapeamento do progresso)
+
+### Mapeamento dos Critérios de Aceitação (CA)
+- **CA01 — Tabela de Logs Cronológica:** Renderização dos eventos em uma tabela estritamente cronológica (do mais recente ao mais antigo) contendo colunas de Data, Horário, Nome do Usuário, Perfil de Acesso e Descrição da Ação.
+- **CA02 & CA04 — Filtros Avançados e Busca Vazia:** Inclusão de componentes de filtro funcionais acima da tabela para pesquisa rápida por Nome de Usuário (dropdown dinâmico), Intervalo de Datas (Data Inicial e Final) e Tipo de Ação (Autenticação, Modelos/Treino, Alertas/Limiares, Outros). Exibição de mensagem informativa amigável e botão para limpar os filtros quando nenhum resultado é retornado.
+- **CA03 — Exportação CSV:** Botão "Exportar CSV" que converte a listagem atualmente filtrada em arquivo `.csv` codificado com BOM (\uFEFF) para compatibilidade com o Excel e aciona o download instantâneo no navegador.
+- **CA05 — Painel de Indicadores Resumidos:** Painel no topo da aba de logs com uma visão consolidada e quantitativa das operações, exibindo: Total de Ações, Ações Críticas (contendo falhas, erros ou bloqueios) e Usuários Ativos.
+- **CA06 — Visualização Expandida de Detalhes:** Lógica de clique em qualquer linha da tabela que abre um sub-painel lateral/overlay animado (`slide-in-from-right`) contendo a visualização detalhada e completa daquela ação de auditoria específica.
+
+---
+
 ### Melhorias Visuais e Redução de Ruído (Diretriz de Qualidade)
 - **Contadores Discretos:** Remoção do efeito de pulsação (`animate-pulse`) do ícone do sino e redução do tamanho do contador (`h-4 w-4`). Para contagens elevadas de alertas (> 9), a cor de fundo do contador é ajustada para um tom vermelho/rose mais suave e com menor contraste (`bg-rose-500/70`) para mitigar a fadiga visual. Remoção completa da badge numérica do ícone de escudo (Auditoria) no cabeçalho global, mantendo apenas a indicação numérica do sino.
 - **Espaçamento e Respiro:** Redesenho das notificações como cartões individuais com bordas suaves (`border border-border/30 rounded-xl`) e aumento do espaçamento interno (`p-4.5`) e externo (`gap-3`) para melhor legibilidade. No Dashboard Principal (`page.tsx`), foi implementada uma ampliação de padding e gap (`pt-5 space-y-7` no `CardContent`, e `pt-4 border-t` nas últimas atividades) para aumentar o respiro das informações e isolar visualmente os blocos.
