@@ -36,11 +36,13 @@ export function AlertThresholdSettings({
   calculateCriticalCount,
   activeAlerts,
 }: AlertThresholdSettingsProps) {
-  const { alertThresholds, updateAlertThreshold, resetAlertThreshold, updateDashboardAlertCount } = useDomain();
+  const { alertThresholds, updateAlertThreshold, resetAlertThreshold, updateDashboardAlertCount, currentUser } = useDomain();
 
   const appliedValue = alertThresholds[domain];
   const [draftValue, setDraftValue] = useState<number>(appliedValue);
   const [showRestoreConfirm, setShowRestoreConfirm] = useState(false);
+
+  const canEdit = !currentUser || currentUser.accessProfile === "Super Admin";
 
   // Sync draft value when applied value changes from context (e.g. on load or reset)
   useEffect(() => {
@@ -139,7 +141,8 @@ export function AlertThresholdSettings({
                 step={step}
                 value={draftValue}
                 onChange={(e) => setDraftValue(Number(e.target.value))}
-                className="flex-1 h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-current text-primary"
+                disabled={!canEdit}
+                className={cn("flex-1 h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-current text-primary", !canEdit && "opacity-50 cursor-not-allowed")}
                 style={{
                   color: domain === "maintenance" ? "var(--amber-500, #f59e0b)" : domain === "demand" ? "#0ea5e9" : domain === "churn" ? "#8b5cf6" : "#10b981"
                 }}
@@ -163,7 +166,8 @@ export function AlertThresholdSettings({
                     // Allow temporary empty input while typing
                   }
                 }}
-                className="w-16 bg-background border border-border text-foreground font-mono text-center text-xs rounded px-1.5 py-1 focus:ring-1 focus:outline-none"
+                disabled={!canEdit}
+                className={cn("w-16 bg-background border border-border text-foreground font-mono text-center text-xs rounded px-1.5 py-1 focus:ring-1 focus:outline-none", !canEdit && "opacity-50 cursor-not-allowed bg-muted")}
               />
               <span className="text-xs text-muted-foreground font-semibold">{unit}</span>
             </div>
@@ -207,8 +211,9 @@ export function AlertThresholdSettings({
                   <Button
                     onClick={handleResetClick}
                     variant="outline"
-                    className={`h-8 text-[10px] font-bold font-sans gap-1 ${styles.btnReset}`}
-                    title="Restaurar limiar de alerta para o padrão de fábrica"
+                    disabled={!canEdit}
+                    className={`h-8 text-[10px] font-bold font-sans gap-1 ${styles.btnReset} disabled:opacity-40 disabled:cursor-not-allowed`}
+                    title={canEdit ? "Restaurar limiar de alerta para o padrão de fábrica" : "Sem permissão"}
                   >
                     <RotateCcw className="h-3 w-3" />
                     Padrão
@@ -216,8 +221,9 @@ export function AlertThresholdSettings({
 
                   <Button
                     onClick={handleApply}
-                    disabled={!hasChanges}
+                    disabled={!hasChanges || !canEdit}
                     className={`h-8 text-[10px] font-bold font-sans ${styles.btnApply} disabled:opacity-40 disabled:cursor-not-allowed`}
+                    title={canEdit ? "" : "Sem permissão para alterar"}
                   >
                     Aplicar
                   </Button>
@@ -225,6 +231,12 @@ export function AlertThresholdSettings({
               )}
             </div>
           </div>
+          {!canEdit && (
+            <div className="text-[10px] text-amber-500 font-semibold bg-amber-500/10 border border-amber-500/20 p-2 rounded flex items-center gap-1.5">
+              <AlertTriangle className="h-3.5 w-3.5" />
+              Somente Administradores têm permissão para alterar regras de threshold.
+            </div>
+          )}
         </CardContent>
       </Card>
 

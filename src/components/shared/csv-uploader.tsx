@@ -1053,7 +1053,10 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
     previousTrainedModels,
     hyperparameterHistory,
     clearHyperparameterHistory,
+    currentUser,
   } = useDomain();
+
+  const canEdit = !currentUser || currentUser.accessProfile === "Super Admin";
   const fileInputRef = useRef<HTMLInputElement>(null);
   const activeModel = activeDomain ? trainedModels[activeDomain] : null;
   const previousModel = activeDomain ? previousTrainedModels[activeDomain] : null;
@@ -1889,12 +1892,20 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                         startTraining(fileDetails.sizeBytes, fileDetails.rows, allRows);
                       }
                     }}
-                    className={cn("text-[10px] font-bold h-8 px-3.5", theme.button)}
+                    disabled={!canEdit}
+                    className={cn("text-[10px] font-bold h-8 px-3.5", theme.button, !canEdit && "opacity-50 cursor-not-allowed")}
+                    title={canEdit ? "" : "Somente Administradores podem iniciar o treinamento."}
                   >
                     Iniciar Treinamento do Modelo
                   </Button>
                 </div>
               </div>
+              {!canEdit && (
+                <div className="text-[10px] text-amber-500 font-semibold bg-amber-500/10 border border-amber-500/20 p-2 rounded flex items-center gap-1.5 mt-2">
+                  <AlertTriangle className="h-3.5 w-3.5" />
+                  Somente Administradores têm permissão para disparar treinamentos de modelo.
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -2665,7 +2676,8 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                   startTraining(fileDetails.sizeBytes, fileDetails.rows, allRows);
                 }
               }}
-              className="text-[10px] font-bold h-8 px-3.5 bg-rose-600 hover:bg-rose-500 text-white font-semibold transition"
+              disabled={!canEdit}
+              className={cn("text-[10px] font-bold h-8 px-3.5 bg-rose-600 hover:bg-rose-500 text-white font-semibold transition", !canEdit && "opacity-50 cursor-not-allowed")}
             >
               Substituir Modelo e Treinar
             </Button>

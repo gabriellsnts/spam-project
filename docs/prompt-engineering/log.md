@@ -8,3 +8,12 @@ Dificuldade: A pÃ¡gina do domÃ­nio de "Churn" possuÃ­a inicialmente 270 linhas, 
 CorreÃ§Ã£o aplicada: Foi utilizado `write_to_file` com `Overwrite: true` em vez de `replace_file_content` para lidar com toda a pÃ¡gina de forma atÃ´mica para RF17 e RF18.
 Melhoria de UX sugerida pela IA: As tabelas foram implementadas permitindo nÃ£o sÃ³ visualizar a classificaÃ§Ã£o e probabilidade, mas as linhas sÃ£o interativas (`expandedRow`), de forma que ao clicar na linha o painel detalha os fatores de influÃªncia locais para aquela pessoa/empresa, conforme o critÃ©rio CA05.
 
+
+[Lote historico-relatorios] Implementar Histórico de Previsões, Relatórios e Controle de Acesso (RF24, RF25, RF31, RF40, RF34)
+
+Prompt usado: Implemente esse requisitos e dps de npm run dev para analise
+Funcionou bem: A abstração do histórico no \DomainContext\, permitindo unificar as predições de Risco de Crédito e demais domínios. A implementação rápida do filtro por domínios e período na interface de Utility Drawer e integração de relatórios via CSV.
+Dificuldade: Refatorar o \CreditRiskPage\ para usar o histórico global em vez do estado local e ajustar o layout da aba do Drawer de forma a não quebrar o layout das outras abas (Alertas e Logs).
+Correção aplicada: Para resolver o acesso aos logs, foi passado um mock de controle de role onde apenas o 'Super Admin' ou usuários nulos (deslogados) podem executar edição nas áreas críticas.
+Melhoria de UX sugerida pela IA: No painel de Previsões, cada card inclui atalho para as páginas dos domínios em vez de apenas texto, com micro-interações de destaque.
+
