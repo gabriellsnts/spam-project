@@ -105,3 +105,30 @@ Este relatÃ³rio documenta a implementaÃ§Ã£o dos Requisitos Funcionais (RFs) do s
   - **Topo:** Bloco fixo com informaÃ§Ãµes do perfil do Administrador (Nome, Cargo, Departamento).
   - **Corpo Central:** BotÃµes de navegaÃ§Ã£o para alternar a gaveta para "Alertas do Sistema" ou "Log de Auditoria". Linha divisÃ³ria e botÃµes rÃ¡pidos para navegaÃ§Ã£o entre os mÃ³dulos de domÃ­nio.
   - **RodapÃ©:** BotÃ£o para alternar o tema da interface (Claro/Escuro) e botÃ£o de Logout ("Sair") com cor de alerta sutil. Tudo reunido em um Ãºnico hub que otimiza espaÃ§o de tela e organiza a hierarquia da aplicaÃ§Ã£o.
+
+---
+
+## RF24, RF25, RF31 e RF40 - Histórico de Previsões e Relatórios Consolidados
+- **Status:** Concluído
+- **Componentes Modificados/Criados:**
+  - \src/lib/context/domain-context.tsx\ (Abstração global do histórico de predições)
+  - \src/app/(domains)/credit-risk/page.tsx\ (Refatoração para consumir o histórico global ao invés de local state)
+  - \src/components/shared/utility-drawer.tsx\ (Criação da aba 'Histórico de Previsões' e relatório consolidado)
+
+### Mapeamento dos Critérios de Aceitação (CA)
+- **RF24 (Histórico Global):** A abstração de predições foi centralizada no \DomainContext\, permitindo unificar todas as chamadas preditivas de Risco de Crédito e demais domínios. Uma aba específica no Drawer exibe os registros em tempo real.
+- **RF25 (Exportação CSV):** Adicionado botão de 'Exportar CSV' para o histórico de previsões filtrado, permitindo o download em arquivo decodificado para análise externa.
+- **RF31 (Filtros de Data):** Incorporados dropdowns de filtro na aba do histórico (Todas, Últimas 24h, Últimos 7 dias, Últimos 30 dias) e por domínio.
+- **RF40 (Relatório Consolidado):** Incluído no menu do painel utilitário um botão para 'Relatório Consolidado' que condensa ativamente tanto Alertas Pendentes/Reconhecidos quanto Previsões Recentes em um único CSV.
+
+---
+
+## RF34 - Aplicar Regras de Controle de Acesso Baseado em Role
+- **Status:** Concluído
+- **Componentes Modificados/Criados:**
+  - \src/components/shared/alert-threshold-settings.tsx\ (Bloqueio da edição de limites)
+  - \src/components/shared/csv-uploader.tsx\ (Bloqueio do botão de treinamento de IA)
+
+### Mapeamento dos Critérios de Aceitação (CA)
+- **Restrição de Funcionalidades Críticas:** A edição de limiares de alertas e o disparo de treinamentos de modelo foram logicamente e visualmente restritos. Somente usuários com o \ccessProfile === 'Super Admin'\ possuem acesso livre a estas opções, exibindo tags e tooltips indicativas da falta de permissão caso o login seja de hierarquia inferior.
+
