@@ -47,6 +47,10 @@ export function UtilityDrawer() {
 
   const [filter, setFilter] = useState<"all" | "unrecognized">("unrecognized");
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
+  const [logUserFilter, setLogUserFilter] = useState<string>("all");
+  const [logStartDate, setLogStartDate] = useState<string>("");
+  const [logEndDate, setLogEndDate] = useState<string>("");
+  const [logActionType, setLogActionType] = useState<string>("all");
 
   const criticalCount = React.useMemo(() => {
     return logs.filter((log) => 
@@ -58,9 +62,63 @@ export function UtilityDrawer() {
     return new Set(logs.map((log) => log.username).filter(Boolean)).size;
   }, [logs]);
 
-  const displayedLogs = React.useMemo(() => {
-    return [...logs].sort((a, b) => b.timestamp - a.timestamp);
+  const uniqueLogUsers = React.useMemo(() => {
+    return Array.from(new Set(logs.map(log => log.username).filter(Boolean)));
   }, [logs]);
+
+  const displayedLogs = React.useMemo(() => {
+    let filtered = [...logs];
+
+    // Filter by User
+    if (logUserFilter !== "all") {
+      filtered = filtered.filter((log) => log.username === logUserFilter);
+    }
+
+    // Filter by Date range
+    if (logStartDate) {
+      filtered = filtered.filter((log) => {
+        const logDate = new Date(log.timestamp);
+        const y = logDate.getFullYear();
+        const m = String(logDate.getMonth() + 1).padStart(2, "0");
+        const d = String(logDate.getDate()).padStart(2, "0");
+        const logLocalDateStr = `${y}-${m}-${d}`;
+        return logLocalDateStr >= logStartDate;
+      });
+    }
+    if (logEndDate) {
+      filtered = filtered.filter((log) => {
+        const logDate = new Date(log.timestamp);
+        const y = logDate.getFullYear();
+        const m = String(logDate.getMonth() + 1).padStart(2, "0");
+        const d = String(logDate.getDate()).padStart(2, "0");
+        const logLocalDateStr = `${y}-${m}-${d}`;
+        return logLocalDateStr <= logEndDate;
+      });
+    }
+
+    // Filter by Action Type
+    if (logActionType !== "all") {
+      filtered = filtered.filter((log) => {
+        const action = log.action || "";
+        if (logActionType === "auth") {
+          return /login|sessão|conta|senha/i.test(action);
+        }
+        if (logActionType === "models") {
+          return /training|treinamento|model/i.test(action);
+        }
+        if (logActionType === "alerts") {
+          return /alert|alerta|limiar/i.test(action);
+        }
+        if (logActionType === "others") {
+          return !/login|sessão|conta|senha|training|treinamento|model|alert|alerta|limiar/i.test(action);
+        }
+        return true;
+      });
+    }
+
+    // Sort chronologically (most recent first)
+    return filtered.sort((a, b) => b.timestamp - a.timestamp);
+  }, [logs, logUserFilter, logStartDate, logEndDate, logActionType]);
 
   const unrecognizedAlerts = alerts.filter((a) => !a.recognized);
   const displayedAlerts = React.useMemo(() => {
@@ -601,13 +659,110 @@ export function UtilityDrawer() {
               </div>
             </div>
 
+            {/* Advanced Filters */}
+            <div className="flex flex-col gap-2.5 p-3 bg-zinc-900/30 border border-border/10 rounded-xl mt-3 mx-1 shrink-0">
+              <div className="flex items-center gap-2">
+                {/* User Filter */}
+                <div className="flex-1 flex flex-col gap-1">
+                  <label className="text-[8px] uppercase tracking-wider font-extrabold text-zinc-500">
+                    Usuário
+                  </label>
+                  <select
+                    value={logUserFilter}
+                    onChange={(e) => setLogUserFilter(e.target.value)}
+                    className="bg-zinc-950 border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer w-full text-ellipsis"
+                  >
+                    <option value="all">Todos</option>
+                    {uniqueLogUsers.map((user) => (
+                      <option key={user} value={user}>
+                        {user}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Action Type Filter */}
+                <div className="flex-1 flex flex-col gap-1">
+                  <label className="text-[8px] uppercase tracking-wider font-extrabold text-zinc-500">
+                    Tipo de Ação
+                  </label>
+                  <select
+                    value={logActionType}
+                    onChange={(e) => setLogActionType(e.target.value)}
+                    className="bg-zinc-950 border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer w-full"
+                  >
+                    <option value="all">Todos</option>
+                    <option value="auth">Autenticação</option>
+                    <option value="models">Modelos/Treino</option>
+                    <option value="alerts">Alertas/Limiares</option>
+                    <option value="others">Outros</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Date Filters */}
+              <div className="flex items-center gap-2">
+                <div className="flex-1 flex flex-col gap-1">
+                  <label className="text-[8px] uppercase tracking-wider font-extrabold text-zinc-500">
+                    Data Inicial
+                  </label>
+                  <input
+                    type="date"
+                    value={logStartDate}
+                    onChange={(e) => setLogStartDate(e.target.value)}
+                    className="bg-zinc-950 border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer w-full"
+                  />
+                </div>
+                <div className="flex-1 flex flex-col gap-1">
+                  <label className="text-[8px] uppercase tracking-wider font-extrabold text-zinc-500">
+                    Data Final
+                  </label>
+                  <input
+                    type="date"
+                    value={logEndDate}
+                    onChange={(e) => setLogEndDate(e.target.value)}
+                    className="bg-zinc-950 border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer w-full"
+                  />
+                </div>
+              </div>
+              
+              {/* Reset Filters button */}
+              {(logUserFilter !== "all" || logStartDate !== "" || logEndDate !== "" || logActionType !== "all") && (
+                <button
+                  onClick={() => {
+                    setLogUserFilter("all");
+                    setLogStartDate("");
+                    setLogEndDate("");
+                    setLogActionType("all");
+                  }}
+                  className="text-[9px] font-bold text-rose-500 hover:text-rose-400 text-center pt-0.5 transition"
+                >
+                  Limpar Filtros Avançados
+                </button>
+              )}
+            </div>
+
             {/* Logs Content */}
             <div className="flex-1 overflow-y-auto py-5 select-none scrollbar-thin flex flex-col min-h-0 relative">
               {displayedLogs.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-center p-6 text-muted-foreground">
                   <ShieldCheck className="h-10 w-10 text-muted-foreground/40 mb-2 stroke-[1.5]" />
-                  <p className="text-sm">Nenhum evento registrado no log.</p>
-                  <p className="text-xs text-muted-foreground/60 mt-1">Selecione ou alterne domínios para gerar logs.</p>
+                  <p className="text-sm font-semibold">Nenhum log encontrado.</p>
+                  <p className="text-xs text-muted-foreground/60 mt-1">Nenhum evento registrado corresponde aos filtros aplicados.</p>
+                  {(logUserFilter !== "all" || logStartDate !== "" || logEndDate !== "" || logActionType !== "all") && (
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        setLogUserFilter("all");
+                        setLogStartDate("");
+                        setLogEndDate("");
+                        setLogActionType("all");
+                      }}
+                      className="mt-4 h-8 text-[11px] font-bold bg-zinc-900 border border-border/30 text-foreground hover:bg-zinc-800"
+                    >
+                      Limpar Filtros
+                    </Button>
+                  )}
                 </div>
               ) : (
                 <div className="w-full overflow-x-auto border border-border/20 rounded-xl bg-zinc-950/40 scrollbar-thin">
