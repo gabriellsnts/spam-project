@@ -24,7 +24,7 @@ interface ProposalData {
 }
 
 export default function CreditRiskPage() {
-  const { addLog, isTraining, trainedModels, alertThresholds, addAlert } = useDomain();
+  const { addLog, isTraining, trainedModels, alertThresholds, addAlert, predictionHistory, addPredictionToHistory, currentUser } = useDomain();
   const activeModel = trainedModels["credit-risk"];
   const [stressActive, setStressActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -63,47 +63,26 @@ export default function CreditRiskPage() {
     };
   } | null>(null);
 
-  interface HistoryItem {
-    id: string;
-    cliente: string;
-    acao: "Aprovar" | "Análise Manual" | "Revisar Garantia" | "Rejeitar";
-    probabilidadeRetorno: number;
-    valor: number;
-    score: number;
-    timestamp: number;
-  }
-
   // History state (CA05)
-  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const history = predictionHistory.filter(p => p.domain === "credit-risk").slice(0, 5);
 
-  // Load history from localStorage inside useEffect to prevent hydration mismatches
-  useEffect(() => {
-    const saved = localStorage.getItem("credit-risk-prediction-history");
-    if (saved) {
-      try {
-        setHistory(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to parse prediction history:", e);
-      }
-    }
-  }, []);
-
-  const handleSelectHistoryItem = (item: HistoryItem) => {
+  const handleSelectHistoryItem = (item: any) => {
+    const details = item.details as Record<string, any> || {};
     setPredictionResult({
-      probabilidadeRetorno: item.probabilidadeRetorno,
-      acao: item.acao,
+      probabilidadeRetorno: details.probabilidadeRetorno as number,
+      acao: item.predictionResult as any,
       dataInput: {
-        valor: item.valor,
-        score: item.score,
-        cliente: item.cliente,
-        propostaId: item.id
+        valor: details.valor as number,
+        score: details.score as number,
+        cliente: item.item,
+        propostaId: item.id.replace(/^PRED-CRD-[a-zA-Z0-9]+-\d+-/, "") // fallback, but we should use the actual ID from details
       }
     });
     setFormData({
-      proposta_id: item.id,
-      cliente: item.cliente,
-      valor: item.valor.toString(),
-      score: item.score.toString()
+      proposta_id: details.propostaId || item.id,
+      cliente: item.item,
+      valor: details.valor ? details.valor.toString() : "",
+      score: details.score ? details.score.toString() : ""
     });
     setErrors({});
   };
@@ -330,20 +309,16 @@ export default function CreditRiskPage() {
 
       addLog(`[Individual Prediction] Predição realizada para '${formData.cliente}' (${formData.proposta_id}). Resultado: ${result.acao} (${result.probabilidadeRetorno}% de retorno).`);
       
-      const newPredictionItem: HistoryItem = {
-        id: newPrediction.dataInput.propostaId,
-        cliente: newPrediction.dataInput.cliente,
-        acao: newPrediction.acao,
-        probabilidadeRetorno: newPrediction.probabilidadeRetorno,
-        valor: newPrediction.dataInput.valor,
-        score: newPrediction.dataInput.score,
-        timestamp: Date.now()
-      };
-
-      setHistory(prev => {
-        const updated = [newPredictionItem, ...prev].slice(0, 5);
-        localStorage.setItem("credit-risk-prediction-history", JSON.stringify(updated));
-        return updated;
+      addPredictionToHistory({
+        domain: "credit-risk",
+        item: newPrediction.dataInput.cliente,
+        predictionResult: newPrediction.acao,
+        details: {
+          propostaId: newPrediction.dataInput.propostaId,
+          probabilidadeRetorno: newPrediction.probabilidadeRetorno,
+          valor: newPrediction.dataInput.valor,
+          score: newPrediction.dataInput.score
+        }
       });
     }, 600);
   };
@@ -699,10 +674,10 @@ export default function CreditRiskPage() {
                   >
                     <div className="space-y-1 min-w-0">
                       <div className="text-xs font-bold text-foreground truncate group-hover:text-emerald-500 transition-colors">
-                        {item.cliente}
+                        {item.item}
                       </div>
                       <div className="text-[9px] text-muted-foreground font-mono flex items-center gap-1.5">
-                        <span>{item.id}</span>
+                        <span>{item.details?.propostaId || item.id}</span>
                         <span>•</span>
                         <span>{new Date(item.timestamp).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</span>
                       </div>
@@ -710,13 +685,13 @@ export default function CreditRiskPage() {
 
                     <div className="shrink-0">
                       <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase border ${
-                        item.acao === "Aprovar"
+                        item.predictionResult === "Aprovar"
                           ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/25"
-                          : item.acao === "Análise Manual" || item.acao === "Revisar Garantia"
+                          : item.predictionResult === "Análise Manual" || item.predictionResult === "Revisar Garantia"
                           ? "bg-amber-500/10 text-amber-500 border-amber-500/25"
                           : "bg-rose-500/10 text-rose-500 border-rose-500/25"
                       }`}>
-                        {item.acao}
+                        {item.predictionResult}
                       </span>
                     </div>
                   </button>

@@ -21,7 +21,9 @@ import {
   LogOut,
   Menu,
   ChevronRight,
-  Download
+  Download,
+  History,
+  Activity
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -42,7 +44,9 @@ export function UtilityDrawer() {
     domainFilter,
     setDomainFilter,
     periodFilter,
-    setPeriodFilter
+    setPeriodFilter,
+    predictionHistory,
+    clearPredictionHistory
   } = useDomain();
 
   const router = useRouter();
@@ -147,6 +151,28 @@ export function UtilityDrawer() {
     });
   }, [alerts, filter, domainFilter, periodFilter, unrecognizedAlerts]);
 
+  const displayedPredictions = React.useMemo(() => {
+    const sorted = [...predictionHistory].sort((a, b) => b.timestamp - a.timestamp);
+    return sorted.filter((pred) => {
+      if (domainFilter !== "all" && pred.domain !== domainFilter) {
+        return false;
+      }
+      if (periodFilter !== "all") {
+        const now = Date.now();
+        const limit =
+          periodFilter === "24h"
+            ? 24 * 60 * 60 * 1000
+            : periodFilter === "7d"
+            ? 7 * 24 * 60 * 60 * 1000
+            : 30 * 24 * 60 * 60 * 1000;
+        if (pred.timestamp < now - limit) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [predictionHistory, domainFilter, periodFilter]);
+
   if (!activeUtilityPanel) return null;
 
   const getDomainIcon = (type: DomainType) => {
@@ -179,6 +205,7 @@ export function UtilityDrawer() {
 
   const isAlerts = activeUtilityPanel === "alerts";
   const isLogs = activeUtilityPanel === "logs";
+  const isPredictions = activeUtilityPanel === "predictions";
   const isMenu = activeUtilityPanel === "menu";
 
   const exportToCSV = () => {
@@ -258,6 +285,99 @@ export function UtilityDrawer() {
     document.body.removeChild(link);
   };
 
+  const exportPredictionsToCSV = () => {
+    const headers = ["Data", "Horário", "Domínio", "Item Analisado", "Resultado da Previsão", "ID do Registro", "Probabilidade/Detalhe"];
+    const rows = displayedPredictions.map(pred => {
+      const dateObj = new Date(pred.timestamp);
+      const dateStr = dateObj.toLocaleDateString("pt-BR");
+      const timeStr = dateObj.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+      const domainName = DOMAINS[pred.domain]?.name || pred.domain;
+      
+      const escape = (val: string | number) => {
+        const str = String(val);
+        if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+          return `"${str.replace(/"/g, '""')}"`;
+        }
+        return str;
+      };
+
+      const detailInfo = pred.details?.probabilidadeRetorno 
+        ? `${pred.details.probabilidadeRetorno}%` 
+        : pred.details?.probabilidadeFalha 
+          ? `${pred.details.probabilidadeFalha}%` 
+          : "";
+
+      return [
+        escape(dateStr),
+        escape(timeStr),
+        escape(domainName),
+        escape(pred.item),
+        escape(pred.predictionResult),
+        escape(pred.id),
+        escape(detailInfo)
+      ];
+    });
+
+    const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `historico_previsoes_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const generateConsolidatedReport = () => {
+    // Basic consolidated CSV for RF40
+    const alertsSection = [["--- ALERTAS ---"]];
+    const alertsHeaders = ["Data", "Horário", "Domínio", "Item", "Métrica", "Valor", "Criticidade"];
+    const alertsRows = displayedAlerts.map(alert => {
+      const d = new Date(alert.timestamp);
+      return [
+        d.toLocaleDateString("pt-BR"),
+        d.toLocaleTimeString("pt-BR"),
+        DOMAINS[alert.domain]?.name || alert.domain,
+        `"${alert.item.replace(/"/g, '""')}"`,
+        `"${alert.metric.replace(/"/g, '""')}"`,
+        `"${alert.value.replace(/"/g, '""')}"`,
+        alert.criticality
+      ];
+    });
+
+    const predsSection = [["\n--- PREVISOES ---"]];
+    const predsHeaders = ["Data", "Horário", "Domínio", "Item Analisado", "Resultado da Previsão"];
+    const predsRows = displayedPredictions.map(pred => {
+      const d = new Date(pred.timestamp);
+      return [
+        d.toLocaleDateString("pt-BR"),
+        d.toLocaleTimeString("pt-BR"),
+        DOMAINS[pred.domain]?.name || pred.domain,
+        `"${pred.item.replace(/"/g, '""')}"`,
+        `"${pred.predictionResult.replace(/"/g, '""')}"`
+      ];
+    });
+
+    const content = [
+      ...alertsSection,
+      alertsHeaders,
+      ...alertsRows,
+      ...predsSection,
+      predsHeaders,
+      ...predsRows
+    ].map(row => row.join(",")).join("\n");
+
+    const blob = new Blob(["\uFEFF" + content], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `relatorio_consolidado_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <>
       {/* Backdrop with blur */}
@@ -291,6 +411,11 @@ export function UtilityDrawer() {
                 <>
                   <Bell className="h-5 w-5 text-zinc-400 shrink-0" />
                   <h2 className="text-md font-semibold text-foreground truncate">Alertas do Sistema</h2>
+                </>
+              ) : isPredictions ? (
+                <>
+                  <History className="h-5 w-5 text-zinc-400 shrink-0" />
+                  <h2 className="text-md font-semibold text-foreground truncate">Histórico de Previsões</h2>
                 </>
               ) : (
                 <>
@@ -374,6 +499,29 @@ export function UtilityDrawer() {
                   </div>
                   <ChevronRight className="h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity" />
                 </button>
+                <button
+                  onClick={() => setActiveUtilityPanel("predictions")}
+                  className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-zinc-900 text-muted-foreground hover:text-foreground transition-colors group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-1.5 rounded-md bg-zinc-900 group-hover:bg-zinc-800 transition-colors">
+                      <History className="h-4 w-4" />
+                    </div>
+                    <span className="text-sm font-medium">Histórico de Previsões</span>
+                  </div>
+                  <ChevronRight className="h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity" />
+                </button>
+                <div className="pt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={generateConsolidatedReport}
+                    className="w-full text-xs font-bold border-zinc-700/50 hover:bg-zinc-900 text-foreground"
+                  >
+                    <Download className="h-3.5 w-3.5 mr-1.5" />
+                    Relatório Consolidado
+                  </Button>
+                </div>
               </div>
 
               <div className="h-px bg-border/10 w-full" />
@@ -682,6 +830,173 @@ export function UtilityDrawer() {
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                   Limpar Tudo
+                </Button>
+              )}
+            </div>
+          </>
+        )}
+
+        {isPredictions && (
+          <>
+            <div className="flex flex-col gap-2.5 p-3 bg-zinc-900/30 border border-border/10 rounded-xl mt-3 mx-1 shrink-0">
+              <div className="flex items-center gap-2">
+                {/* Filtro de Domínio */}
+                <div className="flex-1 flex flex-col gap-1">
+                  <label className="text-[8px] uppercase tracking-wider font-extrabold text-zinc-500">
+                    Domínio
+                  </label>
+                  <select
+                    value={domainFilter}
+                    onChange={(e) => setDomainFilter(e.target.value as DomainType | "all")}
+                    className="bg-zinc-950 border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer"
+                  >
+                    <option value="all">Todos</option>
+                    <option value="maintenance">Manutenção</option>
+                    <option value="demand">Demanda</option>
+                    <option value="churn">Retenção</option>
+                    <option value="credit-risk">Crédito</option>
+                  </select>
+                </div>
+
+                {/* Filtro de Período */}
+                <div className="flex-1 flex flex-col gap-1">
+                  <label className="text-[8px] uppercase tracking-wider font-extrabold text-zinc-500">
+                    Período
+                  </label>
+                  <select
+                    value={periodFilter}
+                    onChange={(e) => setPeriodFilter(e.target.value as "all" | "24h" | "7d" | "30d")}
+                    className="bg-zinc-950 border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer"
+                  >
+                    <option value="all">Todos</option>
+                    <option value="24h">Últimas 24h</option>
+                    <option value="7d">Últimos 7 dias</option>
+                    <option value="30d">Últimos 30 dias</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Export CSV Button */}
+              <Button
+                size="sm"
+                onClick={exportPredictionsToCSV}
+                className="w-full h-8 text-[11px] font-bold bg-green-500 hover:bg-green-600 text-zinc-950 transition-colors flex items-center justify-center gap-1.5 rounded-md"
+              >
+                <Download className="h-3.5 w-3.5" />
+                Exportar CSV
+              </Button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto py-5 space-y-4 select-none scrollbar-thin">
+              {displayedPredictions.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-center p-6 text-muted-foreground">
+                  <History className="h-10 w-10 text-muted-foreground/40 mb-2 stroke-[1.5]" />
+                  <p className="text-sm">Nenhuma previsão encontrada.</p>
+                </div>
+              ) : (
+                displayedPredictions.map((pred) => {
+                  const domainInfo = DOMAINS[pred.domain];
+                  const detailInfo = pred.details?.probabilidadeRetorno 
+                    ? `Retorno: ${pred.details.probabilidadeRetorno}%` 
+                    : pred.details?.probabilidadeFalha 
+                      ? `Falha: ${pred.details.probabilidadeFalha}%` 
+                      : "";
+
+                  return (
+                    <div
+                      key={pred.id}
+                      className={cn(
+                        "p-4.5 flex flex-col gap-3 transition-all duration-300 relative border border-border/30 border-l-4 rounded-xl shadow-sm",
+                        "border-l-blue-500 bg-blue-500/[0.03]"
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="space-y-1 min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span
+                              className={cn(
+                                "flex items-center gap-1 px-2 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-wider border",
+                                getDomainColorClass(pred.domain)
+                              )}
+                            >
+                              {getDomainIcon(pred.domain)}
+                              {domainInfo.name.split(" ")[0]}
+                            </span>
+                            <span
+                              className={cn(
+                                "px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider",
+                                "bg-blue-500/10 text-blue-500 border border-blue-500/20"
+                              )}
+                            >
+                              {pred.predictionResult}
+                            </span>
+                          </div>
+                          <h4 className="text-xs font-bold text-foreground leading-snug mt-1 truncate">
+                            {pred.item}
+                          </h4>
+                        </div>
+                        <span className="text-[8px] font-mono text-zinc-500/40 dark:text-zinc-600/40 tracking-wider shrink-0 select-none">
+                          #{pred.id.substring(4, 11)}
+                        </span>
+                      </div>
+
+                      {detailInfo && (
+                        <div className="flex items-center justify-between bg-zinc-950/20 dark:bg-zinc-950/50 px-2.5 py-1.5 rounded-lg border border-border/20 text-[10px]">
+                          <span className="text-zinc-500 dark:text-zinc-400/80 text-[10px] font-medium">Confiança/Probab.:</span>
+                          <span className="font-mono font-bold text-[10px] text-blue-400">
+                            {detailInfo}
+                          </span>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between gap-3 pt-1 border-t border-border/20">
+                        <span className="text-[9px] text-zinc-500/55 dark:text-zinc-550/55 font-mono select-none flex items-center gap-1.5">
+                          <span>
+                            {new Date(pred.timestamp).toLocaleDateString("pt-BR")}
+                          </span>
+                          <span className="opacity-40">•</span>
+                          <span>
+                            {new Date(pred.timestamp).toLocaleTimeString("pt-BR", {
+                              hour: "2-digit",
+                              minute: "2-digit"
+                            })}
+                          </span>
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              initiateDomainSwitch(pred.domain);
+                              handleClose();
+                            }}
+                            className="h-6 w-6 p-0 text-zinc-500 hover:text-primary hover:bg-primary/5 transition"
+                            title={`Ir para o painel de ${domainInfo.name}`}
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Footer Actions */}
+            <div className="pt-4 border-t border-border/20 bg-transparent flex items-center justify-between shrink-0">
+              <span className="text-xs text-muted-foreground font-mono">
+                Registros: {displayedPredictions.length}
+              </span>
+              {predictionHistory.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearPredictionHistory}
+                  className="h-7 text-xs text-rose-500 hover:text-rose-455 hover:bg-rose-500/5 font-bold transition flex items-center gap-1.5"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Limpar Histórico
                 </Button>
               )}
             </div>

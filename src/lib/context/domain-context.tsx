@@ -23,6 +23,15 @@ export interface Alert {
   recognized: boolean;
 }
 
+export interface PredictionHistoryRecord {
+  id: string;
+  domain: DomainType;
+  timestamp: number;
+  item: string;
+  predictionResult: string;
+  details?: Record<string, string | number | boolean>;
+}
+
 export type DomainType = "maintenance" | "demand" | "churn" | "credit-risk";
 
 export interface DomainMetadata {
@@ -210,8 +219,11 @@ interface DomainContextProps {
   addAlert: (alert: Omit<Alert, "id" | "timestamp" | "recognized">) => void;
   recognizeAlert: (id: string) => void;
   clearAlerts: () => void;
-  activeUtilityPanel: "alerts" | "logs" | "menu" | null;
-  setActiveUtilityPanel: (panel: "alerts" | "logs" | "menu" | null) => void;
+  activeUtilityPanel: "alerts" | "logs" | "predictions" | "menu" | null;
+  setActiveUtilityPanel: (panel: "alerts" | "logs" | "predictions" | "menu" | null) => void;
+  predictionHistory: PredictionHistoryRecord[];
+  addPredictionToHistory: (record: Omit<PredictionHistoryRecord, "id" | "timestamp">) => void;
+  clearPredictionHistory: () => void;
   domainFilter: DomainType | "all";
   setDomainFilter: (filter: DomainType | "all") => void;
   periodFilter: "all" | "24h" | "7d" | "30d";
@@ -354,10 +366,12 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<"light" | "dark" | "auto">("dark");
   const [alertThresholds, setAlertThresholds] = useState<Record<DomainType, number>>(DEFAULT_THRESHOLDS);
   const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [activeUtilityPanel, setActiveUtilityPanel] = useState<"alerts" | "logs" | "menu" | null>(null);
+  const [activeUtilityPanel, setActiveUtilityPanel] = useState<"alerts" | "logs" | "predictions" | "menu" | null>(null);
+  const [predictionHistory, setPredictionHistory] = useState<PredictionHistoryRecord[]>([]);
   const [domainFilter, setDomainFilter] = useState<DomainType | "all">("all");
   const [periodFilter, setPeriodFilter] = useState<"all" | "24h" | "7d" | "30d">("all");
   const isAlertsInitialized = useRef(false);
+  const isPredictionHistoryInitialized = useRef(false);
 
   // Auth states
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -595,6 +609,39 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     }
     isAlertsInitialized.current = true;
     setIsAuthLoading(false);
+
+    const savedPredictionHistory = localStorage.getItem("spam-prediction-history");
+    if (savedPredictionHistory) {
+      try {
+        setPredictionHistory(JSON.parse(savedPredictionHistory));
+      } catch (e) {
+        console.error("Erro ao carregar histórico de predições:", e);
+      }
+    } else {
+      // Mock some historical predictions to show functionality
+      const initialHistory: PredictionHistoryRecord[] = [
+        {
+          id: "PRED-MNT-1",
+          domain: "maintenance",
+          timestamp: Date.now() - 3600000 * 2, // 2h ago
+          item: "Prensa Hidráulica 04 (M04)",
+          predictionResult: "Falha Iminente (89%)",
+          details: { "Vibração RMS": "8.5 mm/s" }
+        },
+        {
+          id: "PRED-CRD-1",
+          domain: "credit-risk",
+          timestamp: Date.now() - 3600000 * 24, // 24h ago
+          item: "PROP-801 (Cliente Alpha)",
+          predictionResult: "Aprovar",
+          details: { "Score": 850 }
+        }
+      ];
+      setPredictionHistory(initialHistory);
+      localStorage.setItem("spam-prediction-history", JSON.stringify(initialHistory));
+    }
+    isPredictionHistoryInitialized.current = true;
+
   }, []);
 
   // Carregar logs do localStorage na inicialização
@@ -726,6 +773,25 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     setAlerts([]);
     addLog("[Alert Cleanup] Todos os alertas foram limpos do histórico.");
   }, [addLog]);
+
+  const addPredictionToHistory = useCallback((record: Omit<PredictionHistoryRecord, "id" | "timestamp">) => {
+    const newRecord: PredictionHistoryRecord = {
+      ...record,
+      id: `PRED-${record.domain.substring(0, 3).toUpperCase()}-${Math.random().toString(36).substring(2, 9).toUpperCase()}-${Date.now()}`,
+      timestamp: Date.now(),
+    };
+    setPredictionHistory(prev => [newRecord, ...prev]);
+  }, []);
+
+  const clearPredictionHistory = useCallback(() => {
+    setPredictionHistory([]);
+    addLog("[Prediction History] Histórico global de previsões limpo.");
+  }, [addLog]);
+
+  useEffect(() => {
+    if (!isPredictionHistoryInitialized.current) return;
+    localStorage.setItem("spam-prediction-history", JSON.stringify(predictionHistory));
+  }, [predictionHistory]);
 
   // Synchronize alerts state to localStorage and update dashboard / health states
   useEffect(() => {
@@ -1479,6 +1545,9 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         clearAlerts,
         activeUtilityPanel,
         setActiveUtilityPanel,
+        predictionHistory,
+        addPredictionToHistory,
+        clearPredictionHistory,
         domainFilter,
         setDomainFilter,
         periodFilter,
