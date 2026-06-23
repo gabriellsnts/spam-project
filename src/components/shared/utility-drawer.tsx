@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useDomain, DOMAINS, DomainType } from "@/lib/context/domain-context";
+import { useDomain, DOMAINS, DomainType, AuditLog } from "@/lib/context/domain-context";
 import { Button } from "@/components/ui/button";
 import {
   Bell,
@@ -46,6 +46,7 @@ export function UtilityDrawer() {
   } = useDomain();
 
   const [filter, setFilter] = useState<"all" | "unrecognized">("unrecognized");
+  const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
 
   const criticalCount = React.useMemo(() => {
     return logs.filter((log) => 
@@ -55,6 +56,10 @@ export function UtilityDrawer() {
 
   const activeUsersCount = React.useMemo(() => {
     return new Set(logs.map((log) => log.username).filter(Boolean)).size;
+  }, [logs]);
+
+  const displayedLogs = React.useMemo(() => {
+    return [...logs].sort((a, b) => b.timestamp - a.timestamp);
   }, [logs]);
 
   const unrecognizedAlerts = alerts.filter((a) => !a.recognized);
@@ -597,49 +602,115 @@ export function UtilityDrawer() {
             </div>
 
             {/* Logs Content */}
-            <div className="flex-1 overflow-y-auto py-5 space-y-4 select-none scrollbar-thin">
-              {logs.length === 0 ? (
+            <div className="flex-1 overflow-y-auto py-5 select-none scrollbar-thin flex flex-col min-h-0 relative">
+              {displayedLogs.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-center p-6 text-muted-foreground">
                   <ShieldCheck className="h-10 w-10 text-muted-foreground/40 mb-2 stroke-[1.5]" />
                   <p className="text-sm">Nenhum evento registrado no log.</p>
                   <p className="text-xs text-muted-foreground/60 mt-1">Selecione ou alterne domínios para gerar logs.</p>
                 </div>
               ) : (
-                logs.map((log) => (
-                  <div
-                    key={log.id}
-                    className="p-4 rounded-lg bg-card/60 border border-border/40 hover:border-muted-foreground/30 transition flex flex-col gap-2 relative overflow-hidden"
-                  >
-                    {/* ID Tag */}
-                    <div className="absolute top-2 right-2 text-[9px] font-mono text-muted-foreground/80 bg-background px-1.5 py-0.5 rounded border border-border/40">
-                      ID: {log.id}
-                    </div>
+                <div className="w-full overflow-x-auto border border-border/20 rounded-xl bg-zinc-950/40 scrollbar-thin">
+                  <table className="w-full text-left border-collapse text-[10px] min-w-[500px]">
+                    <thead>
+                      <tr className="border-b border-border/25 bg-zinc-900/60 text-zinc-400 font-bold uppercase tracking-wider select-none">
+                        <th className="p-3 w-[75px] shrink-0 font-extrabold">Data</th>
+                        <th className="p-3 w-[65px] shrink-0 font-extrabold">Horário</th>
+                        <th className="p-3 w-[100px] font-extrabold">Usuário</th>
+                        <th className="p-3 w-[95px] font-extrabold">Perfil</th>
+                        <th className="p-3 font-extrabold">Ação</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/15">
+                      {displayedLogs.map((log) => {
+                        const dateObj = new Date(log.timestamp);
+                        const dateStr = dateObj.toLocaleDateString("pt-BR");
+                        const timeStr = dateObj.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+                        
+                        return (
+                          <tr
+                            key={log.id}
+                            onClick={() => setSelectedLog(log)}
+                            className="hover:bg-zinc-900/40 cursor-pointer active:bg-zinc-900/60 transition duration-150 group"
+                          >
+                            <td className="p-3 text-zinc-400 font-medium whitespace-nowrap">{dateStr}</td>
+                            <td className="p-3 text-zinc-400 font-mono whitespace-nowrap">{timeStr}</td>
+                            <td className="p-3 text-foreground font-semibold truncate max-w-[100px]" title={log.username}>{log.username}</td>
+                            <td className="p-3 text-zinc-400 font-medium truncate max-w-[95px]" title={log.accessProfile}>{log.accessProfile}</td>
+                            <td className="p-3 text-zinc-300 font-medium max-w-[200px] truncate group-hover:text-foreground transition-colors" title={log.action}>{log.action}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
 
-                    {/* Action/Description */}
-                    <div className="text-xs text-foreground font-medium pr-16 line-clamp-2">
-                      {log.action}
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-[10px] text-muted-foreground">
-                      {/* User Profile */}
-                      <div className="flex items-center gap-1">
-                        <UserIcon className="h-3 w-3 text-muted-foreground/60" />
-                        <span className="font-semibold text-foreground/80">{log.profile}</span>
+              {/* Sub-panel details (CA06) */}
+              {selectedLog && (
+                <div className="absolute inset-0 bg-zinc-950 z-25 flex flex-col p-6 animate-in slide-in-from-right duration-200 border border-border/20 rounded-xl m-1">
+                  <div className="flex items-center justify-between pb-4 border-b border-border/20 mb-4 shrink-0">
+                    <h3 className="text-xs font-bold text-foreground flex items-center gap-2">
+                      <ShieldCheck className="h-4.5 w-4.5 text-emerald-500" />
+                      Detalhes do Registro
+                    </h3>
+                    <button
+                      onClick={() => setSelectedLog(null)}
+                      className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-zinc-900 transition"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                  
+                  <div className="flex-1 overflow-y-auto space-y-4 text-[11px] scrollbar-thin pr-1">
+                    <div className="bg-zinc-900/40 border border-border/15 rounded-xl p-3.5 space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-zinc-500 font-semibold">ID do Registro:</span>
+                        <span className="font-mono font-bold text-foreground bg-zinc-900 px-1.5 py-0.5 rounded border border-border/20">#{selectedLog.id}</span>
                       </div>
-
-                      {/* Millisecond Timestamp (CA05 requirement) */}
-                      <div className="flex items-center gap-1 font-mono">
-                        <Clock className="h-3 w-3 text-muted-foreground/60" />
-                        <span>{log.timestamp} ms</span>
+                      <div className="flex justify-between items-center border-t border-border/10 pt-2.5">
+                        <span className="text-zinc-500 font-semibold">Data da Ação:</span>
+                        <span className="font-bold text-foreground">{new Date(selectedLog.timestamp).toLocaleDateString("pt-BR")}</span>
+                      </div>
+                      <div className="flex justify-between items-center border-t border-border/10 pt-2.5">
+                        <span className="text-zinc-500 font-semibold">Horário da Ação:</span>
+                        <span className="font-bold text-foreground font-mono">{new Date(selectedLog.timestamp).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</span>
                       </div>
                     </div>
 
-                    {/* Human readable date */}
-                    <div className="text-[9px] text-muted-foreground/50 italic">
-                      {new Date(log.timestamp).toLocaleString("pt-BR")}
+                    <div className="bg-zinc-900/40 border border-border/15 rounded-xl p-3.5 space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-zinc-500 font-semibold">Usuário:</span>
+                        <span className="font-bold text-foreground">{selectedLog.username}</span>
+                      </div>
+                      <div className="flex justify-between items-center border-t border-border/10 pt-2.5">
+                        <span className="text-zinc-500 font-semibold">Perfil de Acesso:</span>
+                        <span className="font-bold text-foreground">{selectedLog.accessProfile}</span>
+                      </div>
+                      <div className="flex justify-between items-center border-t border-border/10 pt-2.5">
+                        <span className="text-zinc-500 font-semibold">Escopo (Sistema/Usuário):</span>
+                        <span className="font-bold text-zinc-400">{selectedLog.profile}</span>
+                      </div>
+                    </div>
+
+                    <div className="bg-zinc-900/40 border border-border/15 rounded-xl p-3.5 space-y-2">
+                      <span className="text-zinc-500 font-semibold block">Descrição da Ação:</span>
+                      <p className="text-foreground leading-relaxed font-bold bg-zinc-950 p-3 rounded-lg border border-border/20 break-words whitespace-pre-wrap font-mono text-[10px]">
+                        {selectedLog.action}
+                      </p>
                     </div>
                   </div>
-                ))
+                  
+                  <div className="pt-4 border-t border-border/10 shrink-0">
+                    <Button
+                      variant="ghost"
+                      onClick={() => setSelectedLog(null)}
+                      className="w-full text-xs font-bold bg-zinc-900 border border-border/30 text-foreground hover:bg-zinc-800"
+                    >
+                      Voltar para a Listagem
+                    </Button>
+                  </div>
+                </div>
               )}
             </div>
 
