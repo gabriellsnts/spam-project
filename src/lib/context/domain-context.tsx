@@ -6,6 +6,8 @@ import { useRouter, usePathname } from "next/navigation";
 export interface AuditLog {
   id: string;
   profile: string;
+  username: string;
+  accessProfile: string;
   timestamp: number;
   action: string;
 }
@@ -247,6 +249,89 @@ const DEFAULT_USERS: User[] = [
     lastLogin: new Date().toISOString(),
     status: "ativo",
   },
+];
+
+const MOCK_LOGS: AuditLog[] = [
+  {
+    id: "LOG01",
+    profile: "Administrador",
+    username: "Administrador do Sistema",
+    accessProfile: "Super Admin",
+    timestamp: Date.now() - 30 * 60 * 1000,
+    action: "Login efetuado com sucesso para o usuário 'admin'."
+  },
+  {
+    id: "LOG02",
+    profile: "Administrador",
+    username: "Administrador do Sistema",
+    accessProfile: "Super Admin",
+    timestamp: Date.now() - 1 * 3600000,
+    action: "[Alert Configuration] Limiar de alerta do domínio 'Manutenção de Equipamentos' alterado para 35%."
+  },
+  {
+    id: "LOG03",
+    profile: "Sistema",
+    username: "Sistema",
+    accessProfile: "Sistema",
+    timestamp: Date.now() - 2 * 3600000,
+    action: "[Alert Triggered] Novo alerta preditivo (Alto) no domínio 'Retenção de Clientes': Indústrias Metalúrgicas Alfa (C104) - Valor: 87%."
+  },
+  {
+    id: "LOG04",
+    profile: "Gestor de Operações",
+    username: "João Silva",
+    accessProfile: "Gestor Analítico",
+    timestamp: Date.now() - 3 * 3600000,
+    action: "Login efetuado com sucesso para o usuário 'gestor'."
+  },
+  {
+    id: "LOG05",
+    profile: "Gestor de Operações",
+    username: "João Silva",
+    accessProfile: "Gestor Analítico",
+    timestamp: Date.now() - 4 * 3600000,
+    action: "[Alert Recognized] Alerta no domínio 'Previsão de Demanda' (Cabos Elétricos de Cobre) marcado como reconhecido."
+  },
+  {
+    id: "LOG06",
+    profile: "Sistema",
+    username: "Sistema",
+    accessProfile: "Sistema",
+    timestamp: Date.now() - 5 * 3600000,
+    action: "[Model Training Success] Treinamento do modelo para o módulo 'Previsão de Demanda' concluído com sucesso. ID: SPAM-MODEL-REG-DMD3094, Algoritmo: Prophet Time-Series Regressor."
+  },
+  {
+    id: "LOG07",
+    profile: "Sistema",
+    username: "Sistema",
+    accessProfile: "Sistema",
+    timestamp: Date.now() - 8 * 3600000,
+    action: "[Model Training Error] Falha de volume de dados no módulo 'Risco de Crédito': apenas 8 registros fornecidos (mínimo de 10 exigido)."
+  },
+  {
+    id: "LOG08",
+    profile: "Administrador",
+    username: "Administrador do Sistema",
+    accessProfile: "Super Admin",
+    timestamp: Date.now() - 24 * 3600000,
+    action: "Cadastro do novo usuário gestor 'João Silva' realizado com sucesso."
+  },
+  {
+    id: "LOG09",
+    profile: "Sistema",
+    username: "Sistema",
+    accessProfile: "Sistema",
+    timestamp: Date.now() - 25 * 3600000,
+    action: "Tentativa de login malsucedida para o usuário 'gestor'. Resultado: Credenciais inválidas (Tentativa 1/5)."
+  },
+  {
+    id: "LOG10",
+    profile: "Administrador",
+    username: "Administrador do Sistema",
+    accessProfile: "Super Admin",
+    timestamp: Date.now() - 48 * 3600000,
+    action: "Histórico de logs de auditoria limpo manualmente."
+  }
 ];
 
 const DEFAULT_THRESHOLDS: Record<DomainType, number> = {
@@ -517,11 +602,18 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     const storedLogs = localStorage.getItem("spam-audit-logs");
     if (storedLogs) {
       try {
-        setLogs(JSON.parse(storedLogs));
+        const parsedLogs = JSON.parse(storedLogs);
+        if (Array.isArray(parsedLogs) && parsedLogs.length > 0) {
+          setLogs(parsedLogs);
+          return;
+        }
       } catch (e) {
         console.error("Erro ao carregar logs de auditoria:", e);
       }
     }
+    // Caso contrário, carrega mock
+    setLogs(MOCK_LOGS);
+    localStorage.setItem("spam-audit-logs", JSON.stringify(MOCK_LOGS));
   }, []);
 
   // Efeito para aplicar a classe no elemento html
@@ -577,9 +669,15 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
 
   // Função auxiliar para registrar logs de auditoria com um perfil customizado (CA06)
   const addLogWithProfile = useCallback((profile: string, action: string) => {
+    const isSystem = profile === "Sistema";
+    const logUser = isSystem ? "Sistema" : (currentUser?.fullName || currentUser?.username || "Visitante");
+    const logAccessProfile = isSystem ? "Sistema" : (currentUser?.accessProfile || "Visitante");
+
     const newLog: AuditLog = {
       id: Math.random().toString(36).substring(2, 9).toUpperCase(),
       profile,
+      username: logUser,
+      accessProfile: logAccessProfile,
       timestamp: Date.now(),
       action,
     };
@@ -588,7 +686,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem("spam-audit-logs", JSON.stringify(next));
       return next;
     });
-  }, []);
+  }, [currentUser]);
 
   const addLog = useCallback((action: string) => {
     addLogWithProfile(userProfile, action);

@@ -47,6 +47,16 @@ export function UtilityDrawer() {
 
   const [filter, setFilter] = useState<"all" | "unrecognized">("unrecognized");
 
+  const criticalCount = React.useMemo(() => {
+    return logs.filter((log) => 
+      /falha|erro|error|crítico|critical|bloquead|suspen/i.test(log.action)
+    ).length;
+  }, [logs]);
+
+  const activeUsersCount = React.useMemo(() => {
+    return new Set(logs.map((log) => log.username).filter(Boolean)).size;
+  }, [logs]);
+
   const unrecognizedAlerts = alerts.filter((a) => !a.recognized);
   const displayedAlerts = React.useMemo(() => {
     if (filter === "unrecognized") {
@@ -570,6 +580,22 @@ export function UtilityDrawer() {
 
         {isLogs && (
           <>
+            {/* Indicators Panel */}
+            <div className="grid grid-cols-3 gap-2.5 p-3.5 bg-zinc-900/20 border border-border/10 rounded-xl mt-3 mx-1 shrink-0">
+              <div className="bg-zinc-950 border border-border/20 p-2.5 rounded-lg flex flex-col justify-center min-w-0">
+                <span className="text-[8px] font-extrabold text-zinc-500 uppercase tracking-wider truncate">Total Ações</span>
+                <span className="text-base font-black text-foreground mt-0.5 font-mono">{logs.length}</span>
+              </div>
+              <div className="bg-zinc-950 border border-border/20 p-2.5 rounded-lg flex flex-col justify-center min-w-0">
+                <span className="text-[8px] font-extrabold text-zinc-500 uppercase tracking-wider truncate">Críticas</span>
+                <span className="text-base font-black text-rose-500 mt-0.5 font-mono">{criticalCount}</span>
+              </div>
+              <div className="bg-zinc-950 border border-border/20 p-2.5 rounded-lg flex flex-col justify-center min-w-0">
+                <span className="text-[8px] font-extrabold text-zinc-500 uppercase tracking-wider truncate">Usuários At.</span>
+                <span className="text-base font-black text-emerald-500 mt-0.5 font-mono">{activeUsersCount}</span>
+              </div>
+            </div>
+
             {/* Logs Content */}
             <div className="flex-1 overflow-y-auto py-5 space-y-4 select-none scrollbar-thin">
               {logs.length === 0 ? (
