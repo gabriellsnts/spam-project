@@ -340,7 +340,7 @@ export function UtilityDrawer() {
         DOMAINS[alert.domain]?.name || alert.domain,
         `"${alert.item.replace(/"/g, '""')}"`,
         `"${alert.metric.replace(/"/g, '""')}"`,
-        `"${alert.value.replace(/"/g, '""')}"`,
+        `"${String(alert.value).replace(/"/g, '""')}"`,
         alert.criticality
       ];
     });

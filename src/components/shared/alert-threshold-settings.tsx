@@ -4,6 +4,7 @@ import { useDomain, DomainType } from "@/lib/context/domain-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, CheckCircle2, RotateCcw, ShieldCheck } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ActiveAlertItem {
   id: string;

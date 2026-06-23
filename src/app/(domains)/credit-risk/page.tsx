@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useCallback } from "react";
-import { useDomain } from "@/lib/context/domain-context";
+import { useDomain, PredictionHistoryRecord } from "@/lib/context/domain-context";
 import { TrendingUp, AlertTriangle, Coins, Percent, FileCheck, BarChart3, Lock, History, Printer, Loader2, Search, ChevronDown, ChevronUp, AlertCircle, Sparkles } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -66,7 +66,7 @@ export default function CreditRiskPage() {
   // History state (CA05)
   const history = predictionHistory.filter(p => p.domain === "credit-risk").slice(0, 5);
 
-  const handleSelectHistoryItem = (item: Record<string, unknown>) => {
+  const handleSelectHistoryItem = (item: PredictionHistoryRecord) => {
     const details = (item.details as Record<string, unknown>) || {};
     setPredictionResult({
       probabilidadeRetorno: details.probabilidadeRetorno as number,
@@ -74,15 +74,15 @@ export default function CreditRiskPage() {
       dataInput: {
         valor: details.valor as number,
         score: details.score as number,
-        cliente: item.item as string,
+        cliente: String(item.item),
         propostaId: String(item.id).replace(/^PRED-CRD-[a-zA-Z0-9]+-\d+-/, "") // fallback, but we should use the actual ID from details
       }
     });
     setFormData({
-      proposta_id: details.propostaId || item.id,
-      cliente: item.item,
-      valor: details.valor ? details.valor.toString() : "",
-      score: details.score ? details.score.toString() : ""
+      proposta_id: String(details.propostaId || item.id),
+      cliente: String(item.item),
+      valor: details.valor ? String(details.valor) : "",
+      score: details.score ? String(details.score) : ""
     });
     setErrors({});
   };
