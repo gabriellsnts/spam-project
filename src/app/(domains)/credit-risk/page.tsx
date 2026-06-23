@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { useDomain } from "@/lib/context/domain-context";
 import { TrendingUp, AlertTriangle, Coins, Percent, FileCheck, BarChart3, Lock, History, Printer, Loader2, Search, ChevronDown, ChevronUp, AlertCircle, Sparkles } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,7 +24,7 @@ interface ProposalData {
 }
 
 export default function CreditRiskPage() {
-  const { addLog, isTraining, trainedModels, alertThresholds, addAlert, predictionHistory, addPredictionToHistory, currentUser } = useDomain();
+  const { addLog, isTraining, trainedModels, alertThresholds, addAlert, predictionHistory, addPredictionToHistory } = useDomain();
   const activeModel = trainedModels["credit-risk"];
   const [stressActive, setStressActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -66,16 +66,16 @@ export default function CreditRiskPage() {
   // History state (CA05)
   const history = predictionHistory.filter(p => p.domain === "credit-risk").slice(0, 5);
 
-  const handleSelectHistoryItem = (item: any) => {
-    const details = item.details as Record<string, any> || {};
+  const handleSelectHistoryItem = (item: Record<string, unknown>) => {
+    const details = (item.details as Record<string, unknown>) || {};
     setPredictionResult({
       probabilidadeRetorno: details.probabilidadeRetorno as number,
-      acao: item.predictionResult as any,
+      acao: item.predictionResult as "Aprovar" | "Análise Manual" | "Revisar Garantia" | "Rejeitar",
       dataInput: {
         valor: details.valor as number,
         score: details.score as number,
-        cliente: item.item,
-        propostaId: item.id.replace(/^PRED-CRD-[a-zA-Z0-9]+-\d+-/, "") // fallback, but we should use the actual ID from details
+        cliente: item.item as string,
+        propostaId: String(item.id).replace(/^PRED-CRD-[a-zA-Z0-9]+-\d+-/, "") // fallback, but we should use the actual ID from details
       }
     });
     setFormData({

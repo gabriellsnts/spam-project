@@ -22,8 +22,7 @@ import {
   Menu,
   ChevronRight,
   Download,
-  History,
-  Activity
+  History
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
