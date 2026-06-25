@@ -132,3 +132,18 @@ Este relatório documenta a implementação dos Requisitos Funcionais (RFs) do s
 ### Mapeamento dos Crit�rios de Aceita��o (CA)
 - **Restri��o de Funcionalidades Cr�ticas:** A edi��o de limiares de alertas e o disparo de treinamentos de modelo foram logicamente e visualmente restritos. Somente usu�rios com o \ccessProfile === 'Super Admin'\ possuem acesso livre a estas op��es, exibindo tags e tooltips indicativas da falta de permiss�o caso o login seja de hierarquia inferior.
 
+
+---
+
+## RF39 - Exibir Aviso de Privacidade no Upload de Dados
+- **Status:** Concluído
+- **Componentes Modificados/Criados:**
+  - `src/lib/context/domain-context.tsx` (Definição do texto padrão do aviso e estado global persistente)
+  - `src/app/admin/usuarios/page.tsx` (Adição do painel de edição do aviso legal pelo administrador)
+  - `src/components/shared/csv-uploader.tsx` (Interceptação do uploader de dados de treino e exibição do modal impeditivo)
+  - `src/components/shared/csv-import.tsx` (Interceptação do pré-processador inteligente e exibição do modal impeditivo)
+
+### Mapeamento dos Critérios de Aceitação (CA)
+- **CA01, CA02, CA04 & CA05 – Modal de Consentimento LGPD:** Interceptação imediata do fluxo de upload em qualquer domínio. Exibição de modal impeditivo contendo citação da LGPD, finalidade de uso exclusivo em análise preditiva, não compartilhamento com terceiros, link para a Política de Privacidade e contato do encarregado de proteção de dados (DPO). O upload e o processamento de arquivos são interrompidos se o usuário recusar ou fechar o modal, prosseguindo apenas após o consentimento explícito (por meio de checkbox e botão).
+- **CA03 – Logs de Auditoria de Consentimento:** Disparo de log automático ao confirmar o consentimento, registrando a data, horário, nome completo do usuário, perfil e a mensagem contendo o nome do domínio exato onde o consentimento foi efetuado.
+- **CA06 – Gestão do Texto Dinâmico:** Seção na Área Administrativa com textarea que permite a visualização e edição dinâmica do aviso de privacidade no contexto global (armazenado no localStorage). O modal de upload consome dinamicamente o texto atualizado pelo administrador.
