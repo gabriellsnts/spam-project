@@ -42,7 +42,7 @@ const checkPasswordStrength = (pass: string) => {
 };
 
 export default function AdminUsersPage() {
-  const { currentUser, isAuthLoading, users, setUsers, addLog } = useDomain();
+  const { currentUser, isAuthLoading, users, setUsers, addLog, privacyNoticeText, savePrivacyNoticeText } = useDomain();
   const router = useRouter();
 
   // Estados do formulário
@@ -58,6 +58,18 @@ export default function AdminUsersPage() {
   // Feedbacks
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  // Estados das Diretrizes de Privacidade (RF39)
+  const [localPrivacyText, setLocalPrivacyText] = useState("");
+  const [privacySuccessMsg, setPrivacySuccessMsg] = useState<string | null>(null);
+  const [privacyErrorMsg, setPrivacyErrorMsg] = useState<string | null>(null);
+
+  // Sincronizar o aviso de privacidade global para o estado local
+  useEffect(() => {
+    if (privacyNoticeText) {
+      setLocalPrivacyText(privacyNoticeText);
+    }
+  }, [privacyNoticeText]);
 
   // Redirecionamento se não for administrador
   useEffect(() => {
@@ -236,7 +248,8 @@ export default function AdminUsersPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Formulário de Cadastro (CA01) */}
-            <Card className="lg:col-span-1 border-border/80 bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-lg">
+            <div className="lg:col-span-1 space-y-6">
+              <Card className="border-border/80 bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-lg">
               <CardHeader>
                 <CardTitle className="text-base font-bold text-zinc-100 flex items-center gap-2">
                   <UserCheck className="h-4.5 w-4.5 text-green-500" />
@@ -388,7 +401,67 @@ export default function AdminUsersPage() {
                   </Button>
                 </form>
               </CardContent>
-            </Card>
+              </Card>
+
+              {/* Diretrizes de Privacidade (RF39 - CA06) */}
+              <Card className="border-border/80 bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-lg">
+                <CardHeader>
+                  <CardTitle className="text-base font-bold text-zinc-100 flex items-center gap-2">
+                    <Shield className="h-4.5 w-4.5 text-green-500" />
+                    Diretrizes de Privacidade (LGPD)
+                  </CardTitle>
+                  <CardDescription className="text-xs text-zinc-500">
+                    Configure o aviso legal exibido aos operadores antes do upload de qualquer base de dados (CSV).
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    setPrivacySuccessMsg(null);
+                    setPrivacyErrorMsg(null);
+                    if (!localPrivacyText.trim()) {
+                      setPrivacyErrorMsg("O texto do aviso de privacidade não pode estar vazio.");
+                      return;
+                    }
+                    savePrivacyNoticeText(localPrivacyText.trim());
+                    addLog(`Diretrizes de Privacidade (LGPD) atualizadas pelo administrador '${currentUser?.username}'.`);
+                    setPrivacySuccessMsg("Diretrizes de privacidade atualizadas com sucesso!");
+                  }} className="space-y-4">
+                    {privacyErrorMsg && (
+                      <div className="p-3 text-xs bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg animate-in zoom-in-95 leading-relaxed">
+                        {privacyErrorMsg}
+                      </div>
+                    )}
+
+                    {privacySuccessMsg && (
+                      <div className="p-3 text-xs bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-lg animate-in zoom-in-95 leading-relaxed">
+                        {privacySuccessMsg}
+                      </div>
+                    )}
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
+                        Texto do Aviso de Privacidade
+                      </label>
+                      <textarea
+                        value={localPrivacyText}
+                        onChange={(e) => setLocalPrivacyText(e.target.value)}
+                        rows={8}
+                        placeholder="Insira o aviso legal aqui..."
+                        className="w-full p-3 rounded-lg bg-zinc-950/80 border border-zinc-800 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none text-zinc-200 text-xs transition resize-none leading-relaxed"
+                      />
+                    </div>
+
+                    <Button
+                      type="submit"
+                      className="w-full h-9 text-xs font-bold bg-green-500 hover:bg-green-600 text-zinc-950 transition shadow-sm"
+                    >
+                      Salvar Aviso de Privacidade
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </div>
 
             {/* Grid Coluna Tabela */}
             <div className="lg:col-span-2 space-y-6">

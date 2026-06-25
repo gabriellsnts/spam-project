@@ -177,6 +177,9 @@ interface DomainContextProps {
   confirmDomainSwitch: () => void;
   cancelDomainSwitch: () => void;
   addLog: (action: string) => void;
+  addLogWithProfile: (profile: string, action: string) => void;
+  privacyNoticeText: string;
+  savePrivacyNoticeText: (text: string) => void;
   clearLogs: () => void;
   // Auth fields:
   currentUser: User | null;
@@ -359,6 +362,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
 
   const [activeDomain, setActiveDomain] = useState<DomainType | null>(null);
   const [logs, setLogs] = useState<AuditLog[]>([]);
+  const [privacyNoticeText, setPrivacyNoticeText] = useState<string>("");
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [targetDomain, setTargetDomain] = useState<DomainType | null>(null);
   const [confirmSwitchOpen, setConfirmSwitchOpen] = useState(false);
@@ -512,6 +516,15 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
       } catch (e) {
         console.error("Erro ao carregar histórico de hiperparâmetros:", e);
       }
+    }
+
+    const savedPrivacyText = localStorage.getItem("spam-privacy-notice-text");
+    if (savedPrivacyText) {
+      setPrivacyNoticeText(savedPrivacyText);
+    } else {
+      const defaultText = "Aviso de Privacidade (LGPD): Em conformidade com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018), informamos que os dados importados serão utilizados exclusivamente para fins de análise preditiva neste sistema, garantindo a sua confidencialidade. Não haverá qualquer compartilhamento ou transferência de informações pessoais com terceiros. Para mais detalhes sobre seus direitos e tratamentos efetuados, consulte nossa Política de Privacidade. Caso tenha dúvidas, entre em contato com nosso Encarregado pelo tratamento de dados pessoais (DPO) através do e-mail: dpo@empresa.com.";
+      setPrivacyNoticeText(defaultText);
+      localStorage.setItem("spam-privacy-notice-text", defaultText);
     }
 
     const savedThresholds = localStorage.getItem("spam-alert-thresholds");
@@ -738,6 +751,11 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
   const addLog = useCallback((action: string) => {
     addLogWithProfile(userProfile, action);
   }, [userProfile, addLogWithProfile]);
+
+  const savePrivacyNoticeText = useCallback((text: string) => {
+    setPrivacyNoticeText(text);
+    localStorage.setItem("spam-privacy-notice-text", text);
+  }, []);
 
   const addAlert = useCallback((newAlertData: Omit<Alert, "id" | "timestamp" | "recognized">) => {
     const newAlert: Alert = {
@@ -1502,6 +1520,9 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         confirmDomainSwitch,
         cancelDomainSwitch,
         addLog,
+        addLogWithProfile,
+        privacyNoticeText,
+        savePrivacyNoticeText,
         clearLogs,
         // Auth value:
         currentUser,
