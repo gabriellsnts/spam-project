@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import { useDomain } from "@/lib/context/domain-context";
+import { useDomain, DOMAINS } from "@/lib/context/domain-context";
 import {
   Upload,
   CheckCircle2,
@@ -16,10 +16,12 @@ import {
   Download,
   Info,
   ChevronRight,
-  List
+  List,
+  Shield
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 interface ProcessedCell {
   raw: string;
@@ -43,10 +45,14 @@ interface ProcessedRow {
 }
 
 export function CSVImport() {
-  const { activeDomain, addLog } = useDomain();
+  const { activeDomain, addLog, addLogWithProfile, privacyNoticeText, userProfile } = useDomain();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Estados principais de processamento
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [isLgpdModalOpen, setIsLgpdModalOpen] = useState(false);
+  const [hasConsented, setHasConsented] = useState(false);
+
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [loadingStep, setLoadingStep] = useState("");
@@ -326,24 +332,7 @@ export function CSVImport() {
     return { columnsMetadata, processedList, grandTotalImputed };
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    if (!file.name.toLowerCase().endsWith(".csv")) {
-      setUploadStatus("error");
-      setErrorMessage("Extensão inválida. Por favor, faça upload apenas de arquivos CSV.");
-      addLog(`Falha na importação: O arquivo '${file.name}' não é um CSV válido.`);
-      return;
-    }
-
-    // Limites de tamanho (máximo 5MB para frontend robusto)
-    if (file.size > 5 * 1024 * 1024) {
-      setUploadStatus("error");
-      setErrorMessage("O tamanho do arquivo excede o limite máximo permitido de 5MB.");
-      return;
-    }
-
+  const processFile = (file: File) => {
     setIsUploading(true);
     setUploadStatus("idle");
     setErrorMessage("");
@@ -442,6 +431,28 @@ export function CSVImport() {
     };
 
     reader.readAsArrayBuffer(file);
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.toLowerCase().endsWith(".csv")) {
+      setUploadStatus("error");
+      setErrorMessage("Extensão inválida. Por favor, faça upload apenas de arquivos CSV.");
+      addLog(`Falha na importação: O arquivo '${file.name}' não é um CSV válido.`);
+      return;
+    }
+
+    // Limites de tamanho (máximo 5MB para frontend robusto)
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadStatus("error");
+      setErrorMessage("O tamanho do arquivo excede o limite máximo permitido de 5MB.");
+      return;
+    }
+
+    setPendingFile(file);
+    setIsLgpdModalOpen(true);
   };
 
   const handleReset = () => {
@@ -970,6 +981,117 @@ export function CSVImport() {
           </CardContent>
         </Card>
       )}
+
+      {/* Modal de Aviso de Privacidade e Consentimento LGPD (RF39 - CA01, CA02, CA04, CA05) */}
+      <Dialog open={isLgpdModalOpen} onOpenChange={(open) => {
+        if (!open) {
+          setIsLgpdModalOpen(false);
+          setPendingFile(null);
+          setHasConsented(false);
+          if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+          }
+        }
+      }}>
+        <DialogContent className="sm:max-w-[550px] bg-zinc-900 border-zinc-800 text-foreground">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-zinc-100 font-bold text-sm">
+              <Shield className="h-5 w-5 text-green-500 shrink-0" />
+              Aviso de Privacidade & Consentimento (LGPD)
+            </DialogTitle>
+            <DialogDescription className="text-zinc-400 text-xs">
+              Por favor, leia atentamente as diretrizes de privacidade antes de prosseguir com a importação de dados.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 my-2">
+            <div className="p-4 rounded-xl bg-zinc-950/80 border border-zinc-800 text-[11px] text-zinc-300 leading-relaxed font-sans max-h-[180px] overflow-y-auto whitespace-pre-wrap select-text">
+              {privacyNoticeText}
+            </div>
+
+            <div className="flex flex-col gap-2 p-3.5 bg-zinc-950/40 border border-zinc-800/60 rounded-xl text-[10px] text-zinc-400">
+              <div className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-green-500 shrink-0" />
+                <span>Uso de dados exclusivo para modelagem analítica e predição neste sistema.</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-green-500 shrink-0" />
+                <span>Confidencialidade estrita, sem compartilhamento ou transferência de informações com terceiros.</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-green-500 shrink-0" />
+                <span className="flex-1">
+                  Direito dos titulares assegurados. Para mais informações, consulte a nossa{" "}
+                  <a 
+                    href="#privacy-policy" 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      alert("Política de Privacidade do Sistema SPAM (Demonstração de Homologação)");
+                    }} 
+                    className="text-green-400 hover:text-green-300 underline font-bold"
+                  >
+                    Política de Privacidade
+                  </a>.
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-green-500 shrink-0" />
+                <span>Contato do Encarregado pelo tratamento de dados pessoais (DPO): dpo@empresa.com</span>
+              </div>
+            </div>
+
+            {/* Checkbox para aceite explícito */}
+            <div className="flex items-start gap-2.5 pt-2">
+              <input
+                type="checkbox"
+                id="lgpd-consent-checkbox-import"
+                checked={hasConsented}
+                onChange={(e) => setHasConsented(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-zinc-800 bg-zinc-950 text-green-500 focus:ring-green-500 cursor-pointer accent-green-600"
+              />
+              <label htmlFor="lgpd-consent-checkbox-import" className="text-[11px] text-zinc-400 leading-snug cursor-pointer select-none">
+                Estou ciente e concordo com o processamento dos dados importados em conformidade com a LGPD e as finalidades descritas.
+              </label>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-3 border-t border-zinc-800/80">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsLgpdModalOpen(false);
+                setPendingFile(null);
+                setHasConsented(false);
+                if (fileInputRef.current) {
+                  fileInputRef.current.value = "";
+                }
+              }}
+              className="text-[10px] font-bold h-8 px-3.5 border-zinc-800 hover:bg-zinc-800 text-zinc-300"
+            >
+              Recusar e Cancelar
+            </Button>
+            <Button
+              disabled={!hasConsented}
+              onClick={() => {
+                setIsLgpdModalOpen(false);
+                setHasConsented(false);
+
+                if (pendingFile) {
+                  processFile(pendingFile);
+                  setPendingFile(null);
+                  
+                  // Disparar o Log de Auditoria (CA03)
+                  const domainName = activeDomain ? DOMAINS[activeDomain].name : "teste";
+                  addLogWithProfile(userProfile, `Consentimento LGPD confirmado para importação de dados no domínio ${domainName}`);
+                }
+              }}
+              className="text-[10px] font-bold h-8 px-3.5 bg-green-500 hover:bg-green-600 text-zinc-950 disabled:opacity-50 transition"
+            >
+              Confirmar e Consentir
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

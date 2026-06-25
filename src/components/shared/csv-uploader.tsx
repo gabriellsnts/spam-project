@@ -4,7 +4,7 @@ import React, { useState, useRef, DragEvent } from "react";
 import { useDomain, DOMAINS, TrainedModel } from "@/lib/context/domain-context";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { UploadCloud, CheckCircle2, AlertCircle, Loader2, FileSpreadsheet, Trash2, Info, Download, AlertTriangle } from "lucide-react";
+import { UploadCloud, CheckCircle2, AlertCircle, Loader2, FileSpreadsheet, Trash2, Info, Download, AlertTriangle, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
@@ -1037,6 +1037,8 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
   const { 
     activeDomain, 
     addLog,
+    addLogWithProfile,
+    privacyNoticeText,
     isTraining,
     trainingProgress,
     trainingStep,
@@ -1054,6 +1056,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
     hyperparameterHistory,
     clearHyperparameterHistory,
     currentUser,
+    userProfile,
   } = useDomain();
 
   const canEdit = !currentUser || currentUser.accessProfile === "Super Admin";
@@ -1061,6 +1064,11 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
   const activeModel = activeDomain ? trainedModels[activeDomain] : null;
   const previousModel = activeDomain ? previousTrainedModels[activeDomain] : null;
   const history = activeDomain ? hyperparameterHistory[activeDomain] : [];
+
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [isLgpdModalOpen, setIsLgpdModalOpen] = useState(false);
+  const [isMockPending, setIsMockPending] = useState(false);
+  const [hasConsented, setHasConsented] = useState(false);
 
   // CA05 Comparison logic
   const getPerformanceComparison = () => {
@@ -1454,7 +1462,9 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
   // Handlers para clique e navegação de arquivo
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      processFile(e.target.files[0]);
+      setPendingFile(e.target.files[0]);
+      setIsMockPending(false);
+      setIsLgpdModalOpen(true);
     }
   };
 
@@ -1474,7 +1484,9 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
     setIsDragging(false);
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      processFile(e.dataTransfer.files[0]);
+      setPendingFile(e.dataTransfer.files[0]);
+      setIsMockPending(false);
+      setIsLgpdModalOpen(true);
     }
   };
 
@@ -1594,16 +1606,9 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
             <div className="flex justify-center mt-2">
               <Button 
                 onClick={() => {
-                  setFileDetails({
-                    name: `dados_historicos_${activeDomain || 'teste'}.csv`,
-                    size: "45 KB",
-                    sizeBytes: 45000,
-                    rows: 150,
-                    encoding: "UTF-8",
-                    delimiter: ",",
-                    headers: expectedCols
-                  });
-                  setUploadStatus("success");
+                  setIsMockPending(true);
+                  setPendingFile(null);
+                  setIsLgpdModalOpen(true);
                 }}
                 variant="outline" 
                 className="text-[10px] font-bold h-7 border-dashed border-emerald-500/40 text-emerald-600 hover:bg-emerald-500/10"
@@ -2680,6 +2685,135 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
               className={cn("text-[10px] font-bold h-8 px-3.5 bg-rose-600 hover:bg-rose-500 text-white font-semibold transition", !canEdit && "opacity-50 cursor-not-allowed")}
             >
               Substituir Modelo e Treinar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Aviso de Privacidade e Consentimento LGPD (RF39 - CA01, CA02, CA04, CA05) */}
+      <Dialog open={isLgpdModalOpen} onOpenChange={(open) => {
+        if (!open) {
+          setIsLgpdModalOpen(false);
+          setPendingFile(null);
+          setIsMockPending(false);
+          setHasConsented(false);
+          if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+          }
+        }
+      }}>
+        <DialogContent className="sm:max-w-[550px] bg-zinc-900 border-zinc-800 text-foreground">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-zinc-100 font-bold text-sm">
+              <Shield className="h-5 w-5 text-green-500 shrink-0" />
+              Aviso de Privacidade & Consentimento (LGPD)
+            </DialogTitle>
+            <DialogDescription className="text-zinc-400 text-xs">
+              Por favor, leia atentamente as diretrizes de privacidade antes de prosseguir com a importação de dados.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 my-2">
+            <div className="p-4 rounded-xl bg-zinc-950/80 border border-zinc-800 text-[11px] text-zinc-300 leading-relaxed font-sans max-h-[180px] overflow-y-auto whitespace-pre-wrap select-text">
+              {privacyNoticeText}
+            </div>
+
+            <div className="flex flex-col gap-2 p-3.5 bg-zinc-950/40 border border-zinc-800/60 rounded-xl text-[10px] text-zinc-400">
+              <div className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-green-500 shrink-0" />
+                <span>Uso de dados exclusivo para modelagem analítica e predição neste sistema.</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-green-500 shrink-0" />
+                <span>Confidencialidade estrita, sem compartilhamento ou transferência de informações com terceiros.</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-green-500 shrink-0" />
+                <span className="flex-1">
+                  Direito dos titulares assegurados. Para mais informações, consulte a nossa{" "}
+                  <a 
+                    href="#privacy-policy" 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      alert("Política de Privacidade do Sistema SPAM (Demonstração de Homologação)");
+                    }} 
+                    className="text-green-400 hover:text-green-300 underline font-bold"
+                  >
+                    Política de Privacidade
+                  </a>.
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-green-500 shrink-0" />
+                <span>Contato do Encarregado pelo tratamento de dados pessoais (DPO): dpo@empresa.com</span>
+              </div>
+            </div>
+
+            {/* Checkbox para aceite explícito */}
+            <div className="flex items-start gap-2.5 pt-2">
+              <input
+                type="checkbox"
+                id="lgpd-consent-checkbox"
+                checked={hasConsented}
+                onChange={(e) => setHasConsented(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-zinc-800 bg-zinc-950 text-green-500 focus:ring-green-500 cursor-pointer accent-green-600"
+              />
+              <label htmlFor="lgpd-consent-checkbox" className="text-[11px] text-zinc-400 leading-snug cursor-pointer select-none">
+                Estou ciente e concordo com o processamento dos dados importados em conformidade com a LGPD e as finalidades descritas.
+              </label>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-3 border-t border-zinc-800/80">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsLgpdModalOpen(false);
+                setPendingFile(null);
+                setIsMockPending(false);
+                setHasConsented(false);
+                if (fileInputRef.current) {
+                  fileInputRef.current.value = "";
+                }
+              }}
+              className="text-[10px] font-bold h-8 px-3.5 border-zinc-800 hover:bg-zinc-800 text-zinc-300"
+            >
+              Recusar e Cancelar
+            </Button>
+            <Button
+              disabled={!hasConsented}
+              onClick={() => {
+                setIsLgpdModalOpen(false);
+                setHasConsented(false);
+
+                // Executar a ação pendente
+                const domainName = activeDomain ? DOMAINS[activeDomain].name : "teste";
+                if (isMockPending) {
+                  setFileDetails({
+                    name: `dados_historicos_${activeDomain || 'teste'}.csv`,
+                    size: "45 KB",
+                    sizeBytes: 45000,
+                    rows: 150,
+                    encoding: "UTF-8",
+                    delimiter: ",",
+                    headers: expectedCols
+                  });
+                  setUploadStatus("success");
+                  setIsMockPending(false);
+                  
+                  // Disparar o Log de Auditoria (CA03)
+                  addLogWithProfile(userProfile, `Consentimento LGPD confirmado para importação de dados no domínio ${domainName}`);
+                } else if (pendingFile) {
+                  processFile(pendingFile);
+                  setPendingFile(null);
+                  
+                  // Disparar o Log de Auditoria (CA03)
+                  addLogWithProfile(userProfile, `Consentimento LGPD confirmado para importação de dados no domínio ${domainName}`);
+                }
+              }}
+              className="text-[10px] font-bold h-8 px-3.5 bg-green-500 hover:bg-green-600 text-zinc-950 disabled:opacity-50 transition"
+            >
+              Confirmar e Consentir
             </Button>
           </div>
         </DialogContent>
