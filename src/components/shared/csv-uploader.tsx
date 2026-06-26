@@ -2998,7 +2998,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
             <div className="flex items-center gap-2.5 text-rose-500 mb-1">
               <AlertTriangle className="h-5.5 w-5.5" />
               <DialogTitle className="text-sm font-bold text-foreground font-sans">
-                Confirmar Substituição de Modelo Preditivo (CA04)
+                Sobrescrever modelo anterior?
               </DialogTitle>
             </div>
             <DialogDescription className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
@@ -3034,7 +3034,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
               disabled={!canEdit}
               className={cn("text-[10px] font-bold h-8 px-3.5 bg-rose-600 hover:bg-rose-500 text-white font-semibold transition", !canEdit && "opacity-50 cursor-not-allowed")}
             >
-              Substituir Modelo e Treinar
+              Confirmar
             </Button>
           </div>
         </DialogContent>
