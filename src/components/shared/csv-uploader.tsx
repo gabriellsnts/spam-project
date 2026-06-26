@@ -1666,7 +1666,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
               </div>
               {isModelObsolete && (
                 <span className="text-[9px] text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full font-semibold uppercase">
-                  ⚠️ Obsoleto (> 30 dias)
+                  ⚠️ Obsoleto ({">"} 30 dias)
                 </span>
               )}
             </div>

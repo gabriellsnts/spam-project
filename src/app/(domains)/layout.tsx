@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { Header } from "@/components/shared/header";
 import { Sidebar } from "@/components/shared/sidebar";
 import { usePathname } from "next/navigation";
-import { useDomain, DOMAINS } from "@/lib/context/domain-context";
 import { Loader2 } from "lucide-react";
 
 function DomainSkeleton({ domain }: { domain: string }) {
@@ -22,7 +21,6 @@ function DomainSkeleton({ domain }: { domain: string }) {
     "credit-risk": "bg-emerald-500",
   };
 
-  const domainName = DOMAINS[domain as any]?.name || "Módulo Analítico";
   const accentClass = accentColors[domain] || "text-green-500 bg-green-500/10 border-green-500/20";
   const barClass = barColors[domain] || "bg-green-500";
 

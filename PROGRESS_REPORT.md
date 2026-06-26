@@ -202,3 +202,23 @@ Este relatÃ³rio documenta a implementaÃ§Ã£o dos Requisitos Funcionais (RFs
 - **Aba 1 - Painel de Monitoramento:** Apresentação de KPIs do topo (OEE Médio, Disponibilidade, Alertas Ativos, RUL Médio), lista de equipamentos sob monitoramento e insights automáticos. Card de Modelos Estatísticos removido e botão de simulação realocado para a aba 2.
 - **Aba 2 - Sandbox de Simulação:** Contém sliders de controle de variáveis e card comparativo "Cenário Real vs Cenário Simulado", com botão de "Simular Anomalia" posicionado de forma discreta como preset rápido.
 - **Aba 3 - Calibração do Modelo:** Título dinâmico exibindo o algoritmo ativo atual. Reúne o card de Modelos Estatísticos (R²), o seletor de algoritmo (RF30), a zona de upload de CSV, a tabela comparativa side-by-side e o gráfico de resíduos (recolhido em Accordion sob demanda).
+
+---
+
+## RF29 — Carregar Modelo Salvo Automatically
+- **Status:** Concluído
+- **Componentes Modificados/Criados:**
+  - `src/lib/context/domain-context.tsx` (Validação de integridade estrutural, persistência e logs de integridade)
+  - `src/app/(domains)/layout.tsx` (Tela de carregamento simulado por esqueleto e spinner)
+  - `src/components/shared/csv-uploader.tsx` (Exibição de resumo consolidado, aviso de obsolescência e aviso de ausência de modelo)
+  - `src/app/(domains)/maintenance/page.tsx` (Badge do modelo ativo no banner, aviso de obsolescência e avisos condicionais nas abas)
+  - `src/app/(domains)/demand/page.tsx` (Badge do modelo ativo no banner, aviso de obsolescência e aviso condicional de ausência de modelo)
+  - `src/app/(domains)/churn/page.tsx` (Badge do modelo ativo no banner, aviso de obsolescência e aviso condicional de ausência de modelo)
+  - `src/app/(domains)/credit-risk/page.tsx` (Badge do modelo ativo no banner, aviso de obsolescência e aviso condicional de ausência de modelo)
+
+### Mapeamento dos Critérios de Aceitação (CA)
+- **CA01 & CA03 — Carregamento Automático e Atraso Simulado:** Ao carregar ou alternar para a página de qualquer domínio, a aplicação simula um tempo de carregamento realista de 1.5 a 3 segundos (respeitando o limite de 10s). Durante este atraso, renderiza-se um indicador de progresso (loading spinner/bar) e um esqueleto visual (skeleton loader) estilizado de acordo com o domínio. Caso exista um modelo válido no localStorage, o sistema carrega-o de forma automática, aplicando um distintivo "✓ Modelo Pronto para Uso" com animação pulsante.
+- **CA02 — Mensagem Informativa de Ausência de Modelo:** Caso não exista modelo salvo no localStorage para o domínio correspondente, a interface exibe de forma amigável e informativa instruções claras orientando o usuário a realizar o upload da base histórica em CSV e efetuar o treinamento do modelo, impedindo a quebra de tela e permitindo o uso parcial do sistema.
+- **CA04 — Verificação de Integridade Estrutural:** A rotina de montagem do context realiza uma validação rigorosa das propriedades críticas do modelo recuperado (`metrics`, `algorithm`, `modelId`, `domain`). Havendo ausência de propriedade crítica, o cache do modelo defeituoso é descartado, a persistência é limpa e um alerta técnico de alta criticidade juntamente com logs de auditoria correspondentes são emitidos alertando e sugerindo uma nova calibração.
+- **CA05 — Resumo Consolidado na Aba de Calibração:** Um painel consolidado é dinamicamente exibido na seção de calibração reunindo os metadados críticos do modelo (Domínio correspondente, Algoritmo utilizado, Data e Hora exatas do treinamento) e a listagem de suas métricas de desempenho correspondentes (AUC-ROC, Acurácia, R², RMSE, etc.).
+- **CA06 — Alerta Visual de Obsolescência:** O sistema calcula o tempo de vida do modelo ativo com base no ano atual do ecossistema (2026). Caso a data de calibração ultrapasse 30 dias de idade, um alerta de obsolescência de baixa fadiga cognitiva é renderizado no resumo consolidado sugerindo uma nova recalibração com novos dados de telemetria, sem bloquear ou travar o funcionamento e previsões do modelo ativo atual.
