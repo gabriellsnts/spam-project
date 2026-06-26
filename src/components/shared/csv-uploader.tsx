@@ -1068,6 +1068,8 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
   const previousModel = activeDomain ? previousTrainedModels[activeDomain] : null;
   const history = activeDomain ? hyperparameterHistory[activeDomain] : [];
 
+  const isClassification = activeDomain === "credit-risk" || activeDomain === "churn";
+
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [isLgpdModalOpen, setIsLgpdModalOpen] = useState(false);
   const [isMockPending, setIsMockPending] = useState(false);
@@ -2643,6 +2645,165 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
             </div>
           </div>
         )}
+
+        {/* Tabela Comparativa Side-by-Side (RF30 - CA04) */}
+        {(() => {
+          const modelsForDomain = activeDomain ? trainedModelsByAlgorithm[activeDomain] : null;
+          if (!modelsForDomain) return null;
+
+          const rfModel = modelsForDomain["Random Forest"];
+          const altName = isClassification ? "Regressão Logística" : "Regressão Linear";
+          const altModel = modelsForDomain[altName];
+
+          // Só exibe a tabela se pelo menos um dos modelos estiver treinado
+          if (!rfModel && !altModel) return null;
+
+          // Helper para determinar o vencedor
+          const getWinnerClass = (rfVal: number | undefined, altVal: number | undefined, isLowerBetter = false) => {
+            if (rfVal === undefined || altVal === undefined) return { rf: "", alt: "" };
+            if (rfVal === altVal) return { rf: "text-foreground font-semibold", alt: "text-foreground font-semibold" };
+            const rfWon = isLowerBetter ? rfVal < altVal : rfVal > altVal;
+            return {
+              rf: rfWon ? "text-emerald-500 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20" : "text-muted-foreground",
+              alt: !rfWon ? "text-emerald-500 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20" : "text-muted-foreground"
+            };
+          };
+
+          const formatVal = (val: number | undefined, isPct = false, decimals = 4) => {
+            if (val === undefined || val === null) return "Não treinado";
+            return isPct ? `${(val * 100).toFixed(1)}%` : val.toFixed(decimals);
+          };
+
+          const rows: {
+            name: string;
+            key: string;
+            rf: number | undefined;
+            alt: number | undefined;
+            isPct: boolean;
+            isLowerBetter: boolean;
+            decimals?: number;
+          }[] = isClassification
+            ? [
+                { name: "Acurácia (Accuracy)", key: "accuracy", rf: rfModel?.metrics.accuracy, alt: altModel?.metrics.accuracy, isPct: true, isLowerBetter: false, decimals: undefined },
+                { name: "Precisão (Precision)", key: "precision", rf: rfModel?.metrics.precision, alt: altModel?.metrics.precision, isPct: true, isLowerBetter: false, decimals: undefined },
+                { name: "Sensibilidade (Recall)", key: "recall", rf: rfModel?.metrics.recall, alt: altModel?.metrics.recall, isPct: true, isLowerBetter: false, decimals: undefined },
+                { name: "F1-Score", key: "f1Score", rf: rfModel?.metrics.f1Score, alt: altModel?.metrics.f1Score, isPct: true, isLowerBetter: false, decimals: undefined },
+                { name: "AUC-ROC", key: "aucRoc", rf: rfModel?.metrics.aucRoc, alt: altModel?.metrics.aucRoc, isPct: true, isLowerBetter: false, decimals: undefined },
+              ]
+            : [
+                { name: "R² (Coef. Determinação)", key: "r2", rf: rfModel?.metrics.r2, alt: altModel?.metrics.r2, isPct: false, decimals: 4, isLowerBetter: false },
+                { name: "RMSE (Erro Quadrático)", key: "rmse", rf: rfModel?.metrics.rmse, alt: altModel?.metrics.rmse, isPct: false, decimals: 3, isLowerBetter: true },
+                { name: "MAE (Erro Absoluto)", key: "mae", rf: rfModel?.metrics.mae, alt: altModel?.metrics.mae, isPct: false, decimals: 3, isLowerBetter: true },
+              ];
+
+          const selectedAlg = selectedAlgorithms[activeDomain] || "Random Forest";
+
+          return (
+            <div className="mt-8 pt-6 border-t border-border/80 space-y-4.5 animate-in fade-in duration-500">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                <div>
+                  <h5 className="text-xs font-bold text-foreground flex items-center gap-1.5 font-sans">
+                    📊 Comparação Side-by-Side de Desempenho (RF30 - CA04)
+                  </h5>
+                  <p className="text-[10px] text-muted-foreground leading-relaxed font-sans">
+                    Métricas de validação comparadas lado a lado. O melhor algoritmo em cada métrica é destacado em verde.
+                  </p>
+                </div>
+                {rfModel && altModel && (
+                  <span className="text-[9px] text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded font-mono font-bold uppercase shrink-0">
+                    Ambos Treinados
+                  </span>
+                )}
+              </div>
+
+              <div className="overflow-hidden border border-border/60 rounded-xl bg-zinc-950/20">
+                <table className="w-full text-left border-collapse text-[11px] font-sans">
+                  <thead>
+                    <tr className="bg-muted/50 border-b border-border/60 text-[9px] uppercase tracking-wider text-muted-foreground font-bold font-sans">
+                      <th className="p-3">Métrica de Validação</th>
+                      <th className="p-3 text-center min-w-[130px]">Random Forest</th>
+                      <th className="p-3 text-center min-w-[130px]">{altName}</th>
+                      <th className="p-3 text-center min-w-[110px]">Variação</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/40 font-mono">
+                    {rows.map((row) => {
+                      const classes = getWinnerClass(row.rf, row.alt, row.isLowerBetter);
+                      
+                      // Calculate variation if both are trained
+                      let variationStr = "—";
+                      let varColor = "text-muted-foreground";
+                      if (row.rf !== undefined && row.alt !== undefined) {
+                        const diff = row.rf - row.alt;
+                        if (diff !== 0) {
+                          const percentageDiff = row.alt > 0 ? (diff / row.alt) * 100 : 0;
+                          const rfBetter = row.isLowerBetter ? diff < 0 : diff > 0;
+                          const sign = diff > 0 ? "+" : "";
+                          
+                          if (row.isPct) {
+                            variationStr = `${sign}${(diff * 100).toFixed(1)}% abs`;
+                          } else {
+                            variationStr = `${sign}${percentageDiff.toFixed(1)}% var`;
+                          }
+                          varColor = rfBetter ? "text-emerald-400 font-bold" : "text-rose-400 font-bold";
+                        } else {
+                          variationStr = "Empate";
+                          varColor = "text-muted-foreground";
+                        }
+                      }
+
+                      return (
+                        <tr key={row.key} className="hover:bg-muted/10 transition-colors">
+                          <td className="p-3 font-sans font-semibold text-foreground text-xs">{row.name}</td>
+                          <td className="p-3 text-center">
+                            <span className={cn("inline-block", classes.rf)}>
+                              {formatVal(row.rf, row.isPct, row.decimals)}
+                            </span>
+                          </td>
+                          <td className="p-3 text-center">
+                            <span className={cn("inline-block", classes.alt)}>
+                              {formatVal(row.alt, row.isPct, row.decimals)}
+                            </span>
+                          </td>
+                          <td className={cn("p-3 text-center text-xs", varColor)}>
+                            {variationStr}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Botões rápidos para alternar ou treinar o algoritmo restante */}
+              <div className="flex flex-wrap gap-2 text-[10px] justify-between items-center bg-muted/20 border border-border/40 p-3 rounded-xl font-sans">
+                <span className="text-muted-foreground">
+                  Algoritmo ativo atualmente: <strong className={cn("font-bold text-foreground", theme.accent)}>{selectedAlg}</strong>
+                </span>
+                <div className="flex gap-2">
+                  {!rfModel && (
+                    <Button
+                      onClick={() => setSelectedAlgorithm(activeDomain, "Random Forest")}
+                      variant="outline"
+                      className="text-[9px] font-bold h-7 px-2.5 hover:bg-muted border-dashed border-muted-foreground/30 text-muted-foreground hover:text-foreground"
+                    >
+                      Selecionar Random Forest
+                    </Button>
+                  )}
+                  {!altModel && (
+                    <Button
+                      onClick={() => setSelectedAlgorithm(activeDomain, altName)}
+                      variant="outline"
+                      className="text-[9px] font-bold h-7 px-2.5 hover:bg-muted border-dashed border-muted-foreground/30 text-muted-foreground hover:text-foreground"
+                    >
+                      Selecionar {altName}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
       </CardContent>
 
       {/* Pop-up do Relatório de Conformidade (CA04) */}

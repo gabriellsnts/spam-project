@@ -996,11 +996,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     // CA01 & CA02 - Identify problem nature and select algorithm
     const isClassification = domainKey === "credit-risk" || domainKey === "churn";
     const typeStr = isClassification ? "Classification" : "Regression";
-    const algStr = 
-      domainKey === "credit-risk" ? "LightGBM Classifier" :
-      domainKey === "churn" ? "XGBoost Classifier" :
-      domainKey === "maintenance" ? "XGBoost Regressor" :
-      "Prophet Time-Series Regressor";
+    const algStr = selectedAlgorithms[domainKey] || "Random Forest";
 
     let elapsedSeconds = 0;
     
@@ -1060,26 +1056,35 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
 
         // Generate metrics based on statistical outcomes
         if (isClassification) {
-          modelMetrics = {
-            accuracy: 0.95 + Math.random() * 0.04,
-            precision: 0.94 + Math.random() * 0.04,
-            recall: 0.93 + Math.random() * 0.05,
-            f1Score: 0.94 + Math.random() * 0.04,
-            aucRoc: 0.94 + Math.random() * 0.05, // AUC-ROC (RF12)
-          };
-          hyperparams = domainKey === "credit-risk" ? {
-            num_leaves: 31,
-            learning_rate: 0.03,
-            objective: "binary",
-            max_depth: -1,
-            min_data_in_leaf: 20
-          } : {
-            n_estimators: 150,
-            max_depth: 5,
-            learning_rate: 0.05,
-            scale_pos_weight: 3.5,
-            subsample: 0.8
-          };
+          if (algStr === "Random Forest") {
+            modelMetrics = {
+              accuracy: 0.962 + Math.random() * 0.02,
+              precision: 0.951 + Math.random() * 0.03,
+              recall: 0.945 + Math.random() * 0.02,
+              f1Score: 0.952 + Math.random() * 0.02,
+              aucRoc: 0.965 + Math.random() * 0.02,
+            };
+            hyperparams = {
+              n_estimators: 100,
+              max_depth: 10,
+              min_samples_split: 2,
+              random_state: 42
+            };
+          } else { // Regressão Logística
+            modelMetrics = {
+              accuracy: 0.921 + Math.random() * 0.03,
+              precision: 0.915 + Math.random() * 0.03,
+              recall: 0.902 + Math.random() * 0.03,
+              f1Score: 0.908 + Math.random() * 0.03,
+              aucRoc: 0.931 + Math.random() * 0.03,
+            };
+            hyperparams = {
+              penalty: "l2",
+              C: 1.0,
+              solver: "lbfgs",
+              max_iter: 1000
+            };
+          }
 
           // Generate Confusion Matrix matching testSize and metrics
           const tp = Math.round(testSize * 0.48 * (modelMetrics.recall || 0.95));
@@ -1094,24 +1099,30 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
             fn: Math.max(0, fn)
           };
         } else {
-          modelMetrics = {
-            r2: 0.93 + Math.random() * 0.05,
-            rmse: 1.5 + Math.random() * 1.5,
-            mae: 1.0 + Math.random() * 1.0,
-          };
-          hyperparams = domainKey === "maintenance" ? {
-            n_estimators: 120,
-            max_depth: 6,
-            learning_rate: 0.08,
-            subsample: 0.9,
-            colsample_bytree: 0.8
-          } : {
-            growth: "linear",
-            seasonality_mode: "multiplicative",
-            yearly_seasonality: true,
-            weekly_seasonality: true,
-            changepoint_prior_scale: 0.05
-          };
+          if (algStr === "Random Forest") {
+            modelMetrics = {
+              r2: 0.941 + Math.random() * 0.03,
+              rmse: 1.25 + Math.random() * 0.5,
+              mae: 0.95 + Math.random() * 0.3,
+            };
+            hyperparams = {
+              n_estimators: 100,
+              max_depth: 12,
+              min_samples_split: 2,
+              random_state: 42
+            };
+          } else { // Regressão Linear
+            modelMetrics = {
+              r2: 0.865 + Math.random() * 0.04,
+              rmse: 2.15 + Math.random() * 0.6,
+              mae: 1.65 + Math.random() * 0.4,
+            };
+            hyperparams = {
+              fit_intercept: true,
+              copy_X: true,
+              n_jobs: -1
+            };
+          }
 
           // Generate 25 residual points for regression
           const numPoints = 25;
@@ -1163,6 +1174,18 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
           [domainKey]: newModel
         }));
 
+        setTrainedModelsByAlgorithm(prev => {
+          const updated = {
+            ...prev,
+            [domainKey]: {
+              ...(prev[domainKey] || {}),
+              [algStr]: newModel
+            }
+          };
+          localStorage.setItem("spam-trained-models-by-algorithm", JSON.stringify(updated));
+          return updated;
+        });
+
         const newCycle: RetrainingCycle = {
           modelId,
           timestamp: newModel.timestamp,
@@ -1175,9 +1198,10 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         archiveRetrainingCycle(domainKey, newCycle);
 
         addLog(`[Model Training Success] Treinamento do modelo para o módulo '${DOMAINS[domainKey].name}' concluído com sucesso. ID: ${modelId}, Algoritmo: ${algStr}.`);
+        addLogWithProfile(userProfile, `Treinamento realizado no domínio ${DOMAINS[domainKey].name} utilizando o algoritmo ${algStr}`);
       }
     }, 1000);
-  }, [activeDomain, simulatedFail, addLog, isTraining, trainedModels, archiveRetrainingCycle]);
+  }, [activeDomain, simulatedFail, addLog, isTraining, trainedModels, archiveRetrainingCycle, selectedAlgorithms, setTrainedModelsByAlgorithm, addLogWithProfile, userProfile]);
 
   const resetTraining = useCallback(() => {
     if (trainingIntervalRef.current) clearInterval(trainingIntervalRef.current);
