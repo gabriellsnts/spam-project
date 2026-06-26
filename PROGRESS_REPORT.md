@@ -222,3 +222,18 @@ Este relatÃ³rio documenta a implementaÃ§Ã£o dos Requisitos Funcionais (RFs
 - **CA04 — Verificação de Integridade Estrutural:** A rotina de montagem do context realiza uma validação rigorosa das propriedades críticas do modelo recuperado (`metrics`, `algorithm`, `modelId`, `domain`). Havendo ausência de propriedade crítica, o cache do modelo defeituoso é descartado, a persistência é limpa e um alerta técnico de alta criticidade juntamente com logs de auditoria correspondentes são emitidos alertando e sugerindo uma nova calibração.
 - **CA05 — Resumo Consolidado na Aba de Calibração:** Um painel consolidado é dinamicamente exibido na seção de calibração reunindo os metadados críticos do modelo (Domínio correspondente, Algoritmo utilizado, Data e Hora exatas do treinamento) e a listagem de suas métricas de desempenho correspondentes (AUC-ROC, Acurácia, R², RMSE, etc.).
 - **CA06 — Alerta Visual de Obsolescência:** O sistema calcula o tempo de vida do modelo ativo com base no ano atual do ecossistema (2026). Caso a data de calibração ultrapasse 30 dias de idade, um alerta de obsolescência de baixa fadiga cognitiva é renderizado no resumo consolidado sugerindo uma nova recalibração com novos dados de telemetria, sem bloquear ou travar o funcionamento e previsões do modelo ativo atual.
+
+---
+
+## RF28 — Salvar Modelo Treinado em Arquivo
+- **Status:** Concluído
+- **Componentes Modificados/Criados:**
+  - `src/lib/context/domain-context.tsx` (Lógica de exportação automática, validação de integridade do payload e auditoria de log)
+  - `src/components/shared/csv-uploader.tsx` (Modal de confirmação de sobreposição "Sobrescrever modelo anterior?", botão e fluxo de exportação)
+
+### Mapeamento dos Critérios de Aceitação (CA)
+- **CA01, CA02 & CA04 — Exportação Automática de Modelo:** Ao concluir o treinamento de qualquer modelo preditivo, além da persistência em `localStorage`, o sistema gera e dispara dinamicamente o download automático de um payload JSON estruturado contendo o ID do modelo, o tipo do problema, o domínio, o algoritmo, o timestamp exato de criação, a quantidade de registros utilizada no treino e teste (`totalRecords`, `trainSize`, `testSize`) e todas as métricas detalhadas de desempenho. O arquivo é nomeado automaticamente no padrão `modelo-[nome-do-dominio]-[data-do-treinamento].json` (ex: `modelo-churn-2026-06-26.json`) e um toast premium estilizado é exibido na tela confirmando o salvamento.
+- **CA03 — Confirmação de Sobreposição:** Se o usuário tentar iniciar um novo treinamento em um módulo/domínio que já possua um modelo ativo na sessão atual, a aplicação exibe um modal de diálogo impeditivo de confirmação com a pergunta `"Sobrescrever modelo anterior?"` e as opções de `"Cancelar"` ou `"Confirmar"` para autorizar a substituição.
+- **CA05 — Validação de Integridade Estrutural:** O sistema realiza uma verificação técnica e lógica completa no payload de metadados gerado antes de salvar e disparar o download. Caso falhe alguma propriedade crítica do modelo ou se uma corrupção simulada for detectada (via flag de teste), o salvamento é sumariamente abortado, as variáveis de progresso são zeradas e um alerta de erro crítico instruindo um novo treinamento é exibido para o usuário.
+- **CA06 — Logs de Auditoria Corporativa:** A exportação do arquivo JSON gera automaticamente um registro estruturado no histórico do Log de Auditoria usando o método `addLogWithProfile`, contendo Data, Horário, Usuário que executou, Perfil, e a mensagem padronizada: `"Arquivo de modelo exportado com sucesso no domínio [Nome] utilizando o algoritmo [Nome do Algoritmo]"`.
+
