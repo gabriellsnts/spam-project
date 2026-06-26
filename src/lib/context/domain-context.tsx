@@ -495,6 +495,9 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
 
   // Carregar tema e sessão do localStorage/sessionStorage no cliente
   useEffect(() => {
+    let integrityErrorFound = false;
+    const failedDomains: DomainType[] = [];
+
     const savedUser = sessionStorage.getItem("spam-user");
     let initialUser: User | null = null;
     if (savedUser) {
@@ -561,45 +564,78 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
+    // Carregar e Validar Modelos (CA04)
+    const cleanedModels: Record<DomainType, Record<string, TrainedModel | null>> = {
+      maintenance: { "Random Forest": null, "Regressão Linear": null },
+      demand: { "Random Forest": null, "Regressão Linear": null },
+      churn: { "Random Forest": null, "Regressão Logística": null },
+      "credit-risk": { "Random Forest": null, "Regressão Logística": null }
+    };
+
     const savedTrainedModelsByAlg = localStorage.getItem("spam-trained-models-by-algorithm");
     if (savedTrainedModelsByAlg) {
       try {
         const parsed = JSON.parse(savedTrainedModelsByAlg);
-        setTrainedModelsByAlgorithm(parsed);
+        (Object.keys(parsed) as DomainType[]).forEach(d => {
+          if (parsed[d]) {
+            Object.keys(parsed[d]).forEach(alg => {
+              const model = parsed[d][alg];
+              if (model) {
+                // Verificar se faltam propriedades críticas para atestar integridade
+                if (!model.metrics || !model.algorithm || !model.modelId || !model.domain || typeof model.metrics !== "object") {
+                  integrityErrorFound = true;
+                  if (!failedDomains.includes(d)) {
+                    failedDomains.push(d);
+                  }
+                } else {
+                  cleanedModels[d][alg] = model;
+                }
+              }
+            });
+          }
+        });
+
+        setTrainedModelsByAlgorithm(cleanedModels);
 
         // Atualizar também o trainedModels baseado no algoritmo selecionado
         setTrainedModels(prev => {
           const next = { ...prev };
           (Object.keys(currentSelectedAlgs) as DomainType[]).forEach(d => {
             const selectedAlg = currentSelectedAlgs[d];
-            next[d] = parsed[d]?.[selectedAlg] || null;
+            next[d] = cleanedModels[d]?.[selectedAlg] || null;
           });
           return next;
         });
+
+        if (integrityErrorFound) {
+          localStorage.setItem("spam-trained-models-by-algorithm", JSON.stringify(cleanedModels));
+        }
       } catch (e) {
         console.error("Erro ao carregar modelos por algoritmo:", e);
       }
     }
 
+    // Carregar limiares
     const savedThresholds = localStorage.getItem("spam-alert-thresholds");
     if (savedThresholds) {
       try {
-        setAlerts(JSON.parse(localStorage.getItem("spam-alerts") || "[]"));
         setAlertThresholds(JSON.parse(savedThresholds));
       } catch (e) {
         console.error("Erro ao carregar limiares de alerta:", e);
       }
     }
 
+    // Carregar alertas
+    let loadedAlerts: Alert[] = [];
     const savedAlerts = localStorage.getItem("spam-alerts");
     if (savedAlerts) {
       try {
-        setAlerts(JSON.parse(savedAlerts));
+        loadedAlerts = JSON.parse(savedAlerts);
       } catch (e) {
         console.error("Erro ao carregar alertas:", e);
       }
     } else {
-      const initialAlerts: Alert[] = [
+      loadedAlerts = [
         {
           id: "ALT-MNT-1",
           domain: "maintenance",
@@ -671,12 +707,12 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
           recognized: false
         }))
       ];
-      setAlerts(initialAlerts);
-      localStorage.setItem("spam-alerts", JSON.stringify(initialAlerts));
+      localStorage.setItem("spam-alerts", JSON.stringify(loadedAlerts));
     }
     isAlertsInitialized.current = true;
     setIsAuthLoading(false);
 
+    // Carregar histórico de predições
     const savedPredictionHistory = localStorage.getItem("spam-prediction-history");
     if (savedPredictionHistory) {
       try {
@@ -685,12 +721,11 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         console.error("Erro ao carregar histórico de predições:", e);
       }
     } else {
-      // Mock some historical predictions to show functionality
       const initialHistory: PredictionHistoryRecord[] = [
         {
           id: "PRED-MNT-1",
           domain: "maintenance",
-          timestamp: Date.now() - 3600000 * 2, // 2h ago
+          timestamp: Date.now() - 3600000 * 2,
           item: "Prensa Hidráulica 04 (M04)",
           predictionResult: "Falha Iminente (89%)",
           details: { "Vibração RMS": "8.5 mm/s" }
@@ -698,7 +733,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         {
           id: "PRED-CRD-1",
           domain: "credit-risk",
-          timestamp: Date.now() - 3600000 * 24, // 24h ago
+          timestamp: Date.now() - 3600000 * 24,
           item: "PROP-801 (Cliente Alpha)",
           predictionResult: "Aprovar",
           details: { "Score": 850 }
@@ -709,25 +744,62 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     }
     isPredictionHistoryInitialized.current = true;
 
-  }, []);
-
-  // Carregar logs do localStorage na inicialização
-  useEffect(() => {
+    // Carregar logs de auditoria
+    let loadedLogsList = MOCK_LOGS;
     const storedLogs = localStorage.getItem("spam-audit-logs");
     if (storedLogs) {
       try {
         const parsedLogs = JSON.parse(storedLogs);
         if (Array.isArray(parsedLogs) && parsedLogs.length > 0) {
-          setLogs(parsedLogs);
-          return;
+          loadedLogsList = parsedLogs;
         }
       } catch (e) {
         console.error("Erro ao carregar logs de auditoria:", e);
       }
+    } else {
+      localStorage.setItem("spam-audit-logs", JSON.stringify(MOCK_LOGS));
     }
-    // Caso contrário, carrega mock
-    setLogs(MOCK_LOGS);
-    localStorage.setItem("spam-audit-logs", JSON.stringify(MOCK_LOGS));
+
+    // Processar erros de integridade (CA04)
+    if (integrityErrorFound) {
+      failedDomains.forEach(domain => {
+        const integrityAlertId = `ALT-SYS-INTEGRITY-${domain}-${Date.now()}`;
+        const hasIntegrityAlert = loadedAlerts.some(a => a.id.startsWith(`ALT-SYS-INTEGRITY-${domain}`));
+        if (!hasIntegrityAlert) {
+          const newAlert: Alert = {
+            id: integrityAlertId,
+            domain: domain,
+            item: `Modelo Preditivo (${DOMAINS[domain]?.name || domain})`,
+            value: "Falha de Integridade Estrutural",
+            metric: "Propriedades críticas ausentes",
+            criticality: "high",
+            timestamp: Date.now(),
+            recognized: false
+          };
+          loadedAlerts = [newAlert, ...loadedAlerts];
+        }
+
+        const integrityLogMessage = `[Model Integrity Error] Modelo salvo corrompido ou incompleto detectado no localStorage para o domínio '${domain}'. Cache limpo. Novo treinamento sugerido.`;
+        const hasIntegrityLog = loadedLogsList.some(l => l.action === integrityLogMessage);
+        if (!hasIntegrityLog) {
+          const newLog: AuditLog = {
+            id: Math.random().toString(36).substring(2, 9).toUpperCase(),
+            profile: "Sistema",
+            username: "Sistema",
+            accessProfile: "Sistema",
+            timestamp: Date.now(),
+            action: integrityLogMessage
+          };
+          loadedLogsList = [newLog, ...loadedLogsList];
+        }
+      });
+
+      localStorage.setItem("spam-alerts", JSON.stringify(loadedAlerts));
+      localStorage.setItem("spam-audit-logs", JSON.stringify(loadedLogsList));
+    }
+
+    setAlerts(loadedAlerts);
+    setLogs(loadedLogsList);
   }, []);
 
   // Efeito para aplicar a classe no elemento html
