@@ -6,7 +6,7 @@ export function Accordion({ children, className }: { children: React.ReactNode; 
   return <div className={cn("space-y-2", className)}>{children}</div>;
 }
 
-export function AccordionItem({ children, value, className }: { children: React.ReactNode; value: string; className?: string }) {
+export function AccordionItem({ children, className }: { children: React.ReactNode; value?: string; className?: string }) {
   return <div className={cn("border border-border rounded-lg overflow-hidden", className)}>{children}</div>;
 }
 
