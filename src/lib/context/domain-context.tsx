@@ -231,6 +231,9 @@ interface DomainContextProps {
   setDomainFilter: (filter: DomainType | "all") => void;
   periodFilter: "all" | "24h" | "7d" | "30d";
   setPeriodFilter: (filter: "all" | "24h" | "7d" | "30d") => void;
+  selectedAlgorithms: Record<DomainType, string>;
+  setSelectedAlgorithm: (domain: DomainType, algorithm: string) => void;
+  trainedModelsByAlgorithm: Record<DomainType, Record<string, TrainedModel | null>>;
 }
 
 const DomainContext = createContext<DomainContextProps | undefined>(undefined);
@@ -442,6 +445,20 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     "credit-risk": null
   });
 
+  const [selectedAlgorithms, setSelectedAlgorithmsState] = useState<Record<DomainType, string>>({
+    maintenance: "Random Forest",
+    demand: "Random Forest",
+    churn: "Random Forest",
+    "credit-risk": "Random Forest"
+  });
+
+  const [trainedModelsByAlgorithm, setTrainedModelsByAlgorithm] = useState<Record<DomainType, Record<string, TrainedModel | null>>>({
+    maintenance: { "Random Forest": null, "Regressão Linear": null },
+    demand: { "Random Forest": null, "Regressão Linear": null },
+    churn: { "Random Forest": null, "Regressão Logística": null },
+    "credit-risk": { "Random Forest": null, "Regressão Logística": null }
+  });
+
   // Track previous session model for comparison (RF12 - CA05)
   const [previousTrainedModels, setPreviousTrainedModels] = useState<Record<DomainType, TrainedModel | null>>({
     maintenance: null,
@@ -525,6 +542,43 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
       const defaultText = "Aviso de Privacidade (LGPD): Em conformidade com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018), informamos que os dados importados serão utilizados exclusivamente para fins de análise preditiva neste sistema, garantindo a sua confidencialidade. Não haverá qualquer compartilhamento ou transferência de informações pessoais com terceiros. Para mais detalhes sobre seus direitos e tratamentos efetuados, consulte nossa Política de Privacidade. Caso tenha dúvidas, entre em contato com nosso Encarregado pelo tratamento de dados pessoais (DPO) através do e-mail: dpo@empresa.com.";
       setPrivacyNoticeText(defaultText);
       localStorage.setItem("spam-privacy-notice-text", defaultText);
+    }
+
+    const savedSelectedAlgs = localStorage.getItem("spam-selected-algorithms");
+    let currentSelectedAlgs = {
+      maintenance: "Random Forest",
+      demand: "Random Forest",
+      churn: "Random Forest",
+      "credit-risk": "Random Forest"
+    };
+    if (savedSelectedAlgs) {
+      try {
+        const parsed = JSON.parse(savedSelectedAlgs);
+        setSelectedAlgorithmsState(parsed);
+        currentSelectedAlgs = parsed;
+      } catch (e) {
+        console.error("Erro ao carregar algoritmos selecionados:", e);
+      }
+    }
+
+    const savedTrainedModelsByAlg = localStorage.getItem("spam-trained-models-by-algorithm");
+    if (savedTrainedModelsByAlg) {
+      try {
+        const parsed = JSON.parse(savedTrainedModelsByAlg);
+        setTrainedModelsByAlgorithm(parsed);
+
+        // Atualizar também o trainedModels baseado no algoritmo selecionado
+        setTrainedModels(prev => {
+          const next = { ...prev };
+          (Object.keys(currentSelectedAlgs) as DomainType[]).forEach(d => {
+            const selectedAlg = currentSelectedAlgs[d];
+            next[d] = parsed[d]?.[selectedAlg] || null;
+          });
+          return next;
+        });
+      } catch (e) {
+        console.error("Erro ao carregar modelos por algoritmo:", e);
+      }
     }
 
     const savedThresholds = localStorage.getItem("spam-alert-thresholds");
@@ -1441,6 +1495,21 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     addLog(`[Model History] Limpo histórico de ciclos de retreinamento para o módulo '${DOMAINS[domain].name}'.`);
   }, [addLog]);
 
+  const setSelectedAlgorithm = useCallback((domain: DomainType, algorithm: string) => {
+    setSelectedAlgorithmsState(prev => {
+      const next = { ...prev, [domain]: algorithm };
+      localStorage.setItem("spam-selected-algorithms", JSON.stringify(next));
+      return next;
+    });
+
+    setTrainedModels(prev => {
+      const next = { ...prev };
+      const model = trainedModelsByAlgorithm[domain]?.[algorithm] || null;
+      next[domain] = model;
+      return next;
+    });
+  }, [trainedModelsByAlgorithm]);
+
   const updateAlertThreshold = useCallback((domain: DomainType, value: number) => {
     let oldVal = 0;
     setAlertThresholds(prev => {
@@ -1573,6 +1642,9 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         setDomainFilter,
         periodFilter,
         setPeriodFilter,
+        selectedAlgorithms,
+        setSelectedAlgorithm,
+        trainedModelsByAlgorithm,
       }}
     >
       {children}

@@ -1054,6 +1054,9 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
     trainedModels,
     previousTrainedModels,
     hyperparameterHistory,
+    selectedAlgorithms,
+    setSelectedAlgorithm,
+    trainedModelsByAlgorithm,
     clearHyperparameterHistory,
     currentUser,
     userProfile,
@@ -1557,6 +1560,82 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
       </CardHeader>
 
       <CardContent>
+        {/* Seleção de Algoritmo por Domínio (CA01, CA02, CA05) */}
+        {(() => {
+          const isClassification = activeDomain === "credit-risk" || activeDomain === "churn";
+          const algs = isClassification
+            ? [
+                {
+                  name: "Random Forest",
+                  desc: "Algoritmo ensemble baseado em múltiplas árvores de decisão. Excelente para capturar relações não-lineares complexas."
+                },
+                {
+                  name: "Regressão Logística",
+                  desc: "Modelo estatístico clássico que calcula a probabilidade de uma classe. Altamente interpretável e eficiente."
+                }
+              ]
+            : [
+                {
+                  name: "Random Forest",
+                  desc: "Algoritmo ensemble baseado em múltiplas árvores de decisão. Excelente para prever valores numéricos contínuos sem supor linearidade."
+                },
+                {
+                  name: "Regressão Linear",
+                  desc: "Modelo estatístico linear que estabelece a relação entre variáveis. Simples, rápido e de fácil interpretação."
+                }
+              ];
+          const selectedAlg = selectedAlgorithms[activeDomain] || "Random Forest";
+
+          return (
+            <div className="mb-6 space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <span className={cn("h-1.5 w-1.5 rounded-full bg-current", theme.accent)} />
+                  Algoritmo de Aprendizado de Máquina (RF30)
+                </h4>
+                <span className="text-[9px] text-muted-foreground font-mono bg-muted/65 border border-border/40 px-1.5 py-0.5 rounded font-semibold uppercase">
+                  {isClassification ? "Classificação" : "Regressão"}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                {algs.map((alg) => {
+                  const isSelected = selectedAlg === alg.name;
+                  return (
+                    <div
+                      key={alg.name}
+                      onClick={() => setSelectedAlgorithm(activeDomain, alg.name)}
+                      className={cn(
+                        "border rounded-xl p-3.5 cursor-pointer transition-all duration-300 flex flex-col justify-between gap-1.5 select-none relative overflow-hidden group",
+                        isSelected 
+                          ? cn("border-current shadow-[0_0_15px_rgba(255,255,255,0.02)]", theme.accent) 
+                          : "border-border/60 hover:border-border hover:bg-muted/15"
+                      )}
+                    >
+                      {isSelected && (
+                        <div className={cn("absolute inset-0 opacity-[0.02] bg-current", theme.accent)} />
+                      )}
+                      
+                      <div className="flex items-center justify-between">
+                        <span className={cn("text-xs font-bold text-foreground transition-colors group-hover:text-foreground", isSelected && theme.accent)}>
+                          {alg.name}
+                        </span>
+                        <div className={cn("h-4 w-4 rounded-full border flex items-center justify-center shrink-0", 
+                          isSelected ? "border-current" : "border-muted-foreground/30"
+                        )}>
+                          {isSelected && <span className={cn("h-2.5 w-2.5 rounded-full bg-current", theme.accent)} />}
+                        </div>
+                      </div>
+                      
+                      <p className="text-[10px] text-muted-foreground leading-relaxed">
+                        {alg.desc}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()}
         {/* Input Oculto com accept específico (CA01) */}
         <input
           type="file"
