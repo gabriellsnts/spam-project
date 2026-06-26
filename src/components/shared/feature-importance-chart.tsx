@@ -94,7 +94,7 @@ export function FeatureImportanceChart({
                 type="category"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fontSize: 10, fill: "currentColor", opacity: 0.8 }}
+                tick={{ fontSize: 10, fill: "hsl(var(--foreground))", opacity: 0.8 }}
                 width={120}
               />
               <Tooltip

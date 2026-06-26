@@ -183,33 +183,33 @@ export function UserManagement() {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in duration-305">
       {/* Formulário de Cadastro (CA01) */}
       <div className="lg:col-span-1 space-y-6">
-        <Card className="border-border/80 bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-lg">
+        <Card className="border-zinc-200 dark:border-border/80 bg-white/70 dark:bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-lg">
           <CardHeader>
-            <CardTitle className="text-base font-bold text-zinc-100 flex items-center gap-2">
+            <CardTitle className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
               <UserCheck className="h-4.5 w-4.5 text-green-500" />
               Cadastrar Usuário
             </CardTitle>
-            <CardDescription className="text-xs text-zinc-500">
+            <CardDescription className="text-xs text-slate-700 dark:text-zinc-500">
               Preencha as informações obrigatórias para criar uma nova conta.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {errorMsg && (
-                <div className="p-3 text-xs bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg animate-in zoom-in-95 leading-relaxed">
+                <div className="p-3 text-xs bg-red-500/10 border border-red-550/20 text-red-650 dark:text-red-400 rounded-lg animate-in zoom-in-95 leading-relaxed">
                   {errorMsg}
                 </div>
               )}
 
               {successMsg && (
-                <div className="p-3 text-xs bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-lg animate-in zoom-in-95 leading-relaxed font-mono font-semibold">
+                <div className="p-3 text-xs bg-emerald-500/10 border border-emerald-550/20 text-emerald-600 dark:text-emerald-400 rounded-lg animate-in zoom-in-95 leading-relaxed font-mono font-semibold">
                   {successMsg}
                 </div>
               )}
 
               {/* Nome Completo */}
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Nome Completo</label>
+                <label className="text-[10px] font-bold text-slate-800 dark:text-zinc-400 uppercase tracking-wider block">Nome Completo</label>
                 <div className="relative">
                   <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
                   <input
@@ -217,14 +217,14 @@ export function UserManagement() {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="Ex: João da Silva"
-                    className="w-full h-9 pl-9 pr-3 rounded-lg bg-zinc-950/80 border border-zinc-800 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none text-zinc-200 text-xs transition"
+                    className="w-full h-9 pl-9 pr-3 rounded-lg bg-zinc-950/80 border border-zinc-850 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none text-zinc-200 text-xs transition"
                   />
                 </div>
               </div>
 
               {/* Usuário */}
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Usuário</label>
+                <label className="text-[10px] font-bold text-slate-800 dark:text-zinc-400 uppercase tracking-wider block">Usuário</label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
                   <input
@@ -232,14 +232,14 @@ export function UserManagement() {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder="Ex: joao.silva"
-                    className="w-full h-9 pl-9 pr-3 rounded-lg bg-zinc-950/80 border border-zinc-800 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none text-zinc-200 text-xs transition"
+                    className="w-full h-9 pl-9 pr-3 rounded-lg bg-zinc-950/80 border border-zinc-850 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none text-zinc-200 text-xs transition"
                   />
                 </div>
               </div>
 
               {/* Senha */}
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Senha</label>
+                <label className="text-[10px] font-bold text-slate-800 dark:text-zinc-400 uppercase tracking-wider block">Senha</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
                   <input
@@ -247,7 +247,7 @@ export function UserManagement() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full h-9 pl-9 pr-3 rounded-lg bg-zinc-950/80 border border-zinc-800 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none text-zinc-200 text-xs transition"
+                    className="w-full h-9 pl-9 pr-3 rounded-lg bg-zinc-950/80 border border-zinc-850 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none text-zinc-200 text-xs transition"
                   />
                 </div>
 
@@ -255,7 +255,7 @@ export function UserManagement() {
                 {password && (
                   <div className="pt-1.5 space-y-1.5 animate-in slide-in-from-top-1 duration-200">
                     <div className="flex items-center justify-between text-[10px]">
-                      <span className="text-zinc-500 font-semibold">Força da Senha:</span>
+                      <span className="text-slate-750 dark:text-zinc-500 font-semibold">Força da Senha:</span>
                       <span className={`font-bold ${strength.textColor}`}>{strength.label}</span>
                     </div>
                     {/* Barra de progresso visual */}
@@ -263,7 +263,7 @@ export function UserManagement() {
                       <div className={`h-full transition-all duration-300 ${strength.color}`} style={{ width: `${strength.progress}%` }} />
                     </div>
                     {/* Critérios de senha */}
-                    <div className="grid grid-cols-1 gap-1 text-[9px] text-zinc-500 pt-1">
+                    <div className="grid grid-cols-1 gap-1 text-[9px] text-slate-750 dark:text-zinc-500 pt-1">
                       <div className="flex items-center gap-1">
                         {requirements.minLength ? <Check className="h-3 w-3 text-green-500" /> : <X className="h-3 w-3 text-red-500" />}
                         <span>Pelo menos 6 caracteres</span>
@@ -283,7 +283,7 @@ export function UserManagement() {
 
               {/* Confirmar Senha */}
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Confirmar Senha</label>
+                <label className="text-[10px] font-bold text-slate-800 dark:text-zinc-400 uppercase tracking-wider block">Confirmar Senha</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
                   <input
@@ -291,18 +291,18 @@ export function UserManagement() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full h-9 pl-9 pr-3 rounded-lg bg-zinc-950/80 border border-zinc-800 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none text-zinc-200 text-xs transition"
+                    className="w-full h-9 pl-9 pr-3 rounded-lg bg-zinc-950/80 border border-zinc-850 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none text-zinc-200 text-xs transition"
                   />
                 </div>
               </div>
 
               {/* Perfil de Acesso */}
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Perfil de Acesso</label>
+                <label className="text-[10px] font-bold text-slate-800 dark:text-zinc-400 uppercase tracking-wider block">Perfil de Acesso</label>
                 <select
                   value={profile}
                   onChange={(e) => setProfile(e.target.value)}
-                  className="w-full h-9 px-3 rounded-lg bg-zinc-950/80 border border-zinc-800 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none text-zinc-200 text-xs transition appearance-none cursor-pointer"
+                  className="w-full h-9 px-3 rounded-lg bg-zinc-950/80 border border-zinc-850 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none text-zinc-250 text-xs transition appearance-none cursor-pointer"
                 >
                   <option value="Super Admin">Administrador (Super Admin)</option>
                   <option value="Gestor Analítico">Gestor de Operações (Gestor Analítico)</option>
@@ -312,7 +312,7 @@ export function UserManagement() {
 
               {/* Mostra Simulação de Hash se disponível */}
               {simulatedHash && (
-                <div className="p-2.5 bg-zinc-950 rounded-lg border border-zinc-800/80 space-y-1 text-[9px] font-mono text-zinc-400 animate-in zoom-in-95">
+                <div className="p-2.5 bg-zinc-950 rounded-lg border border-zinc-800/85 space-y-1 text-[9px] font-mono text-slate-700 dark:text-zinc-400 animate-in zoom-in-95">
                   <div className="flex items-center gap-1 text-green-500 font-bold uppercase tracking-wider text-[8px]">
                     <Shield className="h-3 w-3 shrink-0" />
                     <span>Simulador de Hashing</span>
@@ -338,13 +338,13 @@ export function UserManagement() {
         </Card>
 
         {/* Diretrizes de Privacidade (RF39 - CA06) */}
-        <Card className="border-border/80 bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-lg">
+        <Card className="border-zinc-200 dark:border-border/80 bg-white/70 dark:bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-lg">
           <CardHeader>
-            <CardTitle className="text-base font-bold text-zinc-100 flex items-center gap-2">
+            <CardTitle className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
               <Shield className="h-4.5 w-4.5 text-green-500" />
               Diretrizes de Privacidade (LGPD)
             </CardTitle>
-            <CardDescription className="text-xs text-zinc-500">
+            <CardDescription className="text-xs text-slate-700 dark:text-zinc-500">
               Configure o aviso legal exibido aos operadores antes do upload de qualquer base de dados (CSV).
             </CardDescription>
           </CardHeader>
@@ -364,19 +364,19 @@ export function UserManagement() {
               setPrivacySuccessMsg("Diretrizes de privacidade atualizadas com sucesso!");
             }} className="space-y-4">
               {privacyErrorMsg && (
-                <div className="p-3 text-xs bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg animate-in zoom-in-95 leading-relaxed">
+                <div className="p-3 text-xs bg-red-500/10 border border-red-550/20 text-red-650 dark:text-red-400 rounded-lg animate-in zoom-in-95 leading-relaxed">
                   {privacyErrorMsg}
                 </div>
               )}
 
               {privacySuccessMsg && (
-                <div className="p-3 text-xs bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-lg animate-in zoom-in-95 leading-relaxed">
+                <div className="p-3 text-xs bg-emerald-500/10 border border-emerald-550/20 text-emerald-600 dark:text-emerald-400 rounded-lg animate-in zoom-in-95 leading-relaxed">
                   {privacySuccessMsg}
                 </div>
               )}
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
+                <label className="text-[10px] font-bold text-slate-800 dark:text-zinc-400 uppercase tracking-wider block">
                   Texto do Aviso de Privacidade
                 </label>
                 <textarea
@@ -384,7 +384,7 @@ export function UserManagement() {
                   onChange={(e) => setLocalPrivacyText(e.target.value)}
                   rows={8}
                   placeholder="Insira o aviso legal aqui..."
-                  className="w-full p-3 rounded-lg bg-zinc-950/80 border border-zinc-800 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none text-zinc-200 text-xs transition resize-none leading-relaxed"
+                  className="w-full p-3 rounded-lg bg-zinc-950/80 border border-zinc-850 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none text-zinc-200 text-xs transition resize-none leading-relaxed"
                 />
               </div>
 
@@ -401,20 +401,20 @@ export function UserManagement() {
 
       {/* Grid Coluna Tabela */}
       <div className="lg:col-span-2 space-y-6">
-        <Card className="border-border/80 bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-lg flex flex-col h-full overflow-hidden">
+        <Card className="border-zinc-200 dark:border-border/80 bg-white/70 dark:bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-lg flex flex-col h-full overflow-hidden">
           <CardHeader>
-            <CardTitle className="text-base font-bold text-zinc-100 flex items-center gap-2">
+            <CardTitle className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
               <User className="h-4.5 w-4.5 text-green-500" />
               Usuários Cadastrados
             </CardTitle>
-            <CardDescription className="text-xs text-zinc-500">
+            <CardDescription className="text-xs text-slate-700 dark:text-zinc-500">
               Lista completa de contas cadastradas e controle de status.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex-1 overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-zinc-800 text-[10px] uppercase font-bold text-zinc-400">
+                <tr className="border-b border-zinc-200 dark:border-zinc-800 text-[10px] uppercase font-bold text-slate-800 dark:text-zinc-400">
                   <th className="py-3 px-4 font-bold font-semibold">Nome</th>
                   <th className="py-3 px-4 font-bold font-semibold">Usuário</th>
                   <th className="py-3 px-4 font-bold font-semibold">Perfil</th>
@@ -424,21 +424,21 @@ export function UserManagement() {
               </thead>
               <tbody>
                 {users.map((user) => (
-                  <tr key={user.username} className="border-b border-zinc-850 hover:bg-zinc-950/40 transition duration-150">
-                    <td className="py-3.5 px-4 font-medium text-zinc-200">{user.fullName}</td>
-                    <td className="py-3.5 px-4 text-zinc-400 font-mono">@{user.username}</td>
-                    <td className="py-3.5 px-4 text-zinc-300">
+                  <tr key={user.username} className="border-b border-zinc-150 dark:border-zinc-850 hover:bg-zinc-100 dark:hover:bg-zinc-950/40 transition duration-150">
+                    <td className="py-3.5 px-4 font-medium text-slate-900 dark:text-zinc-200">{user.fullName}</td>
+                    <td className="py-3.5 px-4 text-slate-700 dark:text-zinc-400 font-mono">@{user.username}</td>
+                    <td className="py-3.5 px-4 text-slate-800 dark:text-zinc-300">
                       <div>{user.profileName}</div>
-                      <div className="text-[9px] text-zinc-550 font-semibold">{user.accessProfile}</div>
+                      <div className="text-[9px] text-slate-700 dark:text-zinc-400 font-semibold">{user.accessProfile}</div>
                     </td>
                     <td className="py-3.5 px-4">
                       {user.status === "ativo" ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/25">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-550/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25">
                           <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                           Ativo
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-500/10 text-red-400 border border-red-500/25">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-500/10 text-red-655 dark:text-red-400 border border-red-500/25">
                           <span className="h-1.5 w-1.5 rounded-full bg-red-400" />
                           Inativo
                         </span>
@@ -446,7 +446,7 @@ export function UserManagement() {
                     </td>
                     <td className="py-3.5 px-4 text-right">
                       {currentUser && user.username === currentUser.username ? (
-                        <span className="text-[10px] text-zinc-600 font-bold italic mr-2 select-none">
+                        <span className="text-[10px] text-slate-650 dark:text-zinc-650 font-bold italic mr-2 select-none">
                           Sua Conta (Ativa)
                         </span>
                       ) : (
@@ -456,8 +456,8 @@ export function UserManagement() {
                           onClick={() => handleToggleStatus(user.username)}
                           className={`text-[10px] font-bold h-7 py-1 px-3.5 rounded-md transition duration-200 border ${
                             user.status === "ativo"
-                              ? "text-red-400 hover:text-red-300 hover:bg-red-500/10 border-red-500/10 hover:border-red-500/20"
-                              : "text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 border-emerald-500/10 hover:border-emerald-500/20"
+                              ? "text-red-650 hover:text-red-500 hover:bg-red-500/10 border-red-500/10 hover:border-red-500/20"
+                              : "text-emerald-600 hover:text-emerald-500 hover:bg-emerald-500/10 border-emerald-500/10 hover:border-emerald-500/20"
                           }`}
                         >
                           {user.status === "ativo" ? "Desativar" : "Reativar"}

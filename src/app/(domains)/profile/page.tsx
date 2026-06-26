@@ -40,10 +40,10 @@ export default function ProfilePage() {
     <div className="space-y-6 max-w-6xl mx-auto animate-in fade-in duration-300">
       {/* Cabeçalho */}
       <div>
-        <h1 className="text-2xl font-black tracking-tight text-zinc-100 uppercase">
+        <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-zinc-100 uppercase">
           Perfil e Configurações
         </h1>
-        <p className="text-zinc-500 text-xs mt-1">
+        <p className="text-slate-700 dark:text-zinc-400 text-xs mt-1">
           Gerencie suas preferências visuais e acesse configurações administrativas da conta.
         </p>
       </div>
@@ -75,46 +75,46 @@ export default function ProfilePage() {
         <TabsContent value="preferences" className="space-y-6 outline-none">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Card de Informações Básicas (Visual Premium) */}
-            <Card className="md:col-span-1 border-border/80 bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-xl flex flex-col justify-between">
+            <Card className="md:col-span-1 border-zinc-200 dark:border-border/80 bg-white/70 dark:bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-xl flex flex-col justify-between">
               <CardHeader className="text-center pt-8 pb-4">
-                <div className="mx-auto h-20 w-20 rounded-2xl bg-gradient-to-br from-emerald-500/25 to-teal-500/30 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-black text-2xl shadow-lg relative overflow-hidden group">
+                <div className="mx-auto h-20 w-20 rounded-2xl bg-gradient-to-br from-emerald-500/25 to-teal-500/30 border border-emerald-500/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-black text-2xl shadow-lg relative overflow-hidden group">
                   <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/20" />
                   {currentUser.fullName
                     ? currentUser.fullName.split(" ").map((n) => n[0]).join("").substring(0, 2).toUpperCase()
                     : "AD"}
                 </div>
-                <h2 className="text-lg font-bold text-zinc-100 mt-4 leading-tight">
+                <h2 className="text-lg font-bold text-slate-900 dark:text-zinc-100 mt-4 leading-tight">
                   {currentUser.fullName}
                 </h2>
-                <p className="text-xs text-zinc-400 font-mono mt-1">
+                <p className="text-xs text-slate-700 dark:text-zinc-400 font-mono mt-1">
                   @{currentUser.username}
                 </p>
                 <div className="flex justify-center mt-3">
                   <span className={cn(
                     "text-[10px] font-bold px-3 py-1 rounded-full border flex items-center gap-1.5 shadow-sm",
                     isAdmin
-                      ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/25"
-                      : "bg-blue-500/10 text-blue-400 border-blue-500/25"
+                      ? "bg-emerald-550/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25"
+                      : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/25"
                   )}>
                     <Tag className="h-3 w-3" />
                     {currentUser.accessProfile}
                   </span>
                 </div>
               </CardHeader>
-              <CardContent className="border-t border-zinc-800/60 pt-6 pb-8 space-y-4 text-xs">
-                <div className="flex items-center justify-between text-zinc-400">
+              <CardContent className="border-t border-zinc-200 dark:border-zinc-800/60 pt-6 pb-8 space-y-4 text-xs">
+                <div className="flex items-center justify-between text-slate-700 dark:text-zinc-400">
                   <span className="flex items-center gap-2">
                     <Building className="h-4 w-4 text-zinc-500" />
                     Departamento
                   </span>
-                  <span className="font-semibold text-zinc-200">{currentUser.department}</span>
+                  <span className="font-semibold text-zinc-900 dark:text-zinc-200">{currentUser.department}</span>
                 </div>
-                <div className="flex items-center justify-between text-zinc-400">
+                <div className="flex items-center justify-between text-slate-700 dark:text-zinc-400">
                   <span className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-zinc-500" />
                     Último Acesso
                   </span>
-                  <span className="font-semibold text-zinc-200">
+                  <span className="font-semibold text-zinc-900 dark:text-zinc-200">
                     {currentUser.lastLogin 
                       ? new Date(currentUser.lastLogin).toLocaleDateString("pt-BR", {
                           day: "numeric",
@@ -129,13 +129,13 @@ export default function ProfilePage() {
             </Card>
 
             {/* Configurações de Aparência / Tema (RF52) */}
-            <Card className="md:col-span-2 border-border/80 bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-xl">
+            <Card className="md:col-span-2 border-zinc-200 dark:border-border/80 bg-white/70 dark:bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-xl">
               <CardHeader>
-                <CardTitle className="text-base font-bold text-zinc-100 flex items-center gap-2">
+                <CardTitle className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
                   <Laptop className="h-4.5 w-4.5 text-emerald-500" />
                   Aparência do Painel
                 </CardTitle>
-                <CardDescription className="text-xs text-zinc-500">
+                <CardDescription className="text-xs text-slate-700 dark:text-zinc-500">
                   Ajuste a paleta visual do ecossistema. O tema automático detecta e aplica a preferência do seu dispositivo.
                 </CardDescription>
               </CardHeader>
@@ -146,23 +146,23 @@ export default function ProfilePage() {
                   <button
                     onClick={() => setTheme("light")}
                     className={cn(
-                      "flex flex-col items-center justify-center p-5 rounded-xl border transition-all duration-300 gap-3 group relative overflow-hidden",
+                      "flex flex-col items-center justify-center p-5 rounded-xl border transition-all duration-300 gap-3 group relative overflow-hidden cursor-pointer",
                       theme === "light"
-                        ? "bg-zinc-950/80 border-emerald-500/40 text-foreground shadow-md ring-1 ring-emerald-500/20"
-                        : "bg-zinc-950/30 border-zinc-800 text-zinc-400 hover:text-zinc-100 hover:border-zinc-700/80 hover:bg-zinc-950/50"
+                        ? "bg-white dark:bg-zinc-950/80 border-emerald-500/40 text-slate-900 dark:text-foreground shadow-md ring-1 ring-emerald-500/20"
+                        : "bg-zinc-100 dark:bg-zinc-950/30 border-zinc-300 dark:border-zinc-800 text-slate-700 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 hover:border-zinc-400 dark:hover:border-zinc-700/80 hover:bg-zinc-200/50 dark:hover:bg-zinc-950/50 shadow-sm dark:shadow-none"
                     )}
                   >
                     <div className={cn(
                       "p-2.5 rounded-lg border transition-all duration-300",
                       theme === "light"
-                        ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-                        : "bg-zinc-900 border-zinc-800 text-zinc-500 group-hover:text-zinc-300"
+                        ? "bg-emerald-550/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+                        : "bg-zinc-200 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 text-slate-500 dark:text-zinc-500 group-hover:text-slate-700 dark:group-hover:text-zinc-350"
                     )}>
                       <Sun className="h-5 w-5" />
                     </div>
                     <div className="text-center">
-                      <div className="text-xs font-bold">Modo Claro</div>
-                      <div className="text-[10px] text-zinc-500 mt-0.5">Interface clara e suave</div>
+                      <div className="text-xs font-bold text-slate-900 dark:text-zinc-200">Modo Claro</div>
+                      <div className="text-[10px] text-slate-650 dark:text-zinc-500 mt-0.5">Interface clara e suave</div>
                     </div>
                   </button>
 
@@ -170,23 +170,23 @@ export default function ProfilePage() {
                   <button
                     onClick={() => setTheme("dark")}
                     className={cn(
-                      "flex flex-col items-center justify-center p-5 rounded-xl border transition-all duration-300 gap-3 group relative overflow-hidden",
+                      "flex flex-col items-center justify-center p-5 rounded-xl border transition-all duration-300 gap-3 group relative overflow-hidden cursor-pointer",
                       theme === "dark"
-                        ? "bg-zinc-950/80 border-emerald-500/40 text-foreground shadow-md ring-1 ring-emerald-500/20"
-                        : "bg-zinc-950/30 border-zinc-800 text-zinc-400 hover:text-zinc-100 hover:border-zinc-700/80 hover:bg-zinc-950/50"
+                        ? "bg-white dark:bg-zinc-950/80 border-emerald-500/40 text-slate-900 dark:text-foreground shadow-md ring-1 ring-emerald-500/20"
+                        : "bg-zinc-100 dark:bg-zinc-950/30 border-zinc-300 dark:border-zinc-800 text-slate-700 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 hover:border-zinc-400 dark:hover:border-zinc-700/80 hover:bg-zinc-200/50 dark:hover:bg-zinc-950/50 shadow-sm dark:shadow-none"
                     )}
                   >
                     <div className={cn(
                       "p-2.5 rounded-lg border transition-all duration-300",
                       theme === "dark"
-                        ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-                        : "bg-zinc-900 border-zinc-800 text-zinc-500 group-hover:text-zinc-300"
+                        ? "bg-emerald-550/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+                        : "bg-zinc-200 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 text-slate-500 dark:text-zinc-500 group-hover:text-slate-700 dark:group-hover:text-zinc-350"
                     )}>
                       <Moon className="h-5 w-5" />
                     </div>
                     <div className="text-center">
-                      <div className="text-xs font-bold">Modo Escuro</div>
-                      <div className="text-[10px] text-zinc-500 mt-0.5">Foco visual com economia de energia</div>
+                      <div className="text-xs font-bold text-slate-900 dark:text-zinc-200">Modo Escuro</div>
+                      <div className="text-[10px] text-slate-650 dark:text-zinc-500 mt-0.5">Foco visual com economia de energia</div>
                     </div>
                   </button>
 
@@ -194,17 +194,17 @@ export default function ProfilePage() {
                   <button
                     onClick={() => setTheme("auto")}
                     className={cn(
-                      "flex flex-col items-center justify-center p-5 rounded-xl border transition-all duration-300 gap-3 group relative overflow-hidden",
+                      "flex flex-col items-center justify-center p-5 rounded-xl border transition-all duration-300 gap-3 group relative overflow-hidden cursor-pointer",
                       theme === "auto"
-                        ? "bg-zinc-950/80 border-emerald-500/40 text-foreground shadow-md ring-1 ring-emerald-500/20"
-                        : "bg-zinc-950/30 border-zinc-800 text-zinc-400 hover:text-zinc-100 hover:border-zinc-700/80 hover:bg-zinc-950/50"
+                        ? "bg-white dark:bg-zinc-950/80 border-emerald-500/40 text-slate-900 dark:text-foreground shadow-md ring-1 ring-emerald-500/20"
+                        : "bg-zinc-100 dark:bg-zinc-950/30 border-zinc-300 dark:border-zinc-800 text-slate-700 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 hover:border-zinc-400 dark:hover:border-zinc-700/80 hover:bg-zinc-200/50 dark:hover:bg-zinc-950/50 shadow-sm dark:shadow-none"
                     )}
                   >
                     <div className={cn(
                       "p-2.5 rounded-lg border transition-all duration-300",
                       theme === "auto"
-                        ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-                        : "bg-zinc-900 border-zinc-800 text-zinc-500 group-hover:text-zinc-300"
+                        ? "bg-emerald-550/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+                        : "bg-zinc-200 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 text-slate-500 dark:text-zinc-500 group-hover:text-slate-700 dark:group-hover:text-zinc-350"
                     )}>
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -222,8 +222,8 @@ export default function ProfilePage() {
                       </svg>
                     </div>
                     <div className="text-center">
-                      <div className="text-xs font-bold">Sistema</div>
-                      <div className="text-[10px] text-zinc-500 mt-0.5">Sincroniza com as cores do seu SO</div>
+                      <div className="text-xs font-bold text-slate-900 dark:text-zinc-200">Sistema</div>
+                      <div className="text-[10px] text-slate-650 dark:text-zinc-500 mt-0.5">Sincroniza com as cores do seu SO</div>
                     </div>
                   </button>
                 </div>

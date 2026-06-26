@@ -350,15 +350,15 @@ export default function DemandPage() {
               <div className="h-[280px] w-full mt-4">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="currentColor" opacity={0.1} vertical={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                     <XAxis 
                       dataKey="date" 
-                      tick={{ fontSize: 10, fill: "currentColor", opacity: 0.6 }} 
+                      tick={{ fontSize: 10, fill: "hsl(var(--foreground))", opacity: 0.7 }} 
                       tickLine={false} 
                       axisLine={false} 
                     />
                     <YAxis 
-                      tick={{ fontSize: 10, fill: "currentColor", opacity: 0.6 }} 
+                      tick={{ fontSize: 10, fill: "hsl(var(--foreground))", opacity: 0.7 }} 
                       tickLine={false} 
                       axisLine={false} 
                     />
@@ -372,7 +372,7 @@ export default function DemandPage() {
                         name === 'historico' ? 'Histórico Real' : 'Previsão Estimada'
                       ]}
                     />
-                    <ReferenceLine x={chartData[15].date} stroke="currentColor" strokeOpacity={0.3} strokeDasharray="3 3" label={{ position: 'insideTopLeft', value: 'Hoje', fill: 'currentColor', fontSize: 10, opacity: 0.5 }} />
+                    <ReferenceLine x={chartData[15].date} stroke="hsl(var(--border))" strokeOpacity={0.7} strokeDasharray="3 3" label={{ position: 'insideTopLeft', value: 'Hoje', fill: 'hsl(var(--foreground))', fontSize: 10, opacity: 0.6 }} />
                     <Line 
                       type="monotone" 
                       dataKey="historico" 
