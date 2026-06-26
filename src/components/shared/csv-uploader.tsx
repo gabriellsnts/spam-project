@@ -1113,14 +1113,30 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
 
   const handleExportMetricsJSON = () => {
     if (!activeModel) return;
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(activeModel, null, 2));
+    const today = new Date(activeModel.timestamp);
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
+    const formattedDate = `${yyyy}-${mm}-${dd}`;
+    const fileName = `modelo-${activeModel.domain}-${formattedDate}.json`;
+
+    const downloadPayload = {
+      ...activeModel,
+      totalRecords: activeModel.trainSize + activeModel.testSize
+    };
+
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(downloadPayload, null, 2));
     const downloadAnchor = document.createElement("a");
     downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `metricas-${activeModel.modelId.toLowerCase()}.json`);
+    downloadAnchor.setAttribute("download", fileName);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
-    addLog(`[Model Export] Exportadas métricas de performance do modelo ${activeModel.modelId} (JSON).`);
+
+    addLogWithProfile(
+      userProfile,
+      `Arquivo de modelo exportado com sucesso no domínio ${DOMAINS[activeModel.domain].name} utilizando o algoritmo ${activeModel.algorithm}`
+    );
   };
 
   // Estados principais

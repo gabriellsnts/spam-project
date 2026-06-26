@@ -246,6 +246,83 @@ async function sha256(message: string): Promise<string> {
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+// Helper function to show a premium toast notification
+function showPremiumToast(message: string, type: "success" | "error" = "success") {
+  if (typeof document === "undefined") return;
+
+  let container = document.getElementById("premium-toast-container");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "premium-toast-container";
+    container.className = "fixed bottom-5 right-5 z-[9999] flex flex-col gap-2 pointer-events-none";
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement("div");
+  toast.className = `px-4 py-3 rounded-xl border shadow-xl flex items-center gap-3 animate-in slide-in-from-bottom duration-300 pointer-events-auto max-w-sm transition-all text-xs font-semibold ${
+    type === "success"
+      ? "bg-zinc-900/90 border-emerald-500/30 text-emerald-400 backdrop-blur-md"
+      : "bg-zinc-900/90 border-rose-500/30 text-rose-400 backdrop-blur-md"
+  }`;
+
+  const icon = document.createElement("span");
+  icon.innerHTML = type === "success" ? "✓" : "✕";
+  icon.className = `flex items-center justify-center h-5 w-5 rounded-full text-[10px] font-bold ${
+    type === "success" ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"
+  }`;
+  toast.appendChild(icon);
+
+  const text = document.createElement("span");
+  text.textContent = message;
+  toast.appendChild(text);
+
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add("opacity-0", "translate-y-2");
+    setTimeout(() => {
+      toast.remove();
+      if (container && container.childElementCount === 0) {
+        container.remove();
+      }
+    }, 300);
+  }, 4000);
+}
+
+// Helper function to validate model integrity (CA05)
+function validateModelIntegrity(model: TrainedModel): boolean {
+  if (!model) return false;
+  if (!model.modelId || !model.domain || !model.algorithm || !model.type || !model.metrics) return false;
+  if (model.trainSize === undefined || model.testSize === undefined || !model.timestamp) return false;
+  
+  if (model.type === "Classification") {
+    if (
+      model.metrics.accuracy === undefined ||
+      model.metrics.precision === undefined ||
+      model.metrics.recall === undefined ||
+      model.metrics.f1Score === undefined ||
+      model.metrics.aucRoc === undefined
+    ) {
+      return false;
+    }
+  } else {
+    if (
+      model.metrics.r2 === undefined ||
+      model.metrics.rmse === undefined ||
+      model.metrics.mae === undefined
+    ) {
+      return false;
+    }
+  }
+
+  if (typeof window !== "undefined" && localStorage.getItem("spam-simulate-integrity-corruption") === "true") {
+    return false;
+  }
+
+  return true;
+}
+
+
 const DEFAULT_USERS: User[] = [
   {
     username: "admin",
@@ -1006,6 +1083,19 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
 
   const trainingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  const resetTraining = useCallback(() => {
+    if (trainingIntervalRef.current) clearInterval(trainingIntervalRef.current);
+    setIsTraining(false);
+    setTrainingProgress(0);
+    setTrainingStep("");
+    setTrainingETA(0);
+    setTrainingDuration(0);
+    setTrainingError(null);
+    setTrainingErrorDetails(null);
+    setShowTrainingDetails(false);
+    setTrainingFinishedAlert(false);
+  }, []);
+
   const startTraining = useCallback((fileSize: number, rowCount: number, _rowsData?: string[][]) => {
     if (isTraining) return;
 
@@ -1235,6 +1325,20 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
           residuals: residualsData
         };
 
+        // CA05: Simule uma validação de integridade estrutural do bloco gerado antes do disparo do download.
+        const isIntegrityValid = validateModelIntegrity(newModel);
+        if (!isIntegrityValid) {
+          if (trainingIntervalRef.current) clearInterval(trainingIntervalRef.current);
+          setIsTraining(false);
+          setTrainingProgress(0);
+          setTrainingStep("");
+          setTrainingETA(0);
+          setTrainingDuration(0);
+          setTrainingFinishedAlert(false);
+          alert("Erro de Validação de Integridade: O objeto de metadados do modelo está corrompido ou incompleto. Salvamento cancelado. Por favor, realize um novo treinamento.");
+          return;
+        }
+
         // CA05 (RF12) - Save active model to previous model history before updating
         setPreviousTrainedModels(prev => ({
           ...prev,
@@ -1271,26 +1375,46 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
 
         addLog(`[Model Training Success] Treinamento do modelo para o módulo '${DOMAINS[domainKey].name}' concluído com sucesso. ID: ${modelId}, Algoritmo: ${algStr}.`);
         addLogWithProfile(userProfile, `Treinamento realizado no domínio ${DOMAINS[domainKey].name} utilizando o algoritmo ${algStr}`);
+
+        // CA01, CA02, CA04 & CA06: Download automático do JSON e auditoria
+        try {
+          const today = new Date();
+          const yyyy = today.getFullYear();
+          const mm = String(today.getMonth() + 1).padStart(2, "0");
+          const dd = String(today.getDate()).padStart(2, "0");
+          const formattedDate = `${yyyy}-${mm}-${dd}`;
+          const fileName = `modelo-${domainKey}-${formattedDate}.json`;
+
+          const downloadPayload = {
+            ...newModel,
+            totalRecords: trainSize + testSize
+          };
+
+          const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(downloadPayload, null, 2));
+          const downloadAnchor = document.createElement("a");
+          downloadAnchor.setAttribute("href", dataStr);
+          downloadAnchor.setAttribute("download", fileName);
+          document.body.appendChild(downloadAnchor);
+          downloadAnchor.click();
+          downloadAnchor.remove();
+
+          showPremiumToast(`Modelo exportado com sucesso no domínio: ${DOMAINS[domainKey].name}`);
+
+          addLogWithProfile(
+            userProfile,
+            `Arquivo de modelo exportado com sucesso no domínio ${DOMAINS[domainKey].name} utilizando o algoritmo ${algStr}`
+          );
+        } catch (downloadErr) {
+          console.error("Erro ao gerar download automático do modelo:", downloadErr);
+        }
       }
     }, 1000);
   }, [activeDomain, simulatedFail, addLog, isTraining, trainedModels, archiveRetrainingCycle, selectedAlgorithms, setTrainedModelsByAlgorithm, addLogWithProfile, userProfile]);
 
-  const resetTraining = useCallback(() => {
-    if (trainingIntervalRef.current) clearInterval(trainingIntervalRef.current);
-    setIsTraining(false);
-    setTrainingProgress(0);
-    setTrainingStep("");
-    setTrainingETA(0);
-    setTrainingDuration(0);
-    setTrainingError(null);
-    setTrainingErrorDetails(null);
-    setShowTrainingDetails(false);
-    setTrainingFinishedAlert(false);
-  }, []);
-
   const dismissFinishedAlert = useCallback(() => {
     setTrainingFinishedAlert(false);
   }, []);
+
 
   const toggleTrainingDetails = useCallback(() => {
     setShowTrainingDetails(prev => !prev);
