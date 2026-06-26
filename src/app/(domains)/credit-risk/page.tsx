@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useCallback } from "react";
 import { useDomain, PredictionHistoryRecord } from "@/lib/context/domain-context";
-import { TrendingUp, AlertTriangle, Coins, Percent, FileCheck, BarChart3, Lock, History, Printer, Loader2, Search, ChevronDown, ChevronUp, AlertCircle, Sparkles } from "lucide-react";
+import { TrendingUp, AlertTriangle, Coins, Percent, FileCheck, BarChart3, Lock, History, Printer, Loader2, Search, ChevronDown, ChevronUp, AlertCircle, Sparkles, CheckCircle2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CSVUploader, ConfusionMatrixView, DOMAIN_SCHEMAS } from "@/components/shared/csv-uploader";
@@ -26,6 +26,7 @@ interface ProposalData {
 export default function CreditRiskPage() {
   const { addLog, isTraining, trainedModels, alertThresholds, addAlert, predictionHistory, addPredictionToHistory } = useDomain();
   const activeModel = trainedModels["credit-risk"];
+  const isModelObsolete = activeModel ? (Date.now() - activeModel.timestamp > 30 * 24 * 60 * 60 * 1000) : false;
   const [stressActive, setStressActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [riskFilter, setRiskFilter] = useState<RiskLevel>("all");
@@ -344,8 +345,18 @@ export default function CreditRiskPage() {
             <Coins className="h-4 w-4" />
             Módulo de Risco de Crédito (Ativo)
           </div>
-          <h2 className="text-2xl font-black text-foreground tracking-tight">
+          <h2 className="text-2xl font-black text-foreground tracking-tight flex flex-wrap items-center gap-2">
             Análise e Escoragem Preditiva de Crédito
+            {activeModel && (
+              <span className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-bold border font-sans ${
+                isModelObsolete 
+                  ? "bg-amber-500/10 text-amber-500 border-amber-500/20" 
+                  : "bg-emerald-500/10 text-emerald-550 dark:text-emerald-400 border-emerald-500/20 animate-pulse"
+              }`}>
+                <CheckCircle2 className="h-3 w-3" />
+                {isModelObsolete ? "Modelo Obsoleto" : "Modelo Pronto para Uso"}
+              </span>
+            )}
           </h2>
           <p className="text-muted-foreground text-xs">
             Avaliação de riscos de default e concessão de limites de crédito empresarial com redes profundas.
@@ -357,7 +368,7 @@ export default function CreditRiskPage() {
             Exportar Relatório (PDF)
           </Button>
           {!activeModel ? (
-            <div className="flex items-center gap-2 text-amber-500 bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-500/20 text-xs font-semibold">
+            <div className="flex items-center gap-2 text-amber-500 bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-500/20 text-xs font-semibold font-sans">
               <AlertCircle className="h-4 w-4" />
               Treine um modelo primeiro
             </div>
@@ -381,6 +392,18 @@ export default function CreditRiskPage() {
           )}
         </div>
       </div>
+
+      {!activeModel && (
+        <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-500 text-xs font-semibold flex items-start gap-2 animate-in fade-in duration-300 font-sans">
+          <AlertCircle className="h-5 w-5 shrink-0" />
+          <div>
+            <p className="font-bold text-foreground">Sem Modelo Ativo Detectado</p>
+            <p className="text-muted-foreground mt-0.5">
+              Para liberar previsões e análises individuais de crédito, realize o treinamento fazendo o upload da base de dados histórica (CSV) no painel de calibração abaixo.
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-card border-border transition-colors duration-300">

@@ -13,7 +13,9 @@ import {
   Sliders,
   RotateCcw,
   ClipboardCopy,
-  Check
+  Check,
+  CheckCircle2,
+  AlertCircle
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,6 +30,7 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/
 export default function MaintenancePage() {
   const { addLog, isTraining, trainedModels, alertThresholds, addAlert } = useDomain();
   const activeModel = trainedModels["maintenance"];
+  const isModelObsolete = activeModel ? (Date.now() - activeModel.timestamp > 30 * 24 * 60 * 60 * 1000) : false;
   const [horizon, setHorizon] = useState<7 | 30 | 90>(30);
 
   const threshold = alertThresholds["maintenance"] !== undefined ? alertThresholds["maintenance"] : 30;
@@ -290,8 +293,18 @@ ${
             <Radio className="h-4 w-4 animate-pulse" />
             Módulo de Manutenção Preditiva (Ativo)
           </div>
-          <h2 className="text-2xl font-black text-foreground tracking-tight">
+          <h2 className="text-2xl font-black text-foreground tracking-tight flex flex-wrap items-center gap-2">
             Análise de Vibração e Falha de Máquinas
+            {activeModel && (
+              <span className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-bold border font-sans ${
+                isModelObsolete 
+                  ? "bg-amber-500/10 text-amber-500 border-amber-500/20" 
+                  : "bg-emerald-500/10 text-emerald-550 dark:text-emerald-400 border-emerald-500/20 animate-pulse"
+              }`}>
+                <CheckCircle2 className="h-3 w-3" />
+                {isModelObsolete ? "Modelo Obsoleto" : "Modelo Pronto para Uso"}
+              </span>
+            )}
           </h2>
           <p className="text-muted-foreground text-xs">
             Monitoramento térmico e estatísticas OEE integradas em tempo real com sensor IoT simulado.
@@ -313,6 +326,17 @@ ${
         </TabsList>
 
         <TabsContent value="monitoring" className="space-y-6">
+          {!activeModel && (
+            <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-500 text-xs font-semibold flex items-start gap-2 animate-in fade-in duration-300 font-sans">
+              <AlertCircle className="h-5 w-5 shrink-0" />
+              <div>
+                <p className="font-bold text-foreground">Sem Modelo Ativo Detectado</p>
+                <p className="text-muted-foreground mt-0.5">
+                  Para habilitar previsões e simulações completas de falhas de equipamentos, acesse a aba de Calibração e realize o treinamento com um arquivo CSV.
+                </p>
+              </div>
+            </div>
+          )}
           {/* KPI Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card className="bg-card border-border transition-colors duration-300">
@@ -598,6 +622,17 @@ ${
         </TabsContent>
 
         <TabsContent value="simulation" className="space-y-6">
+          {!activeModel && (
+            <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-500 text-xs font-semibold flex items-start gap-2 animate-in fade-in duration-300 font-sans mb-6">
+              <AlertCircle className="h-5 w-5 shrink-0" />
+              <div>
+                <p className="font-bold text-foreground">Acesso Limitado: Sem Modelo Ativo</p>
+                <p className="text-muted-foreground mt-0.5">
+                  A simulação e predição RUL exigem um modelo calibrado. Acesse a aba de Calibração para treinar um modelo utilizando dados históricos.
+                </p>
+              </div>
+            </div>
+          )}
           <div className="max-w-3xl mx-auto">
             {/* Sandbox de Simulação Card */}
             <Card className="bg-card border-border transition-colors duration-300 shadow-md">

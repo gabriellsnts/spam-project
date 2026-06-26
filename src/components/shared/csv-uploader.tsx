@@ -1069,6 +1069,8 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
   const history = activeDomain ? hyperparameterHistory[activeDomain] : [];
 
   const isClassification = activeDomain === "credit-risk" || activeDomain === "churn";
+  const isModelObsolete = activeModel ? (Date.now() - activeModel.timestamp > 30 * 24 * 60 * 60 * 1000) : false;
+  const formattedTimestamp = activeModel ? new Date(activeModel.timestamp).toLocaleString("pt-BR") : "";
 
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [isLgpdModalOpen, setIsLgpdModalOpen] = useState(false);
@@ -1638,6 +1640,114 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
             </div>
           );
         })()}
+
+        {/* CA01, CA02, CA05, CA06: Resumo do Modelo Ativo ou Mensagem de Ausência */}
+        {activeModel ? (
+          <div className={cn(
+            "p-4 rounded-xl border mb-6 space-y-3 relative overflow-hidden animate-in fade-in duration-300",
+            isModelObsolete 
+              ? "bg-amber-500/[0.02] border-amber-500/20" 
+              : "bg-emerald-500/[0.02] border-emerald-500/20"
+          )}>
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/80 pb-2.5">
+              <div className="flex items-center gap-2">
+                <span className={cn(
+                  "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border flex items-center gap-1",
+                  isModelObsolete 
+                    ? "bg-amber-500/10 text-amber-500 border-amber-500/25" 
+                    : "bg-emerald-500/10 text-emerald-500 border-emerald-500/25 animate-pulse"
+                )}>
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  Modelo Pronto para Uso
+                </span>
+                <span className="text-[10px] text-muted-foreground font-mono">
+                  ID: {activeModel.modelId}
+                </span>
+              </div>
+              {isModelObsolete && (
+                <span className="text-[9px] text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full font-semibold uppercase">
+                  ⚠️ Obsoleto (> 30 dias)
+                </span>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-[11px]">
+              <div>
+                <span className="text-muted-foreground block text-[9px] uppercase font-bold tracking-wider">Domínio</span>
+                <span className="text-foreground font-semibold font-sans">{domainInfo.name}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground block text-[9px] uppercase font-bold tracking-wider">Algoritmo</span>
+                <span className="text-foreground font-semibold font-sans">{activeModel.algorithm}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground block text-[9px] uppercase font-bold tracking-wider">Calibrado em</span>
+                <span className="text-foreground font-semibold font-mono">
+                  {formattedTimestamp}
+                </span>
+              </div>
+            </div>
+
+            <div className="pt-2 border-t border-border/60">
+              <span className="text-muted-foreground block text-[9px] uppercase font-bold tracking-wider mb-1.5">Métricas de Desempenho</span>
+              <div className="flex flex-wrap gap-2">
+                {activeModel.type === "Classification" ? (
+                  <>
+                    <div className="bg-zinc-900/60 border border-border/60 px-2 py-1 rounded text-[10px] font-mono">
+                      <span className="text-muted-foreground text-[8px] uppercase block">AUC-ROC</span>
+                      <span className="text-emerald-500 font-bold">{((activeModel.metrics.aucRoc || 0) * 100).toFixed(2)}%</span>
+                    </div>
+                    <div className="bg-zinc-900/60 border border-border/60 px-2 py-1 rounded text-[10px] font-mono">
+                      <span className="text-muted-foreground text-[8px] uppercase block">Acurácia</span>
+                      <span className="text-foreground font-bold">{((activeModel.metrics.accuracy || 0) * 100).toFixed(2)}%</span>
+                    </div>
+                    <div className="bg-zinc-900/60 border border-border/60 px-2 py-1 rounded text-[10px] font-mono">
+                      <span className="text-muted-foreground text-[8px] uppercase block">Precisão</span>
+                      <span className="text-foreground font-bold">{((activeModel.metrics.precision || 0) * 100).toFixed(2)}%</span>
+                    </div>
+                    <div className="bg-zinc-900/60 border border-border/60 px-2 py-1 rounded text-[10px] font-mono">
+                      <span className="text-muted-foreground text-[8px] uppercase block">Recall</span>
+                      <span className="text-foreground font-bold">{((activeModel.metrics.recall || 0) * 100).toFixed(2)}%</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="bg-zinc-900/60 border border-border/60 px-2 py-1 rounded text-[10px] font-mono">
+                      <span className="text-muted-foreground text-[8px] uppercase block">R² (Score)</span>
+                      <span className="text-emerald-500 font-bold">{(activeModel.metrics.r2 || 0).toFixed(4)}</span>
+                    </div>
+                    <div className="bg-zinc-900/60 border border-border/60 px-2 py-1 rounded text-[10px] font-mono">
+                      <span className="text-muted-foreground text-[8px] uppercase block">RMSE</span>
+                      <span className="text-foreground font-bold">{(activeModel.metrics.rmse || 0).toFixed(3)}</span>
+                    </div>
+                    <div className="bg-zinc-900/60 border border-border/60 px-2 py-1 rounded text-[10px] font-mono">
+                      <span className="text-muted-foreground text-[8px] uppercase block">MAE</span>
+                      <span className="text-foreground font-bold">{(activeModel.metrics.mae || 0).toFixed(3)}</span>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {isModelObsolete && (
+              <div className="p-3 bg-amber-500/10 border border-amber-500/25 rounded-lg text-[10px] text-amber-500 flex items-start gap-2 mt-2 animate-in fade-in duration-300">
+                <AlertTriangle className="h-4.5 w-4.5 shrink-0 mt-0.5" />
+                <div>
+                  <strong>Aviso de Obsolescência:</strong> Este modelo foi treinado há mais de 30 dias. Sugerimos realizar um novo treinamento com dados recentes para melhor acurácia preditiva.
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="p-4 rounded-xl border border-dashed border-border bg-zinc-950/20 mb-6 flex flex-col items-center justify-center text-center py-6 animate-in fade-in duration-300 font-sans">
+            <AlertCircle className="h-8 w-8 text-amber-500/80 mb-2" />
+            <h5 className="text-xs font-bold text-foreground mb-1">Nenhum Modelo Ativo Detectado</h5>
+            <p className="text-[10px] text-muted-foreground max-w-md leading-relaxed">
+              Você ainda não realizou o treinamento do modelo para o domínio de <strong>{domainInfo.name}</strong> nesta sessão. Faça o upload do arquivo CSV correspondente na área abaixo e inicie o treinamento para habilitar as previsões.
+            </p>
+          </div>
+        )}
+
         {/* Input Oculto com accept específico (CA01) */}
         <input
           type="file"
