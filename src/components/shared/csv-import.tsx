@@ -993,23 +993,23 @@ export function CSVImport() {
           }
         }
       }}>
-        <DialogContent className="sm:max-w-[550px] bg-zinc-900 border-zinc-800 text-foreground">
+        <DialogContent className="sm:max-w-[550px] bg-card border-border text-foreground">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-zinc-100 font-bold text-sm">
+            <DialogTitle className="flex items-center gap-2 text-foreground font-bold text-sm">
               <Shield className="h-5 w-5 text-green-500 shrink-0" />
               Aviso de Privacidade & Consentimento (LGPD)
             </DialogTitle>
-            <DialogDescription className="text-zinc-400 text-xs">
+            <DialogDescription className="text-muted-foreground text-xs">
               Por favor, leia atentamente as diretrizes de privacidade antes de prosseguir com a importação de dados.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 my-2">
-            <div className="p-4 rounded-xl bg-zinc-950/80 border border-zinc-800 text-[11px] text-zinc-300 leading-relaxed font-sans max-h-[180px] overflow-y-auto whitespace-pre-wrap select-text">
+            <div className="p-4 rounded-xl bg-muted/80 border border-border text-[11px] text-foreground leading-relaxed font-sans max-h-[180px] overflow-y-auto whitespace-pre-wrap select-text">
               {privacyNoticeText}
             </div>
 
-            <div className="flex flex-col gap-2 p-3.5 bg-zinc-950/40 border border-zinc-800/60 rounded-xl text-[10px] text-zinc-400">
+            <div className="flex flex-col gap-2 p-3.5 bg-muted/40 border border-border/60 rounded-xl text-[10px] text-muted-foreground">
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-green-500 shrink-0" />
                 <span>Uso de dados exclusivo para modelagem analítica e predição neste sistema.</span>
@@ -1028,7 +1028,7 @@ export function CSVImport() {
                       e.preventDefault();
                       alert("Política de Privacidade do Sistema SPAM (Demonstração de Homologação)");
                     }} 
-                    className="text-green-400 hover:text-green-300 underline font-bold"
+                    className="text-green-500 hover:text-green-600 underline font-bold"
                   >
                     Política de Privacidade
                   </a>.
@@ -1047,15 +1047,15 @@ export function CSVImport() {
                 id="lgpd-consent-checkbox-import"
                 checked={hasConsented}
                 onChange={(e) => setHasConsented(e.target.checked)}
-                className="mt-0.5 h-4 w-4 rounded border-zinc-800 bg-zinc-950 text-green-500 focus:ring-green-500 cursor-pointer accent-green-600"
+                className="mt-0.5 h-4 w-4 rounded border-border bg-background text-green-500 focus:ring-green-500 cursor-pointer accent-green-600"
               />
-              <label htmlFor="lgpd-consent-checkbox-import" className="text-[11px] text-zinc-400 leading-snug cursor-pointer select-none">
+              <label htmlFor="lgpd-consent-checkbox-import" className="text-[11px] text-muted-foreground leading-snug cursor-pointer select-none">
                 Estou ciente e concordo com o processamento dos dados importados em conformidade com a LGPD e as finalidades descritas.
               </label>
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-3 border-t border-zinc-800/80">
+          <div className="flex justify-end gap-3 pt-3 border-t border-border/80">
             <Button
               variant="outline"
               onClick={() => {
@@ -1066,7 +1066,7 @@ export function CSVImport() {
                   fileInputRef.current.value = "";
                 }
               }}
-              className="text-[10px] font-bold h-8 px-3.5 border-zinc-800 hover:bg-zinc-800 text-zinc-300"
+              className="text-[10px] font-bold h-8 px-3.5 border-border hover:bg-muted text-muted-foreground"
             >
               Recusar e Cancelar
             </Button>

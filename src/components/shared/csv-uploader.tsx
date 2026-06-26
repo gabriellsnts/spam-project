@@ -279,7 +279,7 @@ export function ResidualsPlotView({ model, theme: customTheme }: { model: Traine
   const showPoint = hoveredPoint || selectedPoint;
 
   return (
-    <div className="space-y-4 border border-border/60 bg-zinc-950/40 p-4.5 rounded-xl animate-in fade-in duration-300">
+    <div className="space-y-4 border border-border/60 bg-muted/20 p-4.5 rounded-xl animate-in fade-in duration-300">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <div>
           <h5 className="text-xs font-bold text-foreground">Gráfico de Resíduos da Previsão</h5>
@@ -317,7 +317,7 @@ export function ResidualsPlotView({ model, theme: customTheme }: { model: Traine
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4.5 items-start">
         {/* SVG Graph */}
-        <div className="md:col-span-2 flex justify-center bg-zinc-950 border border-border/40 rounded-lg p-2 relative overflow-hidden select-none">
+        <div className="md:col-span-2 flex justify-center bg-background border border-border/40 rounded-lg p-2 relative overflow-hidden select-none">
           <svg
             ref={svgRef}
             viewBox={`0 0 ${width} ${height}`}
@@ -457,18 +457,18 @@ export function ResidualsPlotView({ model, theme: customTheme }: { model: Traine
           {/* CA04 - Tooltip flutuante interativo posicionado em porcentagem */}
           {showPoint && (
             <div 
-              className="absolute bg-zinc-900/95 border border-border text-foreground p-2 rounded-lg shadow-xl text-[10px] font-mono pointer-events-none z-50 transition-all duration-75 select-none"
+              className="absolute bg-popover/95 border border-border text-foreground p-2 rounded-lg shadow-xl text-[10px] font-mono pointer-events-none z-50 transition-all duration-75 select-none"
               style={{
                 left: `${(getX(showPoint.predicted) / width) * 100}%`,
                 top: `${(getY(showPoint.residual) / height) * 100}%`,
                 transform: 'translate(-50%, -125%)',
               }}
             >
-              <div className="font-bold text-center border-b border-border pb-0.5 mb-1 text-[9px] text-zinc-400">Ponto #{showPoint.id}</div>
+              <div className="font-bold text-center border-b border-border pb-0.5 mb-1 text-[9px] text-muted-foreground">Ponto #{showPoint.id}</div>
               <div>Real: <span className="font-bold text-foreground">{showPoint.real.toFixed(2)}</span></div>
               <div>Predito: <span className="font-bold text-foreground">{showPoint.predicted.toFixed(2)}</span></div>
               <div className="mt-0.5 pt-0.5 border-t border-border/50">
-                Erro: <span className={`font-bold ${showPoint.residual >= 0 ? "text-sky-400" : "text-amber-400"}`}>
+                Erro: <span className={`font-bold ${showPoint.residual >= 0 ? "text-sky-600 dark:text-sky-400" : "text-amber-600 dark:text-amber-400"}`}>
                   {showPoint.residual >= 0 ? "+" : ""}{showPoint.residual.toFixed(2)}
                 </span>
               </div>
@@ -477,7 +477,7 @@ export function ResidualsPlotView({ model, theme: customTheme }: { model: Traine
         </div>
 
         {/* Selected Point Details */}
-        <div className="bg-zinc-950/60 border border-border/40 rounded-lg p-3.5 space-y-3 h-[280px] flex flex-col justify-between">
+        <div className="bg-muted/40 border border-border/40 rounded-lg p-3.5 space-y-3 h-[280px] flex flex-col justify-between">
           <div className="space-y-2.5">
             <h6 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
               <span className={cn("h-1.5 w-1.5 rounded-full bg-current", domainTheme.accent)} />
@@ -503,8 +503,8 @@ export function ResidualsPlotView({ model, theme: customTheme }: { model: Traine
                   <span className={cn(
                     "font-mono font-bold text-xs px-1.5 py-0.5 rounded",
                     selectedPoint.residual >= 0 
-                      ? "bg-sky-550/10 text-sky-400 border border-sky-500/20" 
-                      : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                      ? "bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20" 
+                      : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
                   )}>
                     {selectedPoint.residual >= 0 ? "+" : ""}{selectedPoint.residual.toFixed(2)}
                   </span>
@@ -569,8 +569,16 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
 
   const bgColor = isDarkMode ? "#09090b" : "#ffffff";
   const textColor = isDarkMode ? "#a1a1aa" : "#27272a";
-  const textMutedColor = isDarkMode ? "#71717a" : "#71717a";
+  const textMutedColor = isDarkMode ? "#a1a1aa" : "#71717a";
   const strokeColor = isDarkMode ? "#27272a" : "#e4e4e7";
+
+  const greenTextMain = isDarkMode ? "#ffffff" : "#065f46";
+  const greenTextSub = isDarkMode ? "#a7f3d0" : "#047857";
+  const greenTextLabel = isDarkMode ? "#34d399" : "#065f46";
+
+  const roseTextMain = isDarkMode ? "#ffffff" : "#9f1239";
+  const roseTextSub = isDarkMode ? "#fca5a5" : "#be123c";
+  const roseTextLabel = isDarkMode ? "#f87171" : "#9f1239";
 
   // SVG Setup
   const width = 400;
@@ -765,7 +773,7 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
   const details = activeCell ? getCellDetails(activeCell) : null;
 
   return (
-    <div className="space-y-4 border border-border/60 bg-zinc-950/40 p-4.5 rounded-xl animate-in fade-in duration-300">
+    <div className="space-y-4 border border-border/60 bg-muted/20 p-4.5 rounded-xl animate-in fade-in duration-300">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <div>
           <h5 className="text-xs font-bold text-foreground">Matriz de Confusão do Modelo</h5>
@@ -803,7 +811,7 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4.5 items-start">
         {/* SVG Matrix */}
-        <div className="md:col-span-2 flex justify-center bg-zinc-950 border border-border/40 rounded-lg p-4 relative overflow-hidden select-none">
+        <div className="md:col-span-2 flex justify-center bg-background border border-border/40 rounded-lg p-4 relative overflow-hidden select-none">
           <svg
             ref={svgRef}
             viewBox={`0 0 ${width} ${height}`}
@@ -863,9 +871,9 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
                 strokeWidth={activeCell === "tn" ? 2 : 1}
                 className="transition-all duration-150"
               />
-              <text x={172.5} y={110} textAnchor="middle" fill="#ffffff" fontSize="16px" fontWeight="extrabold" fontFamily="monospace">{matrix.tn}</text>
-              <text x={172.5} y={130} textAnchor="middle" fill="#a7f3d0" fontSize="9px" fontWeight="bold" fontFamily="monospace">{pct(matrix.tn)}%</text>
-              <text x={172.5} y={150} textAnchor="middle" fill="#34d399" fontSize="8px" fontWeight="bold" fontFamily="sans-serif">Verdadeiro Negativo</text>
+              <text x={172.5} y={110} textAnchor="middle" fill={greenTextMain} fontSize="16px" fontWeight="extrabold" fontFamily="monospace">{matrix.tn}</text>
+              <text x={172.5} y={130} textAnchor="middle" fill={greenTextSub} fontSize="9px" fontWeight="bold" fontFamily="monospace">{pct(matrix.tn)}%</text>
+              <text x={172.5} y={150} textAnchor="middle" fill={greenTextLabel} fontSize="8px" fontWeight="bold" fontFamily="sans-serif">Verdadeiro Negativo</text>
             </g>
 
             {/* FP: Real 0, Pred 1 */}
@@ -886,9 +894,9 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
                 strokeWidth={activeCell === "fp" ? 2 : 1}
                 className="transition-all duration-150"
               />
-              <text x={282.5} y={110} textAnchor="middle" fill="#ffffff" fontSize="16px" fontWeight="extrabold" fontFamily="monospace">{matrix.fp}</text>
-              <text x={282.5} y={130} textAnchor="middle" fill="#fca5a5" fontSize="9px" fontWeight="bold" fontFamily="monospace">{pct(matrix.fp)}%</text>
-              <text x={282.5} y={150} textAnchor="middle" fill="#f87171" fontSize="8px" fontWeight="bold" fontFamily="sans-serif">Falso Positivo</text>
+              <text x={282.5} y={110} textAnchor="middle" fill={roseTextMain} fontSize="16px" fontWeight="extrabold" fontFamily="monospace">{matrix.fp}</text>
+              <text x={282.5} y={130} textAnchor="middle" fill={roseTextSub} fontSize="9px" fontWeight="bold" fontFamily="monospace">{pct(matrix.fp)}%</text>
+              <text x={282.5} y={150} textAnchor="middle" fill={roseTextLabel} fontSize="8px" fontWeight="bold" fontFamily="sans-serif">Falso Positivo</text>
             </g>
 
             {/* FN: Real 1, Pred 0 */}
@@ -909,9 +917,9 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
                 strokeWidth={activeCell === "fn" ? 2 : 1}
                 className="transition-all duration-150"
               />
-              <text x={172.5} y={220} textAnchor="middle" fill="#ffffff" fontSize="16px" fontWeight="extrabold" fontFamily="monospace">{matrix.fn}</text>
-              <text x={172.5} y={240} textAnchor="middle" fill="#fca5a5" fontSize="9px" fontWeight="bold" fontFamily="monospace">{pct(matrix.fn)}%</text>
-              <text x={172.5} y={260} textAnchor="middle" fill="#f87171" fontSize="8px" fontWeight="bold" fontFamily="sans-serif">Falso Negativo</text>
+              <text x={172.5} y={220} textAnchor="middle" fill={roseTextMain} fontSize="16px" fontWeight="extrabold" fontFamily="monospace">{matrix.fn}</text>
+              <text x={172.5} y={240} textAnchor="middle" fill={roseTextSub} fontSize="9px" fontWeight="bold" fontFamily="monospace">{pct(matrix.fn)}%</text>
+              <text x={172.5} y={260} textAnchor="middle" fill={roseTextLabel} fontSize="8px" fontWeight="bold" fontFamily="sans-serif">Falso Negativo</text>
             </g>
 
             {/* TP: Real 1, Pred 1 */}
@@ -932,15 +940,15 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
                 strokeWidth={activeCell === "tp" ? 2 : 1}
                 className="transition-all duration-150"
               />
-              <text x={282.5} y={220} textAnchor="middle" fill="#ffffff" fontSize="16px" fontWeight="extrabold" fontFamily="monospace">{matrix.tp}</text>
-              <text x={282.5} y={240} textAnchor="middle" fill="#a7f3d0" fontSize="9px" fontWeight="bold" fontFamily="monospace">{pct(matrix.tp)}%</text>
-              <text x={282.5} y={260} textAnchor="middle" fill="#34d399" fontSize="8px" fontWeight="bold" fontFamily="sans-serif">Verdadeiro Positivo</text>
+              <text x={282.5} y={220} textAnchor="middle" fill={greenTextMain} fontSize="16px" fontWeight="extrabold" fontFamily="monospace">{matrix.tp}</text>
+              <text x={282.5} y={240} textAnchor="middle" fill={greenTextSub} fontSize="9px" fontWeight="bold" fontFamily="monospace">{pct(matrix.tp)}%</text>
+              <text x={282.5} y={260} textAnchor="middle" fill={greenTextLabel} fontSize="8px" fontWeight="bold" fontFamily="sans-serif">Verdadeiro Positivo</text>
             </g>
           </svg>
         </div>
 
         {/* Interactive Explanation Card */}
-        <div className="bg-zinc-950/60 border border-border/40 rounded-lg p-3.5 space-y-3 h-[300px] flex flex-col justify-between">
+        <div className="bg-muted/40 border border-border/40 rounded-lg p-3.5 space-y-3 h-[300px] flex flex-col justify-between">
           {details ? (
             <div className="space-y-2 animate-in fade-in duration-200">
               <h6 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
@@ -3068,23 +3076,23 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
           }
         }
       }}>
-        <DialogContent className="sm:max-w-[550px] bg-zinc-900 border-zinc-800 text-foreground">
+        <DialogContent className="sm:max-w-[550px] bg-card border-border text-foreground">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-zinc-100 font-bold text-sm">
+            <DialogTitle className="flex items-center gap-2 text-foreground font-bold text-sm">
               <Shield className="h-5 w-5 text-green-500 shrink-0" />
               Aviso de Privacidade & Consentimento (LGPD)
             </DialogTitle>
-            <DialogDescription className="text-zinc-400 text-xs">
+            <DialogDescription className="text-muted-foreground text-xs">
               Por favor, leia atentamente as diretrizes de privacidade antes de prosseguir com a importação de dados.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 my-2">
-            <div className="p-4 rounded-xl bg-zinc-950/80 border border-zinc-800 text-[11px] text-zinc-300 leading-relaxed font-sans max-h-[180px] overflow-y-auto whitespace-pre-wrap select-text">
+            <div className="p-4 rounded-xl bg-muted/80 border border-border text-[11px] text-foreground leading-relaxed font-sans max-h-[180px] overflow-y-auto whitespace-pre-wrap select-text">
               {privacyNoticeText}
             </div>
 
-            <div className="flex flex-col gap-2 p-3.5 bg-zinc-950/40 border border-zinc-800/60 rounded-xl text-[10px] text-zinc-400">
+            <div className="flex flex-col gap-2 p-3.5 bg-muted/40 border border-border/60 rounded-xl text-[10px] text-muted-foreground">
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-green-500 shrink-0" />
                 <span>Uso de dados exclusivo para modelagem analítica e predição neste sistema.</span>
@@ -3103,7 +3111,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                       e.preventDefault();
                       alert("Política de Privacidade do Sistema SPAM (Demonstração de Homologação)");
                     }} 
-                    className="text-green-400 hover:text-green-300 underline font-bold"
+                    className="text-green-500 hover:text-green-600 underline font-bold"
                   >
                     Política de Privacidade
                   </a>.
@@ -3122,15 +3130,15 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                 id="lgpd-consent-checkbox"
                 checked={hasConsented}
                 onChange={(e) => setHasConsented(e.target.checked)}
-                className="mt-0.5 h-4 w-4 rounded border-zinc-800 bg-zinc-950 text-green-500 focus:ring-green-500 cursor-pointer accent-green-600"
+                className="mt-0.5 h-4 w-4 rounded border-border bg-background text-green-500 focus:ring-green-500 cursor-pointer accent-green-600"
               />
-              <label htmlFor="lgpd-consent-checkbox" className="text-[11px] text-zinc-400 leading-snug cursor-pointer select-none">
+              <label htmlFor="lgpd-consent-checkbox" className="text-[11px] text-muted-foreground leading-snug cursor-pointer select-none">
                 Estou ciente e concordo com o processamento dos dados importados em conformidade com a LGPD e as finalidades descritas.
               </label>
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-3 border-t border-zinc-800/80">
+          <div className="flex justify-end gap-3 pt-3 border-t border-border/80">
             <Button
               variant="outline"
               onClick={() => {
@@ -3142,7 +3150,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                   fileInputRef.current.value = "";
                 }
               }}
-              className="text-[10px] font-bold h-8 px-3.5 border-zinc-800 hover:bg-zinc-800 text-zinc-300"
+              className="text-[10px] font-bold h-8 px-3.5 border-border hover:bg-muted text-muted-foreground"
             >
               Recusar e Cancelar
             </Button>
