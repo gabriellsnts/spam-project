@@ -15,7 +15,6 @@ import {
   ShieldAlert,
   X,
   ShieldCheck,
-  User as UserIcon,
   Moon,
   Sun,
   LogOut,
@@ -39,7 +38,7 @@ export function UtilityDrawer() {
     currentUser,
     logout,
     theme,
-    toggleTheme,
+    setTheme,
     domainFilter,
     setDomainFilter,
     periodFilter,
@@ -435,33 +434,113 @@ export function UtilityDrawer() {
         {/* Dynamic Content */}
         {isMenu && (
           <div className="flex flex-col h-full overflow-hidden pt-4">
-            {/* Topo: Perfil do Administrador */}
-            <div className="flex items-center gap-4 px-2 pb-6 border-b border-border/10 shrink-0">
-              <div className="h-12 w-12 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center shrink-0">
-                <UserIcon className="h-6 w-6 text-zinc-400" />
+            {/* Hub de Perfil e Configurações */}
+            <div className="flex flex-col gap-4 px-3 py-4 bg-zinc-900/40 border border-border/50 rounded-xl mx-2 mb-4 shrink-0 shadow-lg">
+              {/* Identificação do Usuário */}
+              <div className="flex items-center gap-3">
+                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/25 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-base shrink-0 shadow-md">
+                  {currentUser?.fullName
+                    ? currentUser.fullName.split(" ").map((n) => n[0]).join("").substring(0, 2).toUpperCase()
+                    : "AD"}
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-sm font-bold text-foreground truncate">
+                    {currentUser?.fullName || "Administrador do Sistema"}
+                  </span>
+                  <span className="text-xs text-zinc-400 font-mono truncate">
+                    @{currentUser?.username || "admin"}
+                  </span>
+                  {/* Tag de Perfil */}
+                  <span className={cn(
+                    "text-[10px] font-bold px-2 py-0.5 rounded-full border w-fit mt-1.5",
+                    currentUser?.profileName === "Administrador"
+                      ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_8px_rgba(16,185,129,0.1)]"
+                      : "bg-blue-500/10 text-blue-400 border-blue-500/20 shadow-[0_0_8px_rgba(59,130,246,0.1)]"
+                  )}>
+                    {currentUser?.accessProfile || "Super Admin"}
+                  </span>
+                </div>
               </div>
-              <div className="flex flex-col min-w-0">
-                <span className="text-sm font-bold text-foreground truncate">
-                  {currentUser?.fullName || "Administrador"}
-                </span>
-                <span className="text-xs text-muted-foreground truncate mt-0.5">
-                  {currentUser?.accessProfile || "Super Admin"}
-                </span>
-                <span className="text-[10px] text-zinc-500/80 truncate mt-0.5">
-                  {currentUser?.department || "TI & Infraestrutura"}
-                </span>
-                {(currentUser?.accessProfile === "Super Admin" || !currentUser) && (
+
+              {/* Seletor de Preferências de Tema */}
+              <div className="border-t border-border/40 pt-3">
+                <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2 px-1">
+                  Preferências de Tema
+                </h4>
+                <div className="grid grid-cols-3 gap-1.5 bg-zinc-950/60 p-1 rounded-lg border border-border/20">
+                  <button
+                    onClick={() => setTheme("light")}
+                    className={cn(
+                      "flex flex-col items-center justify-center py-2 rounded-md transition-all duration-200 gap-1 text-[10px] font-semibold",
+                      theme === "light"
+                        ? "bg-zinc-800 text-foreground shadow-sm border border-zinc-700/50"
+                        : "text-muted-foreground hover:text-foreground hover:bg-zinc-900/50"
+                    )}
+                  >
+                    <Sun className="h-3.5 w-3.5" />
+                    <span>Claro</span>
+                  </button>
+                  <button
+                    onClick={() => setTheme("dark")}
+                    className={cn(
+                      "flex flex-col items-center justify-center py-2 rounded-md transition-all duration-200 gap-1 text-[10px] font-semibold",
+                      theme === "dark"
+                        ? "bg-zinc-800 text-foreground shadow-sm border border-zinc-700/50"
+                        : "text-muted-foreground hover:text-foreground hover:bg-zinc-900/50"
+                    )}
+                  >
+                    <Moon className="h-3.5 w-3.5" />
+                    <span>Escuro</span>
+                  </button>
+                  <button
+                    onClick={() => setTheme("auto")}
+                    className={cn(
+                      "flex flex-col items-center justify-center py-2 rounded-md transition-all duration-200 gap-1 text-[10px] font-semibold",
+                      theme === "auto"
+                        ? "bg-zinc-800 text-foreground shadow-sm border border-zinc-700/50"
+                        : "text-muted-foreground hover:text-foreground hover:bg-zinc-900/50"
+                    )}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-3.5 w-3.5"
+                    >
+                      <rect width="20" height="14" x="2" y="3" rx="2" />
+                      <line x1="8" x2="16" y1="21" y2="21" />
+                      <line x1="12" x2="12" y1="17" y2="21" />
+                    </svg>
+                    <span>Sistema</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Bloco Gestão Corporativa (Acesso Administrativo Condicional) */}
+              {currentUser?.profileName === "Administrador" && (
+                <div className="border-t border-border/40 pt-3">
+                  <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2 px-1">
+                    Gestão Corporativa
+                  </h4>
                   <button
                     onClick={() => {
                       router.push("/admin/usuarios");
                       handleClose();
                     }}
-                    className="text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1 mt-1 text-left w-fit"
+                    className="w-full flex items-center justify-between p-2 rounded-lg bg-emerald-500/5 hover:bg-emerald-500/10 border border-emerald-500/10 hover:border-emerald-500/20 text-emerald-400 transition-all duration-200"
                   >
-                    ⚙️ Acessar Área Administrativa
+                    <div className="flex items-center gap-2.5">
+                      <Users className="h-4 w-4" />
+                      <span className="text-xs font-semibold">Gerenciar Usuários</span>
+                    </div>
+                    <ChevronRight className="h-3.5 w-3.5 opacity-80" />
                   </button>
-                )}
-              </div>
+                </div>
+              )}
             </div>
 
             {/* Corpo Central: Opções de Navegação */}
@@ -553,20 +632,8 @@ export function UtilityDrawer() {
               </div>
             </div>
 
-            {/* Rodapé: Alternar Tema e Logout */}
-            <div className="pt-4 border-t border-border/10 shrink-0 space-y-2">
-              <button
-                onClick={toggleTheme}
-                className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-zinc-900 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <div className="p-1.5 rounded-md bg-zinc-900 transition-colors">
-                  {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                </div>
-                <span className="text-sm font-medium">
-                  Tema {theme === "dark" ? "Claro" : "Escuro"}
-                </span>
-              </button>
-              
+            {/* Rodapé: Logout */}
+            <div className="pt-4 border-t border-border/10 shrink-0">
               <button
                 onClick={() => {
                   handleClose();

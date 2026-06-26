@@ -587,10 +587,33 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     }
 
     const savedTheme = localStorage.getItem("spam-theme") as "light" | "dark" | "auto" | null;
-    const userTheme = initialUser?.theme;
+    let finalTheme: "light" | "dark" | "auto" = "dark";
     
-    // Prioridade: Tema do usuário logado -> Tema salvo no localStorage -> Padrão (dark)
-    const finalTheme = userTheme || savedTheme || "dark";
+    if (savedTheme === null) {
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const detectedTheme = prefersDark ? "dark" : "light";
+      finalTheme = detectedTheme;
+      localStorage.setItem("spam-theme", detectedTheme);
+      
+      // Aplicar imediatamente a classe no html para evitar flicker visual
+      const root = window.document.documentElement;
+      if (detectedTheme === "dark") {
+        root.classList.add("dark");
+      } else {
+        root.classList.remove("dark");
+      }
+      
+      const modeLabel = detectedTheme === "dark" ? "Escuro" : "Claro";
+      setTimeout(() => {
+        showPremiumToast(
+          `Detectamos a preferência do seu sistema operacional e aplicamos o modo ${modeLabel} automaticamente.`,
+          "success"
+        );
+      }, 500);
+    } else {
+      const userTheme = initialUser?.theme;
+      finalTheme = userTheme || savedTheme || "dark";
+    }
     setThemeState(finalTheme);
 
     const savedUsers = localStorage.getItem("spam-users");
