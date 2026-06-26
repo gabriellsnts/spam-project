@@ -147,3 +147,21 @@ Este relatório documenta a implementação dos Requisitos Funcionais (RFs) do s
 - **CA01, CA02, CA04 & CA05 – Modal de Consentimento LGPD:** Interceptação imediata do fluxo de upload em qualquer domínio. Exibição de modal impeditivo contendo citação da LGPD, finalidade de uso exclusivo em análise preditiva, não compartilhamento com terceiros, link para a Política de Privacidade e contato do encarregado de proteção de dados (DPO). O upload e o processamento de arquivos são interrompidos se o usuário recusar ou fechar o modal, prosseguindo apenas após o consentimento explícito (por meio de checkbox e botão).
 - **CA03 – Logs de Auditoria de Consentimento:** Disparo de log automático ao confirmar o consentimento, registrando a data, horário, nome completo do usuário, perfil e a mensagem contendo o nome do domínio exato onde o consentimento foi efetuado.
 - **CA06 – Gestão do Texto Dinâmico:** Seção na Área Administrativa com textarea que permite a visualização e edição dinâmica do aviso de privacidade no contexto global (armazenado no localStorage). O modal de upload consome dinamicamente o texto atualizado pelo administrador.
+
+
+---
+
+## RF30 — Selecionar Algoritmo por Domínio
+- **Status:** Concluído
+- **Componentes Modificados/Criados:**
+  - `src/lib/context/domain-context.tsx` (Estruturação e persistência de algoritmos selecionados e modelos treinados por algoritmo, e logs de treinamento)
+  - `src/components/shared/csv-uploader.tsx` (Interface de seleção de algoritmo e tabela comparativa de métricas side-by-side)
+
+### Mapeamento dos Critérios de Aceitação (CA)
+- **CA01 & CA02 — Interface de Seleção e Descrição Técnica:** Adicionada uma interface de seleção (Radio Cards premium) para cada um dos 4 domínios contendo exatamente 2 algoritmos compatíveis com descrições técnicas claras:
+  - Classificação (Retenção e Crédito): *Random Forest* (Método ensemble robusto não-linear) vs *Regressão Logística* (Modelo estatístico linear clássico).
+  - Regressão (Demanda e Manutenção): *Random Forest* (Método ensemble robusto não-linear) vs *Regressão Linear* (Modelo estatístico linear simples).
+- **CA03 — Algoritmo nas Métricas:** Nome do algoritmo utilizado no treinamento é exibido explicitamente nas métricas de desempenho do modelo ativo e nos metadados.
+- **CA04 — Comparação Side-by-Side:** Exibição de uma tabela comparativa detalhada lado a lado exibindo o desempenho de ambos os algoritmos em tempo real. Destaca automaticamente em verde o melhor resultado em cada métrica (tratando métricas de erro como RMSE e MAE onde menor é melhor).
+- **CA05 — Persistência no localStorage:** A preferência de algoritmo selecionado e os modelos treinados são salvos no `localStorage` por domínio para virem pré-selecionados ao recarregar a página (F5).
+- **CA06 — Logs de Auditoria do Treinamento:** Gravação automática no Log de Auditoria usando a função `addLogWithProfile` ao concluir o treinamento, contendo a mensagem: `"Treinamento realizado no domínio [Nome do Domínio] utilizando o algoritmo [Nome do Algoritmo]"`.
