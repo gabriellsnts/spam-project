@@ -380,7 +380,7 @@ export function UtilityDrawer() {
       />
 
       {/* Drawer Panel */}
-      <div className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-md bg-zinc-950 border-l border-border/30 shadow-2xl flex flex-col p-6 transition-transform duration-300 animate-in slide-in-from-right">
+      <div className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-md bg-background border-l border-border/30 shadow-2xl flex flex-col p-6 transition-transform duration-300 animate-in slide-in-from-right">
         {/* Header */}
         <div className="pb-5 border-b border-border/20 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4 flex-1 min-w-0">
@@ -389,7 +389,7 @@ export function UtilityDrawer() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setActiveUtilityPanel("menu")}
-                className="h-7 text-xs text-muted-foreground hover:text-foreground hover:bg-zinc-900 transition px-2 py-0 flex items-center justify-center gap-1 shrink-0 align-middle"
+                className="h-7 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition px-2 py-0 flex items-center justify-center gap-1 shrink-0 align-middle"
               >
                 ← Voltar
               </Button>
@@ -397,17 +397,17 @@ export function UtilityDrawer() {
             <div className="flex items-center gap-2 min-w-0 flex-1">
               {isMenu ? (
                 <>
-                  <Menu className="h-5 w-5 text-zinc-400 shrink-0" />
+                  <Menu className="h-5 w-5 text-muted-foreground shrink-0" />
                   <h2 className="text-md font-semibold text-foreground truncate">Menu Principal</h2>
                 </>
               ) : isAlerts ? (
                 <>
-                  <Bell className="h-5 w-5 text-zinc-400 shrink-0" />
+                  <Bell className="h-5 w-5 text-muted-foreground shrink-0" />
                   <h2 className="text-md font-semibold text-foreground truncate">Alertas do Sistema</h2>
                 </>
               ) : isPredictions ? (
                 <>
-                  <History className="h-5 w-5 text-zinc-400 shrink-0" />
+                  <History className="h-5 w-5 text-muted-foreground shrink-0" />
                   <h2 className="text-md font-semibold text-foreground truncate">Histórico de Previsões</h2>
                 </>
               ) : (
@@ -420,7 +420,7 @@ export function UtilityDrawer() {
           </div>
           <button
             onClick={handleClose}
-            className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-zinc-900 transition shrink-0"
+            className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition shrink-0"
           >
             <X className="h-4.5 w-4.5" />
           </button>
@@ -433,7 +433,7 @@ export function UtilityDrawer() {
             <Link 
               href="/profile" 
               onClick={handleClose}
-              className="flex items-center gap-3 px-3 py-4 bg-zinc-900/40 border border-border/50 rounded-xl mx-2 mb-4 shrink-0 shadow-lg hover:bg-zinc-900/80 transition-all duration-200 group cursor-pointer"
+              className="flex items-center gap-3 px-3 py-4 bg-muted/40 border border-border/50 rounded-xl mx-2 mb-4 shrink-0 shadow-lg hover:bg-muted/80 transition-all duration-200 group cursor-pointer"
             >
               {/* Identificação do Usuário */}
               <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/25 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-base shrink-0 shadow-md group-hover:scale-105 transition-transform duration-200">
@@ -445,7 +445,7 @@ export function UtilityDrawer() {
                 <span className="text-sm font-bold text-foreground truncate group-hover:text-emerald-400 transition-colors">
                   {currentUser?.fullName || "Administrador do Sistema"}
                 </span>
-                <span className="text-xs text-zinc-400 font-mono truncate">
+                <span className="text-xs text-muted-foreground font-mono truncate">
                   @{currentUser?.username || "admin"}
                 </span>
                 {/* Tag de Perfil */}
@@ -458,21 +458,21 @@ export function UtilityDrawer() {
                   {currentUser?.accessProfile || "Super Admin"}
                 </span>
               </div>
-              <ChevronRight className="h-4 w-4 text-zinc-500 group-hover:text-foreground group-hover:translate-x-0.5 transition-all duration-200" />
+              <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all duration-200" />
             </Link>
 
             {/* Corpo Central: Opções de Navegação */}
             <div className="flex-1 overflow-y-auto py-6 space-y-6 select-none scrollbar-thin px-2">
               <div className="space-y-1">
-                <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-3 px-2">
+                <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-3 px-2">
                   Sistema
                 </h3>
                 <button
                   onClick={() => setActiveUtilityPanel("alerts")}
-                  className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-zinc-900 text-muted-foreground hover:text-foreground transition-colors group"
+                  className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors group"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="p-1.5 rounded-md bg-zinc-900 group-hover:bg-zinc-800 transition-colors">
+                    <div className="p-1.5 rounded-md bg-muted group-hover:bg-muted/80 transition-colors">
                       <Bell className="h-4 w-4" />
                     </div>
                     <span className="text-sm font-medium">Alertas do Sistema</span>
@@ -485,10 +485,10 @@ export function UtilityDrawer() {
                 </button>
                 <button
                   onClick={() => setActiveUtilityPanel("logs")}
-                  className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-zinc-900 text-muted-foreground hover:text-foreground transition-colors group"
+                  className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors group"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="p-1.5 rounded-md bg-zinc-900 group-hover:bg-zinc-800 transition-colors">
+                    <div className="p-1.5 rounded-md bg-muted group-hover:bg-muted/80 transition-colors">
                       <ShieldCheck className="h-4 w-4" />
                     </div>
                     <span className="text-sm font-medium">Log de Auditoria</span>
@@ -497,10 +497,10 @@ export function UtilityDrawer() {
                 </button>
                 <button
                   onClick={() => setActiveUtilityPanel("predictions")}
-                  className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-zinc-900 text-muted-foreground hover:text-foreground transition-colors group"
+                  className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors group"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="p-1.5 rounded-md bg-zinc-900 group-hover:bg-zinc-800 transition-colors">
+                    <div className="p-1.5 rounded-md bg-muted group-hover:bg-muted/80 transition-colors">
                       <History className="h-4 w-4" />
                     </div>
                     <span className="text-sm font-medium">Histórico de Previsões</span>
@@ -512,7 +512,7 @@ export function UtilityDrawer() {
                     variant="outline"
                     size="sm"
                     onClick={generateConsolidatedReport}
-                    className="w-full text-xs font-bold border-zinc-700/50 hover:bg-zinc-900 text-foreground"
+                    className="w-full text-xs font-bold border-border hover:bg-muted text-foreground"
                   >
                     <Download className="h-3.5 w-3.5 mr-1.5" />
                     Relatório Consolidado
@@ -523,7 +523,7 @@ export function UtilityDrawer() {
               <div className="h-px bg-border/10 w-full" />
 
               <div className="space-y-1">
-                <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-3 px-2">
+                <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-3 px-2">
                   Módulos de Domínio
                 </h3>
                 {(Object.keys(DOMAINS) as DomainType[]).map((domainType) => {
@@ -535,10 +535,10 @@ export function UtilityDrawer() {
                         initiateDomainSwitch(domainType);
                         handleClose();
                       }}
-                      className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-zinc-900 text-muted-foreground hover:text-foreground transition-colors group"
+                      className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors group"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="p-1.5 rounded-md bg-zinc-900 group-hover:bg-zinc-800 transition-colors">
+                        <div className="p-1.5 rounded-md bg-muted group-hover:bg-muted/80 transition-colors">
                           {getDomainIcon(domainType)}
                         </div>
                         <span className="text-sm font-medium">{domain.name}</span>
@@ -559,7 +559,7 @@ export function UtilityDrawer() {
                 }}
                 className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-rose-500/10 text-muted-foreground hover:text-rose-500 transition-colors group"
               >
-                <div className="p-1.5 rounded-md bg-zinc-900 group-hover:bg-rose-500/20 transition-colors">
+                <div className="p-1.5 rounded-md bg-muted group-hover:bg-rose-500/20 transition-colors">
                   <LogOut className="h-4 w-4" />
                 </div>
                 <span className="text-sm font-medium">Sair</span>
@@ -571,7 +571,7 @@ export function UtilityDrawer() {
         {isAlerts && (
           <>
             {/* Tab Filters */}
-            <div className="flex border-b border-border/10 bg-zinc-950/40 shrink-0 mt-3">
+            <div className="flex border-b border-border/10 bg-muted/40 shrink-0 mt-3">
               <button
                 onClick={() => setFilter("unrecognized")}
                 className={cn(
@@ -597,17 +597,17 @@ export function UtilityDrawer() {
             </div>
 
             {filter === "all" && (
-              <div className="flex flex-col gap-2.5 p-3 bg-zinc-900/30 border border-border/10 rounded-xl mt-3 mx-1 shrink-0">
+              <div className="flex flex-col gap-2.5 p-3 bg-muted/30 border border-border/10 rounded-xl mt-3 mx-1 shrink-0">
                 <div className="flex items-center gap-2">
                   {/* Filtro de Domínio */}
                   <div className="flex-1 flex flex-col gap-1">
-                    <label className="text-[8px] uppercase tracking-wider font-extrabold text-zinc-500">
+                    <label className="text-[8px] uppercase tracking-wider font-extrabold text-muted-foreground">
                       Domínio
                     </label>
                     <select
                       value={domainFilter}
                       onChange={(e) => setDomainFilter(e.target.value as DomainType | "all")}
-                      className="bg-zinc-950 border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer"
+                      className="bg-background border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer"
                     >
                       <option value="all">Todos</option>
                       <option value="maintenance">Manutenção</option>
@@ -619,13 +619,13 @@ export function UtilityDrawer() {
 
                   {/* Filtro de Período */}
                   <div className="flex-1 flex flex-col gap-1">
-                    <label className="text-[8px] uppercase tracking-wider font-extrabold text-zinc-500">
+                    <label className="text-[8px] uppercase tracking-wider font-extrabold text-muted-foreground">
                       Período
                     </label>
                     <select
                       value={periodFilter}
                       onChange={(e) => setPeriodFilter(e.target.value as "all" | "24h" | "7d" | "30d")}
-                      className="bg-zinc-950 border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer"
+                      className="bg-background border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer"
                     >
                       <option value="all">Todos</option>
                       <option value="24h">Últimas 24h</option>
@@ -717,14 +717,14 @@ export function UtilityDrawer() {
                           </h4>
                         </div>
 
-                        <span className="text-[8px] font-mono text-zinc-500/40 dark:text-zinc-600/40 tracking-wider shrink-0 select-none">
+                        <span className="text-[8px] font-mono text-muted-foreground/40 tracking-wider shrink-0 select-none">
                           #{alert.id.substring(4, 11)}
                         </span>
                       </div>
 
                       {/* Value and Metric Description */}
-                      <div className="flex items-center justify-between bg-zinc-950/20 dark:bg-zinc-950/50 px-2.5 py-1.5 rounded-lg border border-border/20 text-[10px]">
-                        <span className="text-zinc-500 dark:text-zinc-400/80 text-[10px] font-medium">{alert.metric}:</span>
+                      <div className="flex items-center justify-between bg-background/20 dark:bg-background/50 px-2.5 py-1.5 rounded-lg border border-border/20 text-[10px]">
+                        <span className="text-muted-foreground text-[10px] font-medium">{alert.metric}:</span>
                         <span className={cn("font-mono font-bold text-[10px]", isHigh ? "text-rose-400" : "text-amber-400")}>
                           {alert.value}
                         </span>
@@ -732,7 +732,7 @@ export function UtilityDrawer() {
 
                       {/* Action Controls */}
                       <div className="flex items-center justify-between gap-3 pt-1 border-t border-border/20">
-                        <span className="text-[9px] text-zinc-500/55 dark:text-zinc-550/55 font-mono select-none flex items-center gap-1.5">
+                        <span className="text-[9px] text-muted-foreground/55 font-mono select-none flex items-center gap-1.5">
                           <span>
                             {new Date(alert.timestamp).toLocaleDateString("pt-BR")}
                           </span>
@@ -754,13 +754,13 @@ export function UtilityDrawer() {
                                   e.stopPropagation();
                                   recognizeAlert(alert.id);
                                 }}
-                                className="h-6 text-[9px] font-black bg-zinc-900 border border-border/80 hover:bg-green-550/10 hover:border-green-500 hover:text-green-500 text-foreground transition-all duration-200 px-2 flex items-center gap-1"
+                                className="h-6 text-[9px] font-black bg-muted border border-border/80 hover:bg-green-500/10 hover:border-green-500 hover:text-green-500 text-foreground transition-all duration-200 px-2 flex items-center gap-1"
                               >
                                 <Check className="h-3 w-3" />
                                 Reconhecer
                               </Button>
                             ) : (
-                              <span className="text-[9px] text-zinc-500/60 dark:text-zinc-450/60 font-bold flex items-center gap-0.5 select-none py-0.5 px-1.5 bg-zinc-950/20 border border-border/20 rounded">
+                              <span className="text-[9px] text-muted-foreground/60 font-bold flex items-center gap-0.5 select-none py-0.5 px-1.5 bg-background/20 border border-border/20 rounded">
                                 <Check className="h-3 w-3 text-emerald-500/70" />
                                 Reconhecido
                               </span>
@@ -768,12 +768,12 @@ export function UtilityDrawer() {
                           ) : (
                             // Read-only status badge in the HISTÓRICO tab
                             alert.recognized ? (
-                              <span className="text-[9px] text-zinc-550 dark:text-zinc-500 font-bold flex items-center gap-0.5 select-none py-0.5 px-1.5 bg-zinc-950/20 border border-border/20 rounded">
+                              <span className="text-[9px] text-muted-foreground font-bold flex items-center gap-0.5 select-none py-0.5 px-1.5 bg-background/20 border border-border/20 rounded">
                                 <Check className="h-3 w-3 text-emerald-500/70" />
                                 Reconhecido
                               </span>
                             ) : (
-                              <span className="text-[9px] text-amber-500/80 dark:text-amber-500/75 font-bold flex items-center gap-0.5 select-none py-0.5 px-1.5 bg-zinc-950/20 border border-border/20 rounded">
+                              <span className="text-[9px] text-amber-500/80 font-bold flex items-center gap-0.5 select-none py-0.5 px-1.5 bg-background/20 border border-border/20 rounded">
                                 Pendente
                               </span>
                             )
@@ -822,17 +822,17 @@ export function UtilityDrawer() {
 
         {isPredictions && (
           <>
-            <div className="flex flex-col gap-2.5 p-3 bg-zinc-900/30 border border-border/10 rounded-xl mt-3 mx-1 shrink-0">
+            <div className="flex flex-col gap-2.5 p-3 bg-muted/30 border border-border/10 rounded-xl mt-3 mx-1 shrink-0">
               <div className="flex items-center gap-2">
                 {/* Filtro de Domínio */}
                 <div className="flex-1 flex flex-col gap-1">
-                  <label className="text-[8px] uppercase tracking-wider font-extrabold text-zinc-500">
+                  <label className="text-[8px] uppercase tracking-wider font-extrabold text-muted-foreground">
                     Domínio
                   </label>
                   <select
                     value={domainFilter}
                     onChange={(e) => setDomainFilter(e.target.value as DomainType | "all")}
-                    className="bg-zinc-950 border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer"
+                    className="bg-background border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer"
                   >
                     <option value="all">Todos</option>
                     <option value="maintenance">Manutenção</option>
@@ -844,13 +844,13 @@ export function UtilityDrawer() {
 
                 {/* Filtro de Período */}
                 <div className="flex-1 flex flex-col gap-1">
-                  <label className="text-[8px] uppercase tracking-wider font-extrabold text-zinc-500">
+                  <label className="text-[8px] uppercase tracking-wider font-extrabold text-muted-foreground">
                     Período
                   </label>
                   <select
                     value={periodFilter}
                     onChange={(e) => setPeriodFilter(e.target.value as "all" | "24h" | "7d" | "30d")}
-                    className="bg-zinc-950 border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer"
+                    className="bg-background border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer"
                   >
                     <option value="all">Todos</option>
                     <option value="24h">Últimas 24h</option>
@@ -919,14 +919,14 @@ export function UtilityDrawer() {
                             {pred.item}
                           </h4>
                         </div>
-                        <span className="text-[8px] font-mono text-zinc-500/40 dark:text-zinc-600/40 tracking-wider shrink-0 select-none">
+                        <span className="text-[8px] font-mono text-muted-foreground/40 tracking-wider shrink-0 select-none">
                           #{pred.id.substring(4, 11)}
                         </span>
                       </div>
 
                       {detailInfo && (
-                        <div className="flex items-center justify-between bg-zinc-950/20 dark:bg-zinc-950/50 px-2.5 py-1.5 rounded-lg border border-border/20 text-[10px]">
-                          <span className="text-zinc-500 dark:text-zinc-400/80 text-[10px] font-medium">Confiança/Probab.:</span>
+                        <div className="flex items-center justify-between bg-background/20 dark:bg-background/50 px-2.5 py-1.5 rounded-lg border border-border/20 text-[10px]">
+                          <span className="text-muted-foreground text-[10px] font-medium">Confiança/Probab.:</span>
                           <span className="font-mono font-bold text-[10px] text-blue-400">
                             {detailInfo}
                           </span>
@@ -934,7 +934,7 @@ export function UtilityDrawer() {
                       )}
 
                       <div className="flex items-center justify-between gap-3 pt-1 border-t border-border/20">
-                        <span className="text-[9px] text-zinc-500/55 dark:text-zinc-550/55 font-mono select-none flex items-center gap-1.5">
+                        <span className="text-[9px] text-muted-foreground/55 font-mono select-none flex items-center gap-1.5">
                           <span>
                             {new Date(pred.timestamp).toLocaleDateString("pt-BR")}
                           </span>
@@ -954,7 +954,7 @@ export function UtilityDrawer() {
                               initiateDomainSwitch(pred.domain);
                               handleClose();
                             }}
-                            className="h-6 w-6 p-0 text-zinc-500 hover:text-primary hover:bg-primary/5 transition"
+                            className="h-6 w-6 p-0 text-muted-foreground hover:text-primary hover:bg-primary/5 transition"
                             title={`Ir para o painel de ${domainInfo.name}`}
                           >
                             <ExternalLink className="h-3.5 w-3.5" />
@@ -990,33 +990,33 @@ export function UtilityDrawer() {
         {isLogs && (
           <>
             {/* Indicators Panel */}
-            <div className="grid grid-cols-3 gap-2.5 p-3.5 bg-zinc-900/20 border border-border/10 rounded-xl mt-3 mx-1 shrink-0">
-              <div className="bg-zinc-950 border border-border/20 p-2.5 rounded-lg flex flex-col justify-center min-w-0">
-                <span className="text-[8px] font-extrabold text-zinc-500 uppercase tracking-wider truncate">Total Ações</span>
+            <div className="grid grid-cols-3 gap-2.5 p-3.5 bg-muted/20 border border-border/10 rounded-xl mt-3 mx-1 shrink-0">
+              <div className="bg-background border border-border/20 p-2.5 rounded-lg flex flex-col justify-center min-w-0">
+                <span className="text-[8px] font-extrabold text-muted-foreground uppercase tracking-wider truncate">Total Ações</span>
                 <span className="text-base font-black text-foreground mt-0.5 font-mono">{logs.length}</span>
               </div>
-              <div className="bg-zinc-950 border border-border/20 p-2.5 rounded-lg flex flex-col justify-center min-w-0">
-                <span className="text-[8px] font-extrabold text-zinc-500 uppercase tracking-wider truncate">Críticas</span>
+              <div className="bg-background border border-border/20 p-2.5 rounded-lg flex flex-col justify-center min-w-0">
+                <span className="text-[8px] font-extrabold text-muted-foreground uppercase tracking-wider truncate">Críticas</span>
                 <span className="text-base font-black text-rose-500 mt-0.5 font-mono">{criticalCount}</span>
               </div>
-              <div className="bg-zinc-950 border border-border/20 p-2.5 rounded-lg flex flex-col justify-center min-w-0">
-                <span className="text-[8px] font-extrabold text-zinc-500 uppercase tracking-wider truncate">Usuários At.</span>
+              <div className="bg-background border border-border/20 p-2.5 rounded-lg flex flex-col justify-center min-w-0">
+                <span className="text-[8px] font-extrabold text-muted-foreground uppercase tracking-wider truncate">Usuários At.</span>
                 <span className="text-base font-black text-emerald-500 mt-0.5 font-mono">{activeUsersCount}</span>
               </div>
             </div>
 
             {/* Advanced Filters */}
-            <div className="flex flex-col gap-2.5 p-3 bg-zinc-900/30 border border-border/10 rounded-xl mt-3 mx-1 shrink-0">
+            <div className="flex flex-col gap-2.5 p-3 bg-muted/30 border border-border/10 rounded-xl mt-3 mx-1 shrink-0">
               <div className="flex items-center gap-2">
                 {/* User Filter */}
                 <div className="flex-1 flex flex-col gap-1">
-                  <label className="text-[8px] uppercase tracking-wider font-extrabold text-zinc-500">
+                  <label className="text-[8px] uppercase tracking-wider font-extrabold text-muted-foreground">
                     Usuário
                   </label>
                   <select
                     value={logUserFilter}
                     onChange={(e) => setLogUserFilter(e.target.value)}
-                    className="bg-zinc-950 border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer w-full text-ellipsis"
+                    className="bg-background border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer w-full text-ellipsis"
                   >
                     <option value="all">Todos</option>
                     {uniqueLogUsers.map((user) => (
@@ -1029,13 +1029,13 @@ export function UtilityDrawer() {
 
                 {/* Action Type Filter */}
                 <div className="flex-1 flex flex-col gap-1">
-                  <label className="text-[8px] uppercase tracking-wider font-extrabold text-zinc-500">
+                  <label className="text-[8px] uppercase tracking-wider font-extrabold text-muted-foreground">
                     Tipo de Ação
                   </label>
                   <select
                     value={logActionType}
                     onChange={(e) => setLogActionType(e.target.value)}
-                    className="bg-zinc-950 border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer w-full"
+                    className="bg-background border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer w-full"
                   >
                     <option value="all">Todos</option>
                     <option value="auth">Autenticação</option>
@@ -1049,25 +1049,25 @@ export function UtilityDrawer() {
               {/* Date Filters */}
               <div className="flex items-center gap-2">
                 <div className="flex-1 flex flex-col gap-1">
-                  <label className="text-[8px] uppercase tracking-wider font-extrabold text-zinc-500">
+                  <label className="text-[8px] uppercase tracking-wider font-extrabold text-muted-foreground">
                     Data Inicial
                   </label>
                   <input
                     type="date"
                     value={logStartDate}
                     onChange={(e) => setLogStartDate(e.target.value)}
-                    className="bg-zinc-950 border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer w-full"
+                    className="bg-background border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer w-full"
                   />
                 </div>
                 <div className="flex-1 flex flex-col gap-1">
-                  <label className="text-[8px] uppercase tracking-wider font-extrabold text-zinc-500">
+                  <label className="text-[8px] uppercase tracking-wider font-extrabold text-muted-foreground">
                     Data Final
                   </label>
                   <input
                     type="date"
                     value={logEndDate}
                     onChange={(e) => setLogEndDate(e.target.value)}
-                    className="bg-zinc-950 border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer w-full"
+                    className="bg-background border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer w-full"
                   />
                 </div>
               </div>
@@ -1125,10 +1125,10 @@ export function UtilityDrawer() {
                   )}
                 </div>
               ) : (
-                <div className="w-full overflow-x-auto border border-border/20 rounded-xl bg-zinc-950/40 scrollbar-thin">
+                <div className="w-full overflow-x-auto border border-border/20 rounded-xl bg-background/40 scrollbar-thin">
                   <table className="w-full text-left border-collapse text-[10px] min-w-[500px]">
                     <thead>
-                      <tr className="border-b border-border/25 bg-zinc-900/60 text-zinc-400 font-bold uppercase tracking-wider select-none">
+                      <tr className="border-b border-border/25 bg-muted/60 text-muted-foreground font-bold uppercase tracking-wider select-none">
                         <th className="p-3 w-[75px] shrink-0 font-extrabold">Data</th>
                         <th className="p-3 w-[65px] shrink-0 font-extrabold">Horário</th>
                         <th className="p-3 w-[100px] font-extrabold">Usuário</th>
@@ -1146,13 +1146,13 @@ export function UtilityDrawer() {
                           <tr
                             key={log.id}
                             onClick={() => setSelectedLog(log)}
-                            className="hover:bg-zinc-900/40 cursor-pointer active:bg-zinc-900/60 transition duration-150 group"
+                            className="hover:bg-muted/40 cursor-pointer active:bg-muted/60 transition duration-150 group"
                           >
-                            <td className="p-3 text-zinc-400 font-medium whitespace-nowrap">{dateStr}</td>
-                            <td className="p-3 text-zinc-400 font-mono whitespace-nowrap">{timeStr}</td>
+                            <td className="p-3 text-muted-foreground font-medium whitespace-nowrap">{dateStr}</td>
+                            <td className="p-3 text-muted-foreground font-mono whitespace-nowrap">{timeStr}</td>
                             <td className="p-3 text-foreground font-semibold truncate max-w-[100px]" title={log.username}>{log.username}</td>
-                            <td className="p-3 text-zinc-400 font-medium truncate max-w-[95px]" title={log.accessProfile}>{log.accessProfile}</td>
-                            <td className="p-3 text-zinc-300 font-medium max-w-[200px] truncate group-hover:text-foreground transition-colors" title={log.action}>{log.action}</td>
+                            <td className="p-3 text-muted-foreground font-medium truncate max-w-[95px]" title={log.accessProfile}>{log.accessProfile}</td>
+                            <td className="p-3 text-foreground/80 font-medium max-w-[200px] truncate group-hover:text-foreground transition-colors" title={log.action}>{log.action}</td>
                           </tr>
                         );
                       })}
@@ -1163,7 +1163,7 @@ export function UtilityDrawer() {
 
               {/* Sub-panel details (CA06) */}
               {selectedLog && (
-                <div className="absolute inset-0 bg-zinc-950 z-25 flex flex-col p-6 animate-in slide-in-from-right duration-200 border border-border/20 rounded-xl m-1">
+                <div className="absolute inset-0 bg-background z-25 flex flex-col p-6 animate-in slide-in-from-right duration-200 border border-border/20 rounded-xl m-1">
                   <div className="flex items-center justify-between pb-4 border-b border-border/20 mb-4 shrink-0">
                     <h3 className="text-xs font-bold text-foreground flex items-center gap-2">
                       <ShieldCheck className="h-4.5 w-4.5 text-emerald-500" />
@@ -1171,46 +1171,46 @@ export function UtilityDrawer() {
                     </h3>
                     <button
                       onClick={() => setSelectedLog(null)}
-                      className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-zinc-900 transition"
+                      className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition"
                     >
                       <X className="h-4 w-4" />
                     </button>
                   </div>
                   
                   <div className="flex-1 overflow-y-auto space-y-4 text-[11px] scrollbar-thin pr-1">
-                    <div className="bg-zinc-900/40 border border-border/15 rounded-xl p-3.5 space-y-3">
+                    <div className="bg-muted/40 border border-border/15 rounded-xl p-3.5 space-y-3">
                       <div className="flex justify-between items-center">
-                        <span className="text-zinc-500 font-semibold">ID do Registro:</span>
-                        <span className="font-mono font-bold text-foreground bg-zinc-900 px-1.5 py-0.5 rounded border border-border/20">#{selectedLog.id}</span>
+                        <span className="text-muted-foreground font-semibold">ID do Registro:</span>
+                        <span className="font-mono font-bold text-foreground bg-muted px-1.5 py-0.5 rounded border border-border/20">#{selectedLog.id}</span>
                       </div>
                       <div className="flex justify-between items-center border-t border-border/10 pt-2.5">
-                        <span className="text-zinc-500 font-semibold">Data da Ação:</span>
+                        <span className="text-muted-foreground font-semibold">Data da Ação:</span>
                         <span className="font-bold text-foreground">{new Date(selectedLog.timestamp).toLocaleDateString("pt-BR")}</span>
                       </div>
                       <div className="flex justify-between items-center border-t border-border/10 pt-2.5">
-                        <span className="text-zinc-500 font-semibold">Horário da Ação:</span>
+                        <span className="text-muted-foreground font-semibold">Horário da Ação:</span>
                         <span className="font-bold text-foreground font-mono">{new Date(selectedLog.timestamp).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</span>
                       </div>
                     </div>
 
-                    <div className="bg-zinc-900/40 border border-border/15 rounded-xl p-3.5 space-y-3">
+                    <div className="bg-muted/40 border border-border/15 rounded-xl p-3.5 space-y-3">
                       <div className="flex justify-between items-center">
-                        <span className="text-zinc-500 font-semibold">Usuário:</span>
+                        <span className="text-muted-foreground font-semibold">Usuário:</span>
                         <span className="font-bold text-foreground">{selectedLog.username}</span>
                       </div>
                       <div className="flex justify-between items-center border-t border-border/10 pt-2.5">
-                        <span className="text-zinc-500 font-semibold">Perfil de Acesso:</span>
+                        <span className="text-muted-foreground font-semibold">Perfil de Acesso:</span>
                         <span className="font-bold text-foreground">{selectedLog.accessProfile}</span>
                       </div>
                       <div className="flex justify-between items-center border-t border-border/10 pt-2.5">
-                        <span className="text-zinc-500 font-semibold">Escopo (Sistema/Usuário):</span>
-                        <span className="font-bold text-zinc-400">{selectedLog.profile}</span>
+                        <span className="text-muted-foreground font-semibold">Escopo (Sistema/Usuário):</span>
+                        <span className="font-bold text-muted-foreground">{selectedLog.profile}</span>
                       </div>
                     </div>
 
-                    <div className="bg-zinc-900/40 border border-border/15 rounded-xl p-3.5 space-y-2">
-                      <span className="text-zinc-500 font-semibold block">Descrição da Ação:</span>
-                      <p className="text-foreground leading-relaxed font-bold bg-zinc-950 p-3 rounded-lg border border-border/20 break-words whitespace-pre-wrap font-mono text-[10px]">
+                    <div className="bg-muted/40 border border-border/15 rounded-xl p-3.5 space-y-2">
+                      <span className="text-muted-foreground font-semibold block">Descrição da Ação:</span>
+                      <p className="text-foreground leading-relaxed font-bold bg-background p-3 rounded-lg border border-border/20 break-words whitespace-pre-wrap font-mono text-[10px]">
                         {selectedLog.action}
                       </p>
                     </div>
@@ -1220,7 +1220,7 @@ export function UtilityDrawer() {
                     <Button
                       variant="ghost"
                       onClick={() => setSelectedLog(null)}
-                      className="w-full text-xs font-bold bg-zinc-900 border border-border/30 text-foreground hover:bg-zinc-800"
+                      className="w-full text-xs font-bold bg-muted border border-border/30 text-foreground hover:bg-muted/80"
                     >
                       Voltar para a Listagem
                     </Button>
