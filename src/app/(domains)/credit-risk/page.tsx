@@ -367,7 +367,7 @@ export default function CreditRiskPage() {
             />
           )}
           <ShareAnalysisDialog />
-          <ExportDropdown />
+          <ExportDropdown data={paginatedData} filenamePrefix="risco_credito" />
           {!activeModel ? (
             <div className="flex items-center gap-2 text-amber-500 bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-500/20 text-xs font-semibold">
               <AlertCircle className="h-4 w-4" />

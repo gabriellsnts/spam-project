@@ -12,15 +12,74 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function ExportDropdown() {
+interface ExportDropdownProps {
+  data?: any[];
+  filenamePrefix?: string;
+}
+
+export function ExportDropdown({ data = [], filenamePrefix = "export" }: ExportDropdownProps) {
   const [exportingFormat, setExportingFormat] = useState<string | null>(null);
 
-  const handleExport = (format: string) => {
+  const getTimestamp = () => {
+    const now = new Date();
+    return now.toISOString().replace(/[:.]/g, "-").split("T").join("_").slice(0, -5);
+  };
+
+  const handleExport = (format: "CSV" | "JSON" | "PDF") => {
     setExportingFormat(format);
-    // Simulate a download delay
+    
+    // Simulate generation delay
     setTimeout(() => {
+      const filename = `${filenamePrefix}_${getTimestamp()}`;
+      
+      if (format === "JSON") {
+        const jsonStr = JSON.stringify(data, null, 2);
+        const blob = new Blob([jsonStr], { type: "application/json" });
+        triggerDownload(blob, `${filename}.json`);
+      } 
+      else if (format === "CSV") {
+        if (data.length > 0) {
+          const headers = Object.keys(data[0]);
+          const csvRows = [];
+          csvRows.push(headers.join(","));
+          
+          for (const row of data) {
+            const values = headers.map(header => {
+              const escaped = ('' + row[header]).replace(/"/g, '\\"');
+              return `"${escaped}"`;
+            });
+            csvRows.push(values.join(","));
+          }
+          
+          const blob = new Blob([csvRows.join("\\n")], { type: "text/csv" });
+          triggerDownload(blob, `${filename}.csv`);
+        } else {
+          // Empty state
+          const blob = new Blob(["Nenhum dado disponível"], { type: "text/csv" });
+          triggerDownload(blob, `${filename}.csv`);
+        }
+      }
+      else if (format === "PDF") {
+        // Mock PDF since we don't have jspdf installed
+        // We will trigger window.print() or just a mock blob
+        const blob = new Blob(["Simulação de arquivo PDF. Utilize a função de Impressão nativa do navegador para um PDF visual."], { type: "text/plain" });
+        triggerDownload(blob, `${filename}_simulado.pdf`);
+        setTimeout(() => window.print(), 500);
+      }
+      
       setExportingFormat(null);
-    }, 2000);
+    }, 1500);
+  };
+
+  const triggerDownload = (blob: Blob, filename: string) => {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
   };
 
   return (
