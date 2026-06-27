@@ -227,6 +227,7 @@ export interface SimulatedEmail {
     threshold: number;
     timestamp: number;
   }[];
+}
 
 export type GlossaryCategory = "Geral" | "Machine Learning" | "Métricas" | "Logística" | "Previsão";
 
@@ -244,7 +245,6 @@ export interface TrashItem {
   type: string;
   deletedAt: string;
   deletedBy: string;
-
 }
 
 interface DomainContextProps {
@@ -1019,15 +1019,6 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    // Carregar alertas
-    let loadedAlerts: Alert[] = [];
-    const savedAlerts = localStorage.getItem("spam-alerts");
-    if (savedAlerts) {
-      try {
-        loadedAlerts = JSON.parse(savedAlerts);
-      } catch (e) {
-        console.error("Erro ao carregar alertas:", e);
-
     const savedGlossary = localStorage.getItem("spam-glossary");
     if (savedGlossary) {
       try {
@@ -1055,13 +1046,15 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     }
     isTrashInitialized.current = true;
 
+    let loadedAlerts: Alert[] = [];
     const savedAlerts = localStorage.getItem("spam-alerts");
     if (savedAlerts) {
       try {
-        setAlerts(JSON.parse(savedAlerts));
-      } catch {
+        loadedAlerts = JSON.parse(savedAlerts);
+        setAlerts(loadedAlerts);
+      } catch (e) {
+        console.error("Erro ao carregar alertas:", e);
         setAlerts([]);
-
       }
     } else {
       loadedAlerts = [
