@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { AlertThresholdSettings } from "@/components/shared/alert-threshold-settings";
 import { ExportDropdown } from "@/components/shared/export-dropdown";
 import { ShareAnalysisDialog } from "@/components/shared/share-analysis-dialog";
+import { ModelCertificateDialog } from "@/components/shared/model-certificate-dialog";
 
 type RiskLevel = "all" | "high" | "medium" | "low";
 
@@ -355,6 +356,15 @@ export default function CreditRiskPage() {
         </div>
 
         <div className="flex flex-col sm:flex-row items-center gap-2 relative z-10">
+          {activeModel && (
+            <ModelCertificateDialog 
+              modelId={activeModel.modelId}
+              algorithm={activeModel.algorithm}
+              accuracy={activeModel.metrics.accuracy || 0}
+              f1Score={activeModel.metrics.f1Score || 0}
+              validationDate={activeModel.trainedAt || new Date().toISOString()}
+            />
+          )}
           <ShareAnalysisDialog />
           <ExportDropdown />
           {!activeModel ? (
