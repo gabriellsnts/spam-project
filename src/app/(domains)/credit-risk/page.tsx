@@ -13,6 +13,7 @@ import { AlertThresholdSettings } from "@/components/shared/alert-threshold-sett
 import { ExportDropdown } from "@/components/shared/export-dropdown";
 import { ShareAnalysisDialog } from "@/components/shared/share-analysis-dialog";
 import { ModelCertificateDialog } from "@/components/shared/model-certificate-dialog";
+import { GlossaryTooltip } from "@/components/shared/glossary-tooltip";
 
 type RiskLevel = "all" | "high" | "medium" | "low";
 
@@ -439,7 +440,7 @@ export default function CreditRiskPage() {
         <Card className="bg-card border-border transition-colors duration-300">
           <CardHeader className="pb-2">
             <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
-              Exposição de Carteira (VaR)
+              Exposição de Carteira (<GlossaryTooltip termId="3">VaR</GlossaryTooltip>)
             </CardDescription>
             <CardTitle className="text-2xl font-black text-foreground">{metrics.totalExposure}</CardTitle>
           </CardHeader>
