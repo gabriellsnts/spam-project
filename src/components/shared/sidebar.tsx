@@ -14,6 +14,7 @@ import {
   ChevronRight,
   Database,
   ShieldCheck,
+  Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -220,6 +221,32 @@ export function Sidebar() {
               {!isCollapsed && (
                 <span className="truncate animate-in fade-in slide-in-from-left-2 duration-300">
                   Painel Inicial (Home)
+                </span>
+              )}
+            </a>
+          </Link>
+          
+          <Link href="/admin/trash" passHref legacyBehavior>
+            <a
+              className={cn(
+                "flex items-center gap-3 p-2.5 rounded-xl text-xs font-semibold transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-transparent relative",
+                pathname.startsWith("/admin/trash") ? "text-destructive bg-destructive/10 border-destructive/20" : ""
+              )}
+              title={isCollapsed ? "Lixeira" : undefined}
+            >
+              <div
+                className={cn(
+                  "absolute left-0 top-0 bottom-0 w-1 transition-all duration-200",
+                  pathname.startsWith("/admin/trash")
+                    ? "bg-destructive shadow-[0_0_8px_rgba(239,68,68,0.6)]"
+                    : "bg-transparent"
+                )}
+                style={{ borderRadius: "0 4px 4px 0" }}
+              />
+              <Trash2 className="h-4.5 w-4.5 shrink-0 ml-1" />
+              {!isCollapsed && (
+                <span className="truncate animate-in fade-in slide-in-from-left-2 duration-300">
+                  Lixeira
                 </span>
               )}
             </a>
