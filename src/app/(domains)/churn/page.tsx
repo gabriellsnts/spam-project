@@ -21,7 +21,7 @@ interface ClientData {
 }
 
 export default function ChurnPage() {
-  const { addLog, isTraining, trainedModels, alertThresholds, addAlert } = useDomain();
+  const { addLog, isTraining, trainedModels, alertThresholds, addAlert, currentView } = useDomain();
   const activeModel = trainedModels["churn"];
   const isModelObsolete = activeModel ? (Date.now() - activeModel.timestamp > 30 * 24 * 60 * 60 * 1000) : false;
   const [churnSimulated, setChurnSimulated] = useState(false);
@@ -206,7 +206,9 @@ export default function ChurnPage() {
         </div>
       </div>
 
-      {!activeModel && (
+      {currentView === "monitoring" && (
+        <div className="space-y-6 animate-in fade-in duration-300">
+          {!activeModel && (
         <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-500 text-xs font-semibold flex items-start gap-2 animate-in fade-in duration-300 font-sans">
           <AlertCircle className="h-5 w-5 shrink-0" />
           <div>
@@ -455,9 +457,65 @@ export default function ChurnPage() {
           </CardContent>
         </Card>
       </div>
+    </div>
+  )}
 
-      {/* Ingestão de Dados Históricos e Diagnósticos */}
-      <div className="space-y-6">
+  {currentView === "simulation" && (
+    <div className="space-y-6 animate-in fade-in duration-300 max-w-3xl mx-auto">
+      <Card className="bg-card border-border transition-colors duration-300 shadow-md">
+        <CardHeader>
+          <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
+            <UserMinus className="h-4 w-4 text-violet-500" />
+            Sandbox de Simulação de Churn
+          </CardTitle>
+          <CardDescription className="text-[11px] text-muted-foreground">
+            Simule cancelamento de clientes em massa para estressar a taxa de churn projetada.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="p-4 bg-violet-500/5 border border-violet-500/10 rounded-xl space-y-3">
+            <div className="text-xs font-bold text-foreground">Preset Rápido de Churn em Massa</div>
+            <p className="text-muted-foreground text-[11px] leading-relaxed">
+              Esta ferramenta simula a perda de contratos de alta relevância simultaneamente para verificar a capacidade de resposta das estratégias de Customer Success.
+            </p>
+            <div className="flex gap-2">
+              {!activeModel ? (
+                <div className="text-xs text-amber-500 font-semibold bg-amber-500/10 border border-amber-500/25 p-2 rounded-lg w-full text-center">
+                  ⚠️ É necessário realizar o treinamento do modelo na aba de Calibração antes de rodar simulações.
+                </div>
+              ) : churnSimulated ? (
+                <Button
+                  onClick={resetSimulation}
+                  disabled={isTraining}
+                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-1.5 h-9"
+                >
+                  Resetar Score e Normalizar Base
+                </Button>
+              ) : (
+                <Button
+                  onClick={triggerChurnSimulation}
+                  disabled={isTraining}
+                  className="w-full bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold py-1.5 h-9"
+                >
+                  ⚠️ Simular Churn em Massa
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <div className="p-3 bg-muted/40 border border-border/80 rounded-xl text-xs space-y-2">
+            <div className="font-bold text-foreground">Cenário de Estresse</div>
+            <div className="text-muted-foreground text-[10px]">
+              Status Atual da Simulação: <strong className={churnSimulated ? "text-rose-500 animate-pulse" : "text-emerald-500"}>{churnSimulated ? "CRÍTICO (CHURN EM MASSA SIMULADO)" : "NORMAL (LINHA DE BASE)"}</strong>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )}
+
+  {currentView === "calibration" && (
+    <div className="space-y-6 animate-in fade-in duration-300">
         {activeModel && (
           <>
             <Card className="bg-card border-border transition-colors duration-300">
@@ -481,6 +539,26 @@ export default function ChurnPage() {
 
         <CSVUploader />
       </div>
-    </div>
-  );
+    )}
+
+    {currentView === "comparison" && (
+      <div className="space-y-6 animate-in fade-in duration-300">
+        <Card className="bg-card border-border transition-colors duration-300 shadow-md">
+          <CardHeader>
+            <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
+              <Sparkles className="h-4 w-4 text-violet-500" />
+              Comparação Real vs Previsto
+            </CardTitle>
+            <CardDescription className="text-[11px] text-muted-foreground">
+              Módulo de validação de assertividade do modelo preditivo.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="py-8 text-center text-muted-foreground text-xs font-sans">
+            Esta área está reservada para o módulo de comparação entre dados reais e previsões (RF32).
+          </CardContent>
+        </Card>
+      </div>
+    )}
+  </div>
+);
 }

@@ -1,48 +1,21 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useDomain, DOMAINS, DomainType } from "@/lib/context/domain-context";
+import { useDomain, DomainType } from "@/lib/context/domain-context";
 import {
-  Wrench,
-  TrendingUp,
-  Users,
-  ShieldAlert,
-  Home,
   ChevronLeft,
   ChevronRight,
-  Database,
   ShieldCheck,
+  BarChart3,
+  Sliders,
+  Settings,
+  Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  Wrench: Wrench,
-  TrendingUp: TrendingUp,
-  Users: Users,
-  ShieldAlert: ShieldAlert,
-};
-
 export function Sidebar() {
-  const { activeDomain, initiateDomainSwitch, logs, currentUser } = useDomain();
+  const { activeDomain, logs, currentView, setCurrentView } = useDomain();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const pathname = usePathname();
-
-  const getDomainColorClass = (type: DomainType, isActive: boolean) => {
-    if (!isActive) return "text-muted-foreground hover:text-foreground hover:bg-muted/40";
-    
-    switch (type) {
-      case "maintenance":
-        return "text-amber-500 bg-amber-500/10 border-amber-500/30";
-      case "demand":
-        return "text-sky-500 bg-sky-500/10 border-sky-500/30";
-      case "churn":
-        return "text-violet-500 bg-violet-500/10 border-violet-500/30";
-      case "credit-risk":
-        return "text-emerald-500 bg-emerald-500/10 border-emerald-500/30";
-    }
-  };
 
   const getActiveDotColorClass = (type: DomainType) => {
     switch (type) {
@@ -54,12 +27,50 @@ export function Sidebar() {
         return "bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.6)]";
       case "credit-risk":
         return "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]";
+      default:
+        return "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]";
+    }
+  };
+
+  const getViewColorClass = (viewName: string) => {
+    const isViewActive = currentView === viewName;
+    if (!isViewActive) return "text-muted-foreground hover:text-foreground hover:bg-muted/40 border-transparent";
+
+    switch (activeDomain) {
+      case "maintenance":
+        return "text-amber-500 bg-amber-500/10 border-amber-500/30";
+      case "demand":
+        return "text-sky-500 bg-sky-500/10 border-sky-500/30";
+      case "churn":
+        return "text-violet-500 bg-violet-500/10 border-violet-500/30";
+      case "credit-risk":
+        return "text-emerald-500 bg-emerald-500/10 border-emerald-500/30";
+      default:
+        return "text-green-500 bg-green-500/10 border-green-500/30";
+    }
+  };
+
+  const getActiveDotClass = (viewName: string) => {
+    const isViewActive = currentView === viewName;
+    if (!isViewActive) return "bg-transparent";
+
+    switch (activeDomain) {
+      case "maintenance":
+        return "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]";
+      case "demand":
+        return "bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.6)]";
+      case "churn":
+        return "bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.6)]";
+      case "credit-risk":
+        return "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]";
+      default:
+        return "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]";
     }
   };
 
   const renderActiveDomainMetric = () => {
     if (!activeDomain) return null;
-    
+
     switch (activeDomain) {
       case "maintenance":
         return (
@@ -116,6 +127,39 @@ export function Sidebar() {
     }
   };
 
+  const viewItems = [
+    {
+      id: "monitoring",
+      name: "Painel de Monitoramento",
+      desc: "Métricas & KPIs em tempo real",
+      icon: BarChart3
+    },
+    {
+      id: "simulation",
+      name: "Sandbox de Simulação",
+      desc: activeDomain === "maintenance"
+        ? "Estressar parâmetros IoT"
+        : activeDomain === "demand"
+        ? "Simular pico de demanda"
+        : activeDomain === "churn"
+        ? "Simular cancelamento"
+        : "Estressar risco de crédito",
+      icon: Sliders
+    },
+    {
+      id: "calibration",
+      name: "Calibração do Modelo",
+      desc: "Treinamento & base CSV",
+      icon: Settings
+    },
+    {
+      id: "comparison",
+      name: "Comparação Real vs Previsto",
+      desc: "Acurácia & dados reais (RF32)",
+      icon: Sparkles
+    }
+  ];
+
   return (
     <div
       className={cn(
@@ -138,121 +182,73 @@ export function Sidebar() {
 
       {/* Nav Content */}
       <div className="p-3 space-y-6 flex-1 flex flex-col overflow-y-auto">
-        {/* Navigation Label */}
-        {!isCollapsed && (
+        {!isCollapsed && activeDomain && (
           <div className="px-3 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest animate-in fade-in duration-300">
-            Módulos Analíticos
+            Ferramentas Internas
           </div>
         )}
 
-        {/* Navigation Links */}
-        <nav className="space-y-1.5">
-          {(Object.keys(DOMAINS) as DomainType[]).map((key) => {
-            const domain = DOMAINS[key];
-            const isActive = activeDomain === key;
-            const Icon = iconMap[domain.iconName] || Database;
+        <nav className="space-y-2">
+          {activeDomain ? (
+            viewItems.map((item) => {
+              const isViewActive = currentView === item.id;
+              const Icon = item.icon;
 
-            return (
-              <button
-                key={domain.id}
-                onClick={() => initiateDomainSwitch(domain.id)}
-                className={cn(
-                  "w-full flex items-center gap-3 p-2.5 rounded-xl border border-transparent text-xs font-semibold transition-all duration-200 relative group overflow-hidden",
-                  getDomainColorClass(domain.id, isActive)
-                )}
-                title={isCollapsed ? domain.name : undefined}
-              >
-                {/* Visual hover left indicator */}
-                <div
+              if (isCollapsed) {
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setCurrentView(item.id)}
+                    className={cn(
+                      "w-full flex items-center justify-center p-2.5 rounded-xl border transition-all duration-200 relative group",
+                      getViewColorClass(item.id)
+                    )}
+                    title={item.name}
+                  >
+                    {isViewActive && (
+                      <span className="absolute top-1.5 right-1.5 flex h-1.5 w-1.5">
+                        <span className={cn("animate-ping absolute inline-flex h-full w-full rounded-full opacity-75", getActiveDotClass(item.id))} />
+                        <span className={cn("relative inline-flex rounded-full h-1.5 w-1.5", getActiveDotClass(item.id))} />
+                      </span>
+                    )}
+                    <Icon className="h-5 w-5 shrink-0" />
+                  </button>
+                );
+              }
+
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setCurrentView(item.id)}
                   className={cn(
-                    "absolute left-0 top-0 bottom-0 w-1 transition-all duration-200",
-                    isActive
-                      ? getActiveDotColorClass(domain.id)
-                      : "bg-transparent group-hover:bg-muted-foreground/45"
+                    "w-full flex items-start gap-3 p-3 rounded-xl border transition-all duration-200 text-left relative overflow-hidden group",
+                    getViewColorClass(item.id)
                   )}
-                  style={{ borderRadius: "0 4px 4px 0" }}
-                />
+                >
+                  <div className={cn(
+                    "absolute left-0 top-3 bottom-3 w-1 rounded-r-md transition-all duration-200",
+                    getActiveDotClass(item.id)
+                  )} />
 
-                <Icon className="h-4.5 w-4.5 shrink-0 ml-1" />
+                  <Icon className="h-5 w-5 shrink-0 mt-0.5" />
 
-                {!isCollapsed && (
-                  <span className="truncate animate-in fade-in slide-in-from-left-2 duration-300">
-                    {domain.name}
-                  </span>
-                )}
-
-                {/* Pulsing dot for active status (collapsed mode) */}
-                {isCollapsed && isActive && (
-                  <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
-                    <span className={cn("animate-ping absolute inline-flex h-full w-full rounded-full opacity-75", getActiveDotColorClass(domain.id))} />
-                    <span className={cn("relative inline-flex rounded-full h-2 w-2", getActiveDotColorClass(domain.id))} />
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* Separator & General Navigation */}
-        <div className="border-t border-border/80 pt-4 space-y-1.5">
-          {!isCollapsed && (
-            <div className="px-3 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest animate-in fade-in duration-300 mb-2">
-              Painel Geral
-            </div>
-          )}          <Link href="/" passHref legacyBehavior>
-            <a
-              className={cn(
-                "flex items-center gap-3 p-2.5 rounded-xl text-xs font-semibold transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-transparent relative",
-                pathname === "/" ? "text-green-500 bg-green-500/10 border-green-500/20" : ""
-              )}
-              title={isCollapsed ? "Painel Inicial" : undefined}
-            >
-              <div
-                className={cn(
-                  "absolute left-0 top-0 bottom-0 w-1 transition-all duration-200",
-                  pathname === "/"
-                    ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"
-                    : "bg-transparent"
-                )}
-                style={{ borderRadius: "0 4px 4px 0" }}
-              />
-              <Home className="h-4.5 w-4.5 shrink-0 ml-1" />
-              {!isCollapsed && (
-                <span className="truncate animate-in fade-in slide-in-from-left-2 duration-300">
-                  Painel Inicial (Home)
-                </span>
-              )}
-            </a>
-          </Link>
- 
-          {currentUser && currentUser.profileName === "Administrador" && (
-            <Link href="/admin/usuarios" passHref legacyBehavior>
-              <a
-                className={cn(
-                  "flex items-center gap-3 p-2.5 rounded-xl text-xs font-semibold transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-transparent relative",
-                  pathname.startsWith("/admin/usuarios") ? "text-green-500 bg-green-500/10 border-green-500/20" : ""
-                )}
-                title={isCollapsed ? "Gerenciar Usuários" : undefined}
-              >
-                <div
-                  className={cn(
-                    "absolute left-0 top-0 bottom-0 w-1 transition-all duration-200",
-                    pathname.startsWith("/admin/usuarios")
-                      ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"
-                      : "bg-transparent"
-                  )}
-                  style={{ borderRadius: "0 4px 4px 0" }}
-                />
-                <Users className="h-4.5 w-4.5 shrink-0 ml-1" />
-                {!isCollapsed && (
-                  <span className="truncate animate-in fade-in slide-in-from-left-2 duration-300">
-                    Gerenciar Usuários
-                  </span>
-                )}
-              </a>
-            </Link>
+                  <div className="space-y-0.5">
+                    <div className="text-xs font-bold leading-none">{item.name}</div>
+                    <div className="text-[9px] text-muted-foreground font-normal leading-none mt-1 group-hover:text-foreground/70 transition-colors">
+                      {item.desc}
+                    </div>
+                  </div>
+                </button>
+              );
+            })
+          ) : (
+            !isCollapsed && (
+              <div className="px-3 py-6 text-center text-xs text-muted-foreground">
+                Nenhum módulo selecionado. Use o menu hambúrguer para abrir um módulo analítico.
+              </div>
+            )
           )}
-        </div>
+        </nav>
       </div>
 
       {/* Footer Area: Active Module Summary Info */}

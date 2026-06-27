@@ -24,7 +24,7 @@ interface ProposalData {
 }
 
 export default function CreditRiskPage() {
-  const { addLog, isTraining, trainedModels, alertThresholds, addAlert, predictionHistory, addPredictionToHistory } = useDomain();
+  const { addLog, isTraining, trainedModels, alertThresholds, addAlert, predictionHistory, addPredictionToHistory, currentView } = useDomain();
   const activeModel = trainedModels["credit-risk"];
   const isModelObsolete = activeModel ? (Date.now() - activeModel.timestamp > 30 * 24 * 60 * 60 * 1000) : false;
   const [stressActive, setStressActive] = useState(false);
@@ -393,7 +393,9 @@ export default function CreditRiskPage() {
         </div>
       </div>
 
-      {!activeModel && (
+      {currentView === "monitoring" && (
+        <div className="space-y-6 animate-in fade-in duration-300">
+          {!activeModel && (
         <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-500 text-xs font-semibold flex items-start gap-2 animate-in fade-in duration-300 font-sans">
           <AlertCircle className="h-5 w-5 shrink-0" />
           <div>
@@ -919,9 +921,65 @@ export default function CreditRiskPage() {
           </CardContent>
         </Card>
       </div>
+    </div>
+  )}
 
-      {/* Ingestão de Dados Históricos e Diagnósticos */}
-      <div className="space-y-6">
+  {currentView === "simulation" && (
+    <div className="space-y-6 animate-in fade-in duration-300 max-w-3xl mx-auto">
+      <Card className="bg-card border-border transition-colors duration-300 shadow-md">
+        <CardHeader>
+          <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
+            <Coins className="h-4 w-4 text-emerald-500" />
+            Sandbox de Simulação de Risco de Crédito
+          </CardTitle>
+          <CardDescription className="text-[11px] text-muted-foreground">
+            Simule cenários de estresse macroeconômico e rebaixamento de ratings.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-xl space-y-3">
+            <div className="text-xs font-bold text-foreground">Preset Rápido de Teste de Estresse</div>
+            <p className="text-muted-foreground text-[11px] leading-relaxed">
+              Esta simulação simula uma retração econômica generalizada na carteira de crédito para analisar o impacto nos ratings e o risco sistemático de inadimplência (default).
+            </p>
+            <div className="flex gap-2">
+              {!activeModel ? (
+                <div className="text-xs text-amber-500 font-semibold bg-amber-500/10 border border-amber-500/25 p-2 rounded-lg w-full text-center">
+                  ⚠️ É necessário realizar o treinamento do modelo na aba de Calibração antes de rodar simulações.
+                </div>
+              ) : stressActive ? (
+                <Button
+                  onClick={resetSimulation}
+                  disabled={isTraining}
+                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-1.5 h-9"
+                >
+                  Resetar Cenário e Normalizar Base
+                </Button>
+              ) : (
+                <Button
+                  onClick={triggerStressSimulation}
+                  disabled={isTraining}
+                  className="w-full bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold py-1.5 h-9"
+                >
+                  ⚠️ Executar Teste de Estresse
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <div className="p-3 bg-muted/40 border border-border/80 rounded-xl text-xs space-y-2">
+            <div className="font-bold text-foreground">Impacto Esperado</div>
+            <div className="text-muted-foreground text-[10px]">
+              Status Atual da Simulação: <strong className={stressActive ? "text-rose-500 animate-pulse" : "text-emerald-500"}>{stressActive ? "ESTRESSADO (AVISO DE RISCO SISTEMÁTICO)" : "NORMAL (LINHA DE BASE)"}</strong>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )}
+
+  {currentView === "calibration" && (
+    <div className="space-y-6 animate-in fade-in duration-300">
         {activeModel && (
           <>
             <Card className="bg-card border-border transition-colors duration-300">
@@ -945,6 +1003,26 @@ export default function CreditRiskPage() {
 
         <CSVUploader />
       </div>
+    )}
+
+    {currentView === "comparison" && (
+      <div className="space-y-6 animate-in fade-in duration-300">
+        <Card className="bg-card border-border transition-colors duration-300 shadow-md">
+          <CardHeader>
+            <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
+              <Sparkles className="h-4 w-4 text-emerald-500" />
+              Comparação Real vs Previsto
+            </CardTitle>
+            <CardDescription className="text-[11px] text-muted-foreground">
+              Módulo de validação de assertividade do modelo preditivo.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="py-8 text-center text-muted-foreground text-xs font-sans">
+            Esta área está reservada para o módulo de comparação entre dados reais e previsões (RF32).
+          </CardContent>
+        </Card>
+      </div>
+    )}
 
       {/* Container Oculto na tela, visível apenas no Print (CA06) */}
       {predictionResult && (

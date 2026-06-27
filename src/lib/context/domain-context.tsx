@@ -234,6 +234,8 @@ interface DomainContextProps {
   selectedAlgorithms: Record<DomainType, string>;
   setSelectedAlgorithm: (domain: DomainType, algorithm: string) => void;
   trainedModelsByAlgorithm: Record<DomainType, Record<string, TrainedModel | null>>;
+  currentView: string;
+  setCurrentView: (view: string) => void;
 }
 
 const DomainContext = createContext<DomainContextProps | undefined>(undefined);
@@ -441,6 +443,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   const [activeDomain, setActiveDomain] = useState<DomainType | null>(null);
+  const [currentView, setCurrentView] = useState<string>("monitoring");
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [privacyNoticeText, setPrivacyNoticeText] = useState<string>("");
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -1665,8 +1668,10 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     const activeSegment = segments[segments.length - 1] as DomainType;
     if (activeSegment && DOMAINS[activeSegment]) {
       setActiveDomain(activeSegment);
+      setCurrentView("monitoring");
     } else if (pathname === "/") {
       setActiveDomain(null);
+      setCurrentView("monitoring");
     }
   }, [pathname]);
 
@@ -1818,6 +1823,8 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
   return (
     <DomainContext.Provider
       value={{
+        currentView,
+        setCurrentView,
         activeDomain,
         logs,
         isTransitioning,

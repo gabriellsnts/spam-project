@@ -11,7 +11,7 @@ import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveCo
 import { AlertThresholdSettings } from "@/components/shared/alert-threshold-settings";
 
 export default function DemandPage() {
-  const { addLog, isTraining, trainedModels, alertThresholds, addAlert } = useDomain();
+  const { addLog, isTraining, trainedModels, alertThresholds, addAlert, currentView } = useDomain();
   const activeModel = trainedModels["demand"];
   const isModelObsolete = activeModel ? (Date.now() - activeModel.timestamp > 30 * 24 * 60 * 60 * 1000) : false;
   const [seasonalActive, setSeasonalActive] = useState(false);
@@ -223,7 +223,9 @@ export default function DemandPage() {
         </div>
       </div>
 
-      {!activeModel && (
+      {currentView === "monitoring" && (
+        <div className="space-y-6 animate-in fade-in duration-300">
+          {!activeModel && (
         <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-500 text-xs font-semibold flex items-start gap-2 animate-in fade-in duration-300 font-sans">
           <AlertCircle className="h-5 w-5 shrink-0" />
           <div>
@@ -437,9 +439,65 @@ export default function DemandPage() {
           </CardContent>
         </Card>
       </div>
+    </div>
+  )}
 
-      {/* Ingestão de Dados Históricos e Diagnósticos */}
-      <div className="space-y-6">
+  {currentView === "simulation" && (
+    <div className="space-y-6 animate-in fade-in duration-300 max-w-3xl mx-auto">
+      <Card className="bg-card border-border transition-colors duration-300 shadow-md">
+        <CardHeader>
+          <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
+            <Calendar className="h-4 w-4 text-sky-500" />
+            Sandbox de Simulação de Demanda
+          </CardTitle>
+          <CardDescription className="text-[11px] text-muted-foreground">
+            Ajuste cenários de estresse de estoque e pico sazonal de demanda.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="p-4 bg-sky-500/5 border border-sky-500/10 rounded-xl space-y-3">
+            <div className="text-xs font-bold text-foreground">Preset Rápido de Sazonalidade</div>
+            <p className="text-muted-foreground text-[11px] leading-relaxed">
+              Simule um aumento abrupto de demanda para estressar a capacidade do seu estoque mínimo e verificar os itens sob risco de ruptura de estoque.
+            </p>
+            <div className="flex gap-2">
+              {!activeModel ? (
+                <div className="text-xs text-amber-500 font-semibold bg-amber-500/10 border border-amber-500/25 p-2 rounded-lg w-full text-center">
+                  ⚠️ É necessário realizar o treinamento do modelo na aba de Calibração antes de rodar simulações.
+                </div>
+              ) : seasonalActive ? (
+                <Button
+                  onClick={resetSimulation}
+                  disabled={isTraining}
+                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-1.5 h-9"
+                >
+                  Resetar Demanda Operacional
+                </Button>
+              ) : (
+                <Button
+                  onClick={triggerSeasonalSimulation}
+                  disabled={isTraining}
+                  className="w-full bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold py-1.5 h-9"
+                >
+                  ⚠️ Simular Pico de Demanda Sazonal
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <div className="p-3 bg-muted/40 border border-border/80 rounded-xl text-xs space-y-2">
+            <div className="font-bold text-foreground">Configurações de Parâmetros</div>
+            <div className="text-muted-foreground text-[10px]">
+              Status Atual da Simulação: <strong className={seasonalActive ? "text-sky-500" : "text-emerald-500"}>{seasonalActive ? "ATIVADO (ESTRESSE DE PICO)" : "NORMAL (LINHA DE BASE)"}</strong>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )}
+
+  {currentView === "calibration" && (
+    <div className="space-y-6 animate-in fade-in duration-300">
         {activeModel && (
           <>
             <Card className="bg-card border-border transition-colors duration-300">
@@ -463,6 +521,26 @@ export default function DemandPage() {
 
         <CSVUploader />
       </div>
-    </div>
-  );
+    )}
+
+    {currentView === "comparison" && (
+      <div className="space-y-6 animate-in fade-in duration-300">
+        <Card className="bg-card border-border transition-colors duration-300 shadow-md">
+          <CardHeader>
+            <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
+              <Sparkles className="h-4 w-4 text-sky-500" />
+              Comparação Real vs Previsto
+            </CardTitle>
+            <CardDescription className="text-[11px] text-muted-foreground">
+              Módulo de validação de assertividade do modelo preditivo.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="py-8 text-center text-muted-foreground text-xs font-sans">
+            Esta área está reservada para o módulo de comparação entre dados reais e previsões (RF32).
+          </CardContent>
+        </Card>
+      </div>
+    )}
+  </div>
+);
 }

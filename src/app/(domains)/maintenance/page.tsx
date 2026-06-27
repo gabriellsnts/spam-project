@@ -24,11 +24,10 @@ import { DescriptiveStats } from "@/components/shared/descriptive-stats";
 import { FeatureImportanceChart } from "@/components/shared/feature-importance-chart";
 import { calculateMachineRUL, BASE_RULS } from "@/lib/predictive-engine";
 import { AlertThresholdSettings } from "@/components/shared/alert-threshold-settings";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 
 export default function MaintenancePage() {
-  const { addLog, isTraining, trainedModels, alertThresholds, addAlert } = useDomain();
+  const { addLog, isTraining, trainedModels, alertThresholds, addAlert, currentView } = useDomain();
   const activeModel = trainedModels["maintenance"];
   const isModelObsolete = activeModel ? (Date.now() - activeModel.timestamp > 30 * 24 * 60 * 60 * 1000) : false;
   const [horizon, setHorizon] = useState<7 | 30 | 90>(30);
@@ -268,13 +267,6 @@ ${
     addLog("Relatório consolidado exportado para PDF via impressão.");
   };
 
-  const getActiveAlgLabel = () => {
-    const algName = activeModel ? activeModel.algorithm : "Random Forest";
-    if (algName.toLowerCase().includes("linear")) {
-      return `Calibração [Regressão Linear Ativa]`;
-    }
-    return `Calibração [Random Forest Ativo]`;
-  };
 
   const mockFeatures = [
     { name: "Vibração RMS", weight: 0.45, description: "Desgaste de rolamentos e desbalanceamento mecânico." },
@@ -318,14 +310,8 @@ ${
         </div>
       </div>
 
-      <Tabs defaultValue="monitoring" className="space-y-6">
-        <TabsList className="grid w-full max-w-2xl grid-cols-3 bg-muted border border-border rounded-xl p-1">
-          <TabsTrigger value="monitoring" className="text-xs py-2 rounded-lg">Painel de Monitoramento</TabsTrigger>
-          <TabsTrigger value="simulation" className="text-xs py-2 rounded-lg">Sandbox de Simulação</TabsTrigger>
-          <TabsTrigger value="calibration" className="text-xs py-2 rounded-lg">{getActiveAlgLabel()}</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="monitoring" className="space-y-6">
+      {currentView === "monitoring" && (
+        <div className="space-y-6 animate-in fade-in duration-300">
           {!activeModel && (
             <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-500 text-xs font-semibold flex items-start gap-2 animate-in fade-in duration-300 font-sans">
               <AlertCircle className="h-5 w-5 shrink-0" />
@@ -619,9 +605,11 @@ ${
               </Card>
             </div>
           </div>
-        </TabsContent>
+        </div>
+      )}
 
-        <TabsContent value="simulation" className="space-y-6">
+      {currentView === "simulation" && (
+        <div className="space-y-6 animate-in fade-in duration-300">
           {!activeModel && (
             <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-500 text-xs font-semibold flex items-start gap-2 animate-in fade-in duration-300 font-sans mb-6">
               <AlertCircle className="h-5 w-5 shrink-0" />
@@ -876,9 +864,11 @@ ${
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
+        </div>
+      )}
 
-        <TabsContent value="calibration" className="space-y-6">
+      {currentView === "calibration" && (
+        <div className="space-y-6 animate-in fade-in duration-300">
           {/* Card Descritivo de Modelos Estatísticos */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card className="bg-card border-border transition-colors duration-300">
@@ -951,8 +941,27 @@ ${
               activeDomain="maintenance"
             />
           )}
-        </TabsContent>
-      </Tabs>
+        </div>
+      )}
+
+      {currentView === "comparison" && (
+        <div className="space-y-6 animate-in fade-in duration-300">
+          <Card className="bg-card border-border transition-colors duration-300 shadow-md">
+            <CardHeader>
+              <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                <Sparkles className="h-4 w-4 text-amber-500" />
+                Comparação Real vs Previsto
+              </CardTitle>
+              <CardDescription className="text-[11px] text-muted-foreground">
+                Módulo de validação de assertividade do modelo preditivo.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="py-8 text-center text-muted-foreground text-xs font-sans">
+              Esta área está reservada para o módulo de comparação entre dados reais e previsões (RF32).
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
