@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { translations, LanguageType } from "@/lib/translations";
 
 export interface AuditLog {
   id: string;
@@ -58,11 +59,21 @@ export interface DomainMetadata {
   iconName: string;
 }
 
+let currentModuleLanguage: LanguageType = "pt";
+
 export const DOMAINS: Record<DomainType, DomainMetadata> = {
   "maintenance": {
     id: "maintenance",
-    name: "Manutenção de Equipamentos",
-    description: "Análise preditiva de falhas em máquinas, ciclos de vida útil e cronograma de manutenção preventiva baseada em sensores.",
+    get name() {
+      if (currentModuleLanguage === "en") return "Equipment Maintenance";
+      if (currentModuleLanguage === "es") return "Mantenimiento de Equipos";
+      return "Manutenção de Equipamentos";
+    },
+    get description() {
+      if (currentModuleLanguage === "en") return "Predictive analysis of machine failures, lifecycle, and preventive maintenance schedule based on sensors.";
+      if (currentModuleLanguage === "es") return "Análisis predictivo de fallas de máquinas, ciclo de vida y cronograma de mantenimiento preventivo basado en sensores.";
+      return "Análise preditiva de falhas em máquinas, ciclos de vida útil e cronograma de manutenção preventiva baseada em sensores.";
+    },
     color: "amber",
     accentClass: "text-amber-500 bg-amber-500/10 border-amber-500/30",
     bgGradient: "from-amber-600/20 via-zinc-900 to-zinc-950",
@@ -71,8 +82,16 @@ export const DOMAINS: Record<DomainType, DomainMetadata> = {
   },
   "demand": {
     id: "demand",
-    name: "Previsão de Demanda",
-    description: "Modelagem de séries temporais para projeção de vendas, estoques e sazonalidades com inteligência estatística.",
+    get name() {
+      if (currentModuleLanguage === "en") return "Demand Forecasting";
+      if (currentModuleLanguage === "es") return "Previsión de Demanda";
+      return "Previsão de Demanda";
+    },
+    get description() {
+      if (currentModuleLanguage === "en") return "Time series modeling for sales, inventory, and seasonality projections with statistical intelligence.";
+      if (currentModuleLanguage === "es") return "Modelado de series temporales para proyección de ventas, inventarios y estacionalidades con inteligencia estadística.";
+      return "Modelagem de séries temporais para projeção de vendas, estoques e sazonalidades com inteligência estatística.";
+    },
     color: "sky",
     accentClass: "text-sky-500 bg-sky-500/10 border-sky-500/30",
     bgGradient: "from-sky-600/20 via-zinc-900 to-zinc-950",
@@ -81,8 +100,16 @@ export const DOMAINS: Record<DomainType, DomainMetadata> = {
   },
   "churn": {
     id: "churn",
-    name: "Retenção de Clientes",
-    description: "Identificação de padrões de cancelamento, score de risco de rotatividade de clientes e ações de engajamento direcionadas.",
+    get name() {
+      if (currentModuleLanguage === "en") return "Customer Retention";
+      if (currentModuleLanguage === "es") return "Retención de Clientes";
+      return "Retenção de Clientes";
+    },
+    get description() {
+      if (currentModuleLanguage === "en") return "Identification of cancellation patterns, customer churn risk scores, and targeted engagement actions.";
+      if (currentModuleLanguage === "es") return "Identificación de patrones de cancelación, puntuación de riesgo de rotación de clientes y acciones de fidelización dirigidas.";
+      return "Identificação de padrões de cancelamento, score de risco de rotatividade de clientes e ações de engajamento direcionadas.";
+    },
     color: "violet",
     accentClass: "text-violet-500 bg-violet-500/10 border-violet-500/30",
     bgGradient: "from-violet-600/20 via-zinc-900 to-zinc-950",
@@ -91,8 +118,16 @@ export const DOMAINS: Record<DomainType, DomainMetadata> = {
   },
   "credit-risk": {
     id: "credit-risk",
-    name: "Risco de Crédito",
-    description: "Avaliação de risco de crédito de clientes, score de adimplência e análise de probabilidade de inadimplência.",
+    get name() {
+      if (currentModuleLanguage === "en") return "Credit Risk";
+      if (currentModuleLanguage === "es") return "Riesgo de Crédito";
+      return "Risco de Crédito";
+    },
+    get description() {
+      if (currentModuleLanguage === "en") return "Evaluation of customer credit risk, solvency score, and analysis of default probability.";
+      if (currentModuleLanguage === "es") return "Evaluación del riesgo crediticio de los clientes, puntuación de solvencia y análisis de la probabilidad de impago.";
+      return "Avaliação de risco de crédito de clientes, score de adimplência e análise de probabilidade de inadimplência.";
+    },
     color: "emerald",
     accentClass: "text-emerald-500 bg-emerald-500/10 border-emerald-500/30",
     bgGradient: "from-emerald-600/20 via-zinc-900 to-zinc-950",
@@ -130,6 +165,7 @@ export interface User {
   status: "ativo" | "inativo";
   passwordHash?: string;
   theme?: "light" | "dark" | "auto";
+  language?: LanguageType;
 }
 
 export interface TrainedModel {
@@ -278,6 +314,10 @@ interface DomainContextProps {
   applyCustomTheme: (theme: CustomTheme | null) => void;
   saveCustomTheme: (name: string, colors: CustomThemeColors) => void;
   deleteCustomTheme: (id: string) => void;
+  language: LanguageType;
+  setLanguage: (lang: LanguageType) => void;
+  t: (key: string) => string;
+  getDomainName: (type: DomainType) => string;
 }
 
 const DomainContext = createContext<DomainContextProps | undefined>(undefined);
@@ -534,6 +574,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<"light" | "dark" | "auto">("dark");
   const [activeCustomTheme, setActiveCustomTheme] = useState<CustomTheme | null>(null);
   const [customThemes, setCustomThemes] = useState<CustomTheme[]>([]);
+  const [language, setLanguageState] = useState<LanguageType>("pt");
   const [alertThresholds, setAlertThresholds] = useState<Record<DomainType, number>>(DEFAULT_THRESHOLDS);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [activeUtilityPanel, setActiveUtilityPanel] = useState<"alerts" | "logs" | "predictions" | "menu" | null>(null);
@@ -682,6 +723,41 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     let integrityErrorFound = false;
     const failedDomains: DomainType[] = [];
 
+    // Carregar configurações de idioma (RF54)
+    const savedLanguage = localStorage.getItem("spam-language") as LanguageType | null;
+    let finalLanguage: LanguageType = "pt";
+
+    if (savedLanguage) {
+      finalLanguage = savedLanguage;
+      currentModuleLanguage = savedLanguage;
+      setLanguageState(savedLanguage);
+    } else {
+      // Detecção automática do idioma do navegador (CA04)
+      const browserLang = navigator.language.toLowerCase();
+      if (browserLang.startsWith("en")) {
+        finalLanguage = "en";
+      } else if (browserLang.startsWith("es")) {
+        finalLanguage = "es";
+      } else {
+        finalLanguage = "pt";
+      }
+
+      localStorage.setItem("spam-language", finalLanguage);
+      currentModuleLanguage = finalLanguage;
+      setLanguageState(finalLanguage);
+
+      // Exibir toast informativo
+      const toastMsgs = {
+        pt: "Definimos seu idioma como Português Brasileiro com base nas configurações do seu navegador. Você pode alterá-lo nas configurações de perfil.",
+        en: "We set your language to English automatically based on your browser settings. You can change it at any time in your profile.",
+        es: "Hemos configurado su idioma a Español automáticamente según la configuración de su navegador. Puede cambiarlo en su perfil."
+      };
+      
+      setTimeout(() => {
+        showPremiumToast(toastMsgs[finalLanguage], "success");
+      }, 1000);
+    }
+
     // Carregar configurações de tema customizado (RF53)
     const savedCustomThemes = localStorage.getItem("spam-custom-themes");
     if (savedCustomThemes) {
@@ -722,6 +798,13 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
       try {
         initialUser = JSON.parse(savedUser);
         setCurrentUser(initialUser);
+        
+        if (initialUser && initialUser.language) {
+          finalLanguage = initialUser.language;
+          currentModuleLanguage = initialUser.language;
+          setLanguageState(initialUser.language);
+          localStorage.setItem("spam-language", initialUser.language);
+        }
       } catch (e) {
         console.error("Erro ao carregar usuário salvo:", e);
       }
@@ -1812,6 +1895,62 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     showPremiumToast("Tema removido com sucesso!", "success");
   }, []);
 
+  const t = useCallback((key: string): string => {
+    const dictionary = translations[language] as Record<string, string>;
+    if (dictionary && dictionary[key]) {
+      return dictionary[key];
+    }
+    // fallback to pt
+    const fallbackDict = translations["pt"] as Record<string, string>;
+    if (fallbackDict && fallbackDict[key]) {
+      return fallbackDict[key];
+    }
+    return key;
+  }, [language]);
+
+  const getDomainName = useCallback((type: DomainType): string => {
+    switch (type) {
+      case "maintenance":
+        return t("maintenance_name");
+      case "demand":
+        return t("demand_name");
+      case "churn":
+        return t("churn_name");
+      case "credit-risk":
+        return t("credit_risk_name");
+      default:
+        return "";
+    }
+  }, [t]);
+
+  const setLanguage = useCallback((lang: LanguageType) => {
+    setLanguageState(lang);
+    currentModuleLanguage = lang;
+    localStorage.setItem("spam-language", lang);
+
+    // Salvar preferência de idioma no perfil de usuário logado (CA03)
+    if (currentUser) {
+      const updatedUser = { ...currentUser, language: lang };
+      setCurrentUser(updatedUser);
+      sessionStorage.setItem("spam-user", JSON.stringify(updatedUser));
+
+      setUsers((prevUsers) => {
+        const nextUsers = prevUsers.map((u) => 
+          u.username === currentUser.username ? { ...u, language: lang } : u
+        );
+        localStorage.setItem("spam-users", JSON.stringify(nextUsers));
+        return nextUsers;
+      });
+    }
+
+    const logMsgs = {
+      pt: `Idioma alterado para Português.`,
+      en: `Language changed to English.`,
+      es: `Idioma cambiado a Español.`
+    };
+    addLogWithProfile(userProfile, logMsgs[lang] || `Idioma alterado para ${lang}`);
+  }, [currentUser, userProfile, addLogWithProfile, setUsers]);
+
   const toggleTheme = useCallback(() => {
     setThemeState((prev) => {
       let next: "light" | "dark" | "auto" = "dark";
@@ -2240,6 +2379,10 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         applyCustomTheme,
         saveCustomTheme,
         deleteCustomTheme,
+        language,
+        setLanguage,
+        t,
+        getDomainName,
       }}
     >
       {children}

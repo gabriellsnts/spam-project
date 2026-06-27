@@ -6,15 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { 
   Paintbrush, 
-  Check, 
   Trash2, 
   RotateCcw, 
   Sparkles, 
   ShieldAlert, 
   Eye, 
   Save, 
-  CheckCircle,
-  Play
+  CheckCircle
 } from "lucide-react";
 
 // Helpers para Cálculo de Acessibilidade WCAG 2.1
@@ -89,9 +87,7 @@ const PRESETS = [
       alert: "#b91c1c",   // Dark Red
     }
   }
-];
-
-export function ThemeCustomizer() {
+];export function ThemeCustomizer() {
   const {
     activeCustomTheme,
     customThemes,
@@ -99,8 +95,9 @@ export function ThemeCustomizer() {
     saveCustomTheme,
     deleteCustomTheme,
     addLog,
-    currentUser,
-    theme: systemMode
+    theme: systemMode,
+    t,
+    language
   } = useDomain();
 
   // Estados locais para inputs em tempo real (CA01 & CA03)
@@ -118,7 +115,6 @@ export function ThemeCustomizer() {
 
   // Atualizador individual de cor
   const handleColorChange = (key: keyof CustomThemeColors, value: string) => {
-    // Validar se é hex válido
     let cleanVal = value;
     if (!value.startsWith("#") && value.length <= 7) {
       cleanVal = "#" + value;
@@ -129,9 +125,6 @@ export function ThemeCustomizer() {
     }));
   };
 
-  // Aplicação provisória na prévia é instantânea através dos estados locais.
-  // Para refletir em toda a aplicação (CA02) ou salvar definitamente,
-  // criamos estilos inline dinâmicos para a seção de PREVIEW.
   const previewStyle = {
     "--preview-primary": colors.primary,
     "--preview-success": colors.success,
@@ -139,36 +132,42 @@ export function ThemeCustomizer() {
   } as React.CSSProperties;
 
   // Cálculos de acessibilidade WCAG 2.1 (CA04)
-  // Cenário: Fundo escuro (#09090b) ou fundo claro (#ffffff)
   const isDarkBg = systemMode === "dark" || (systemMode === "auto" && typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches);
   const bgColor = isDarkBg ? "#09090b" : "#ffffff";
-  const textColor = isDarkBg ? "#ffffff" : "#09090b";
 
   // Calcular contrastes
   const primaryTextContrast = getContrastRatio(colors.primary, bgColor);
   const successTextContrast = getContrastRatio(colors.success, bgColor);
   const alertTextContrast = getContrastRatio(colors.alert, bgColor);
 
-  const primaryBtnContrast = getContrastRatio(colors.primary, "#ffffff");
-  const successBtnContrast = getContrastRatio(colors.success, "#ffffff");
-  const alertBtnContrast = getContrastRatio(colors.alert, "#ffffff");
-
   // Combinações reprovadas (< 4.5:1)
   const accessibilityWarnings: string[] = [];
 
   if (primaryTextContrast < 4.5) {
     accessibilityWarnings.push(
-      `Destaque/Primária possui baixo contraste em textos contra o fundo ${isDarkBg ? 'escuro' : 'claro'} (${primaryTextContrast.toFixed(2)}:1). Mínimo exigido: 4.5:1.`
+      language === "en"
+        ? `Highlight/Primary color has low contrast on text against the ${isDarkBg ? 'dark' : 'light'} background (${primaryTextContrast.toFixed(2)}:1). Minimum required: 4.5:1.`
+        : language === "es"
+        ? `El color de Destaque/Primario tiene bajo contraste en textos contra el fondo ${isDarkBg ? 'oscuro' : 'claro'} (${primaryTextContrast.toFixed(2)}:1). Mínimo requerido: 4.5:1.`
+        : `Destaque/Primária possui baixo contraste em textos contra o fundo ${isDarkBg ? 'escuro' : 'claro'} (${primaryTextContrast.toFixed(2)}:1). Mínimo exigido: 4.5:1.`
     );
   }
   if (successTextContrast < 4.5) {
     accessibilityWarnings.push(
-      `Sucesso possui baixo contraste em textos contra o fundo ${isDarkBg ? 'escuro' : 'claro'} (${successTextContrast.toFixed(2)}:1). Mínimo exigido: 4.5:1.`
+      language === "en"
+        ? `Success color has low contrast on text against the ${isDarkBg ? 'dark' : 'light'} background (${successTextContrast.toFixed(2)}:1). Minimum required: 4.5:1.`
+        : language === "es"
+        ? `El color de Éxito tiene bajo contraste en textos contra el fondo ${isDarkBg ? 'oscuro' : 'claro'} (${successTextContrast.toFixed(2)}:1). Mínimo requerido: 4.5:1.`
+        : `Sucesso possui baixo contraste em textos contra o fundo ${isDarkBg ? 'escuro' : 'claro'} (${successTextContrast.toFixed(2)}:1). Mínimo exigido: 4.5:1.`
     );
   }
   if (alertTextContrast < 4.5) {
     accessibilityWarnings.push(
-      `Alerta possui baixo contraste em textos contra o fundo ${isDarkBg ? 'escuro' : 'claro'} (${alertTextContrast.toFixed(2)}:1). Mínimo exigido: 4.5:1.`
+      language === "en"
+        ? `Alert color has low contrast on text against the ${isDarkBg ? 'dark' : 'light'} background (${alertTextContrast.toFixed(2)}:1). Minimum required: 4.5:1.`
+        : language === "es"
+        ? `El color de Alerta tiene bajo contraste en textos contra el fondo ${isDarkBg ? 'oscuro' : 'claro'} (${alertTextContrast.toFixed(2)}:1). Mínimo requerido: 4.5:1.`
+        : `Alerta possui baixo contraste em textos contra o fundo ${isDarkBg ? 'escuro' : 'claro'} (${alertTextContrast.toFixed(2)}:1). Mínimo exigido: 4.5:1.`
     );
   }
 
@@ -196,7 +195,13 @@ export function ThemeCustomizer() {
 
   const handleSaveAndApply = () => {
     if (!themeName.trim()) {
-      alert("Por favor, digite um nome identificador para salvar o tema.");
+      alert(
+        language === "en"
+          ? "Please enter an identifying name to save the theme."
+          : language === "es"
+          ? "Por favor, introduzca un nombre identificador para guardar el tema."
+          : "Por favor, digite um nome identificador para salvar o tema."
+      );
       return;
     }
 
@@ -204,7 +209,7 @@ export function ThemeCustomizer() {
     
     // Auto-aplicar
     const savedTheme: CustomTheme = {
-      id: `theme-temp`, // Será sobrescrito pelo ID real na lista
+      id: `theme-temp`,
       name: themeName,
       colors
     };
@@ -221,7 +226,6 @@ export function ThemeCustomizer() {
     addLog(`[Theme Restored] Configurações visuais redefinidas para o tema padrão do sistema.`);
   };
 
-  // Carregar Preset (Modo Demo)
   const handleLoadPreset = (presetName: string, presetColors: CustomThemeColors) => {
     setColors(presetColors);
     const activeTheme: CustomTheme = {
@@ -244,10 +248,14 @@ export function ThemeCustomizer() {
           <CardHeader>
             <CardTitle className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
               <Paintbrush className="h-4.5 w-4.5 text-emerald-500" />
-              Seleção de Cores
+              {language === "en" ? "Color Selection" : language === "es" ? "Selección de Colores" : "Seleção de Cores"}
             </CardTitle>
             <CardDescription className="text-xs text-slate-700 dark:text-zinc-500">
-              Escolha as cores corporativas utilizando os seletores visuais ou inserindo códigos hexadecimais.
+              {language === "en" 
+                ? "Choose corporate colors using visual pickers or entering hexadecimal codes." 
+                : language === "es" 
+                ? "Elija los colores corporativos usando los selectores visuales o ingresando códigos hexadecimales." 
+                : "Escolha as cores corporativas utilizando os seletores visuais ou inserindo códigos hexadecimais."}
             </CardDescription>
           </CardHeader>
           
@@ -255,7 +263,7 @@ export function ThemeCustomizer() {
             {/* Cor de Destaque / Primária */}
             <div className="space-y-2">
               <label className="text-xs font-bold text-slate-750 dark:text-zinc-300 block">
-                Cor de Destaque (Primária)
+                {language === "en" ? "Highlight Color (Primary)" : language === "es" ? "Color de Destaque (Primario)" : "Cor de Destaque (Primária)"}
               </label>
               <div className="flex gap-2">
                 <input 
@@ -276,8 +284,8 @@ export function ThemeCustomizer() {
 
             {/* Cor de Sucesso */}
             <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-750 dark:text-zinc-300 block">
-                Cor de Sucesso
+              <label className="text-xs font-bold text-slate-755 dark:text-zinc-300 block">
+                {language === "en" ? "Success Color" : language === "es" ? "Color de Éxito" : "Cor de Sucesso"}
               </label>
               <div className="flex gap-2">
                 <input 
@@ -298,8 +306,8 @@ export function ThemeCustomizer() {
 
             {/* Cor de Alerta */}
             <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-750 dark:text-zinc-300 block">
-                Cor de Alerta Crítico
+              <label className="text-xs font-bold text-slate-755 dark:text-zinc-300 block">
+                {language === "en" ? "Critical Alert Color" : language === "es" ? "Color de Alerta Crítico" : "Cor de Alerta Crítico"}
               </label>
               <div className="flex gap-2">
                 <input 
@@ -322,9 +330,9 @@ export function ThemeCustomizer() {
             <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800/60 flex flex-col gap-2">
               <Button 
                 onClick={handleApplyTheme}
-                className="w-full text-xs py-2 bg-zinc-900 dark:bg-zinc-950 text-foreground border border-border/80 hover:bg-zinc-800 dark:hover:bg-zinc-900 font-bold"
+                className="w-full text-xs py-2 bg-zinc-900 dark:bg-zinc-955 text-foreground border border-border/80 hover:bg-zinc-850 dark:hover:bg-zinc-900 font-bold"
               >
-                Aplicar na Sessão Global
+                {language === "en" ? "Apply to Global Session" : language === "es" ? "Aplicar en la Sesión Global" : "Aplicar na Sessão Global"}
               </Button>
               <Button 
                 variant="ghost"
@@ -332,7 +340,7 @@ export function ThemeCustomizer() {
                 className="w-full text-xs text-rose-500 hover:text-rose-400 hover:bg-rose-500/5 flex items-center justify-center gap-1 font-bold"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
-                Restaurar Padrão do Sistema
+                {t("restore_default")}
               </Button>
             </div>
           </CardContent>
@@ -343,10 +351,14 @@ export function ThemeCustomizer() {
           <CardHeader>
             <CardTitle className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
               <Eye className="h-4.5 w-4.5 text-emerald-500" />
-              Prévia Interativa do Branding
+              {language === "en" ? "Interactive Branding Preview" : language === "es" ? "Vista Previa Interactiva de Marca" : "Prévia Interativa do Branding"}
             </CardTitle>
             <CardDescription className="text-xs text-slate-700 dark:text-zinc-500">
-              Veja em tempo real como as cores selecionadas afetam os elementos visuais chaves do painel.
+              {language === "en" 
+                ? "See in real-time how the selected colors affect the key visual elements of the dashboard." 
+                : language === "es" 
+                ? "Vea en tiempo real cómo los colores seleccionados afectan los elementos visuales clave del panel." 
+                : "Veja em tempo real como as cores selecionadas afetam os elementos visuais chaves do painel."}
             </CardDescription>
           </CardHeader>
           
@@ -376,7 +388,7 @@ export function ThemeCustomizer() {
                     }}
                     className="px-2 py-0.5 rounded-full border text-[9px] font-bold"
                   >
-                    Treinamento Ativo
+                    {language === "en" ? "Active Training" : language === "es" ? "Entrenamiento Activo" : "Treinamento Ativo"}
                   </span>
                 </div>
               </div>
@@ -386,7 +398,7 @@ export function ThemeCustomizer() {
                 {/* Sucesso Card */}
                 <div className="border border-border/80 bg-background/50 p-3 rounded-xl space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-[10px] text-muted-foreground font-semibold">Integridade do Modelo</span>
+                    <span className="text-[10px] text-muted-foreground font-semibold">{language === "en" ? "Model Integrity" : language === "es" ? "Integridad del Modelo" : "Integridade do Modelo"}</span>
                     <span 
                       style={{ 
                         color: "var(--preview-success)",
@@ -395,13 +407,13 @@ export function ThemeCustomizer() {
                       }}
                       className="px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border"
                     >
-                      Estável
+                      {language === "en" ? "Stable" : language === "es" ? "Estable" : "Estável"}
                     </span>
                   </div>
                   <div className="flex items-baseline gap-1.5 mt-1">
                     <span className="text-lg font-black text-foreground">98.4%</span>
                     <span className="text-[9px] text-emerald-500 font-semibold flex items-center gap-0.5">
-                      ✓ Aprovado
+                      {language === "en" ? "✓ Passed" : language === "es" ? "✓ Aprobado" : "✓ Aprovado"}
                     </span>
                   </div>
                   <div 
@@ -418,7 +430,7 @@ export function ThemeCustomizer() {
                 {/* Alerta Card */}
                 <div className="border border-border/80 bg-background/50 p-3 rounded-xl space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-[10px] text-muted-foreground font-semibold">Métricas de Alerta</span>
+                    <span className="text-[10px] text-muted-foreground font-semibold">{language === "en" ? "Alert Metrics" : language === "es" ? "Métricas de Alerta" : "Métricas de Alerta"}</span>
                     <span 
                       style={{ 
                         color: "var(--preview-alert)",
@@ -427,7 +439,7 @@ export function ThemeCustomizer() {
                       }}
                       className="px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border"
                     >
-                      Crítico
+                      {language === "en" ? "Critical" : language === "es" ? "Crítico" : "Crítico"}
                     </span>
                   </div>
                   <div className="flex items-baseline gap-1.5 mt-1">
@@ -436,7 +448,7 @@ export function ThemeCustomizer() {
                       style={{ color: "var(--preview-alert)" }}
                       className="text-[9px] font-bold animate-pulse"
                     >
-                      ⚠ Risco Alto
+                      {language === "en" ? "⚠ High Risk" : language === "es" ? "⚠ Riesgo Alto" : "⚠ Risco Alto"}
                     </span>
                   </div>
                   <div 
@@ -460,7 +472,7 @@ export function ThemeCustomizer() {
                   }}
                   className="flex-1 py-1.5 rounded-lg text-white font-bold text-[10px] transition-transform active:scale-95 text-center"
                 >
-                  Botão de Destaque
+                  {language === "en" ? "Highlight Button" : language === "es" ? "Botón de Destaque" : "Botão de Destaque"}
                 </button>
                 <button 
                   style={{ 
@@ -470,7 +482,7 @@ export function ThemeCustomizer() {
                   }}
                   className="flex-1 py-1.5 rounded-lg border text-[10px] font-bold text-center"
                 >
-                  Secundário
+                  {language === "en" ? "Secondary" : language === "es" ? "Secundario" : "Secundário"}
                 </button>
               </div>
             </div>
@@ -479,27 +491,27 @@ export function ThemeCustomizer() {
             <div className="border border-border/60 dark:border-zinc-800/60 rounded-xl p-3.5 bg-muted/20 space-y-3">
               <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
                 <ShieldAlert className="h-4 w-4 text-amber-500" />
-                Validador de Acessibilidade (WCAG 2.1 AA)
+                {t("accessibility_check")}
               </h4>
               
               {/* Tabela de Contrasto Ratios */}
               <div className="grid grid-cols-3 gap-2.5 text-[10px]">
                 <div className="p-2 rounded-lg bg-background border border-border flex flex-col justify-center min-w-0">
-                  <span className="text-muted-foreground font-semibold truncate">Destaque vs Fundo</span>
+                  <span className="text-muted-foreground font-semibold truncate">{language === "en" ? "Highlight vs Bg" : language === "es" ? "Destaque vs Fondo" : "Destaque vs Fundo"}</span>
                   <span className={`text-xs font-black mt-0.5 ${primaryTextContrast >= 4.5 ? 'text-emerald-500' : 'text-amber-500 font-bold'}`}>
-                    {primaryTextContrast.toFixed(2)}:1 ({primaryTextContrast >= 4.5 ? 'Aprovado' : 'Atenção'})
+                    {primaryTextContrast.toFixed(2)}:1 ({primaryTextContrast >= 4.5 ? (language === "en" ? "Passed" : language === "es" ? "Aprobado" : "Aprovado") : (language === "en" ? "Attention" : language === "es" ? "Atención" : "Atenção")})
                   </span>
                 </div>
                 <div className="p-2 rounded-lg bg-background border border-border flex flex-col justify-center min-w-0">
-                  <span className="text-muted-foreground font-semibold truncate">Sucesso vs Fundo</span>
+                  <span className="text-muted-foreground font-semibold truncate">{language === "en" ? "Success vs Bg" : language === "es" ? "Éxito vs Fondo" : "Sucesso vs Fundo"}</span>
                   <span className={`text-xs font-black mt-0.5 ${successTextContrast >= 4.5 ? 'text-emerald-500' : 'text-amber-500 font-bold'}`}>
-                    {successTextContrast.toFixed(2)}:1 ({successTextContrast >= 4.5 ? 'Aprovado' : 'Atenção'})
+                    {successTextContrast.toFixed(2)}:1 ({successTextContrast >= 4.5 ? (language === "en" ? "Passed" : language === "es" ? "Aprobado" : "Aprovado") : (language === "en" ? "Attention" : language === "es" ? "Atención" : "Atenção")})
                   </span>
                 </div>
                 <div className="p-2 rounded-lg bg-background border border-border flex flex-col justify-center min-w-0">
-                  <span className="text-muted-foreground font-semibold truncate">Alerta vs Fundo</span>
-                  <span className={`text-xs font-black mt-0.5 ${alertTextContrast >= 4.5 ? 'text-emerald-500' : 'text-amber-500'}`}>
-                    {alertTextContrast.toFixed(2)}:1 ({alertTextContrast >= 4.5 ? 'Aprovado' : 'Atenção'})
+                  <span className="text-muted-foreground font-semibold truncate">{language === "en" ? "Alert vs Bg" : language === "es" ? "Alerta vs Fondo" : "Alerta vs Fundo"}</span>
+                  <span className={`text-xs font-black mt-0.5 ${alertTextContrast >= 4.5 ? 'text-emerald-500' : 'text-amber-500 font-bold'}`}>
+                    {alertTextContrast.toFixed(2)}:1 ({alertTextContrast >= 4.5 ? (language === "en" ? "Passed" : language === "es" ? "Aprobado" : "Aprovado") : (language === "en" ? "Attention" : language === "es" ? "Atención" : "Atenção")})
                   </span>
                 </div>
               </div>
@@ -517,7 +529,13 @@ export function ThemeCustomizer() {
               ) : (
                 <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/20 text-[10px] text-emerald-400 font-bold rounded-lg flex items-center gap-1.5">
                   <CheckCircle className="h-4 w-4 text-emerald-500 shrink-0" />
-                  <span>Todas as cores atendem perfeitamente aos critérios de contraste exigidos pela WCAG 2.1 (AA).</span>
+                  <span>
+                    {language === "en"
+                      ? "All colors perfectly meet the contrast ratio requirements of WCAG 2.1 (AA)."
+                      : language === "es"
+                      ? "Todos los colores cumplen perfectamente con los requisitos de contraste de la norma WCAG 2.1 (AA)."
+                      : "Todas as cores atendem perfeitamente aos critérios de contraste exigidos pela WCAG 2.1 (AA)."}
+                  </span>
                 </div>
               )}
             </div>
@@ -530,10 +548,14 @@ export function ThemeCustomizer() {
         <CardHeader className="border-b border-zinc-200/50 dark:border-zinc-800/50 pb-4">
           <CardTitle className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
             <Save className="h-4.5 w-4.5 text-emerald-500" />
-            Temas Salvos e Presets
+            {language === "en" ? "Saved Themes and Presets" : language === "es" ? "Temas Guardados y Presets" : "Temas Salvos e Presets"}
           </CardTitle>
           <CardDescription className="text-xs text-slate-700 dark:text-zinc-500">
-            Crie novos temas corporativos ou escolha um preset pré-configurado do Modo Demo para testes rápidos.
+            {language === "en"
+              ? "Create new corporate themes or choose a pre-configured preset from Demo Mode for quick testing."
+              : language === "es"
+              ? "Cree nuevos temas corporativos o elija un preset preconfigurado del Modo Demo para pruebas rápidas."
+              : "Crie novos temas corporativos ou escolha um preset pré-configurado do Modo Demo para testes rápidos."}
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-5 space-y-6">
@@ -542,15 +564,15 @@ export function ThemeCustomizer() {
           <div className="flex flex-col sm:flex-row items-end gap-3.5 p-4 border border-dashed border-zinc-300 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/20 rounded-xl">
             <div className="flex-1 space-y-2 w-full">
               <label htmlFor="theme-name-input" className="text-xs font-bold text-slate-755 dark:text-zinc-300 block">
-                Nome do Tema Customizado
+                {language === "en" ? "Custom Theme Name" : language === "es" ? "Nombre del Tema Personalizado" : "Nome do Tema Customizado"}
               </label>
               <input
                 id="theme-name-input"
                 type="text"
                 value={themeName}
                 onChange={(e) => setThemeName(e.target.value)}
-                placeholder="Ex: Branding Gabriel Alimentos"
-                className="w-full text-xs bg-zinc-100 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
+                placeholder={language === "en" ? "E.g., Corporate Branding" : language === "es" ? "Ej: Marca Corporativa" : "Ex: Branding Gabriel Alimentos"}
+                className="w-full text-xs bg-zinc-100 dark:bg-zinc-955 border border-zinc-300 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
               />
             </div>
             <Button
@@ -558,7 +580,7 @@ export function ThemeCustomizer() {
               className="w-full sm:w-auto h-[38px] text-xs font-bold bg-emerald-600 hover:bg-emerald-555 text-white flex items-center justify-center gap-1.5 rounded-xl px-6 cursor-pointer shrink-0 shadow-lg"
             >
               <Save className="h-3.5 w-3.5" />
-              Salvar e Ativar Tema
+              {language === "en" ? "Save and Activate" : language === "es" ? "Guardar y Activar" : "Salvar e Ativar Tema"}
             </Button>
           </div>
 
@@ -567,12 +589,12 @@ export function ThemeCustomizer() {
             {/* Listagem de Temas Salvos pelo Admin */}
             <div className="space-y-3">
               <h4 className="text-xs font-bold text-slate-900 dark:text-zinc-200">
-                Temas Personalizados Salvos ({customThemes.length})
+                {language === "en" ? "Saved Custom Themes" : language === "es" ? "Temas Personalizados Guardados" : "Temas Personalizados Salvos"} ({customThemes.length})
               </h4>
               
               {customThemes.length === 0 ? (
                 <div className="p-6 text-center text-xs text-muted-foreground border border-border/60 rounded-xl bg-zinc-100/10">
-                  Nenhum tema personalizado salvo até o momento.
+                  {language === "en" ? "No custom themes saved yet." : language === "es" ? "Ningún tema personalizado guardado hasta el momento." : "Nenhum tema personalizado salvo até o momento."}
                 </div>
               ) : (
                 <div className="grid grid-cols-1 gap-2.5 max-h-[220px] overflow-y-auto pr-1">
@@ -590,9 +612,9 @@ export function ThemeCustomizer() {
                         <div className="flex flex-col min-w-0">
                           <span className="text-xs font-bold text-foreground truncate">{themeItem.name}</span>
                           <div className="flex gap-1.5 mt-1.5">
-                            <span style={{ backgroundColor: themeItem.colors.primary }} className="h-3.5 w-3.5 rounded-full border border-border/20 shadow-sm" title="Destaque" />
-                            <span style={{ backgroundColor: themeItem.colors.success }} className="h-3.5 w-3.5 rounded-full border border-border/20 shadow-sm" title="Sucesso" />
-                            <span style={{ backgroundColor: themeItem.colors.alert }} className="h-3.5 w-3.5 rounded-full border border-border/20 shadow-sm" title="Alerta" />
+                            <span style={{ backgroundColor: themeItem.colors.primary }} className="h-3.5 w-3.5 rounded-full border border-border/20 shadow-sm" title={language === "en" ? "Highlight" : language === "es" ? "Destaque" : "Destaque"} />
+                            <span style={{ backgroundColor: themeItem.colors.success }} className="h-3.5 w-3.5 rounded-full border border-border/20 shadow-sm" title={language === "en" ? "Success" : language === "es" ? "Éxito" : "Sucesso"} />
+                            <span style={{ backgroundColor: themeItem.colors.alert }} className="h-3.5 w-3.5 rounded-full border border-border/20 shadow-sm" title={language === "en" ? "Alert" : language === "es" ? "Alerta" : "Alerta"} />
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -606,14 +628,16 @@ export function ThemeCustomizer() {
                                 : "bg-zinc-900 hover:bg-zinc-800 text-foreground"
                             }`}
                           >
-                            {isActive ? "Ativo" : "Ativar"}
+                            {isActive 
+                              ? (language === "en" ? "Active" : language === "es" ? "Activo" : "Ativo") 
+                              : (language === "en" ? "Activate" : language === "es" ? "Activar" : "Ativar")}
                           </Button>
                           <Button
                             size="icon"
                             variant="ghost"
                             onClick={() => deleteCustomTheme(themeItem.id)}
                             className="h-7 w-7 text-zinc-500 hover:text-rose-500 hover:bg-rose-550/10"
-                            title="Excluir Tema"
+                            title={language === "en" ? "Delete Theme" : language === "es" ? "Eliminar Tema" : "Excluir Tema"}
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>
@@ -629,7 +653,7 @@ export function ThemeCustomizer() {
             <div className="space-y-3">
               <h4 className="text-xs font-bold text-slate-900 dark:text-zinc-200 flex items-center gap-1.5">
                 <Sparkles className="h-4 w-4 text-emerald-500" />
-                Presets Corporativos (Modo Demo)
+                {language === "en" ? "Corporate Presets (Demo Mode)" : language === "es" ? "Presets Corporativos (Modo Demo)" : "Presets Corporativos (Modo Demo)"}
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[220px] overflow-y-auto pr-1">
                 {PRESETS.map((preset, i) => (
