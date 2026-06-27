@@ -26,3 +26,12 @@ Dificuldade: O componente Table padrão do shadcn não estava inicializado no proj
 Correção aplicada: Utilizada tabela nativa. Link para a Lixeira inserido na barra lateral com ícone respectivo.
 Melhoria de UX sugerida pela IA: Inclusão de um Toast simulado para dar feedback visual imediato ao usuário quando um item é 'restaurado' ou 'excluído', aumentando a interatividade da página estática.
 
+
+[RF55] Disponibilizar Glossário Integrado de Termos Técnicos
+
+Prompt usado: RF55 - criar rota /docs/glossary/page.tsx com lista de termos técnicos (mockados) e barra de pesquisa.
+Funcionou bem: Criação da UI usando Cards para agrupar os termos. A lógica de filtro por texto na search bar funcionou diretamente com React State (useState).
+Dificuldade: Nenhuma.
+Correção aplicada: Nenhuma necessária.
+Melhoria de UX sugerida pela IA: Adicionado um 'badge' (tag) para categorizar cada termo (Métricas, Machine Learning, Geral), facilitando a leitura rápida e organização visual.
+

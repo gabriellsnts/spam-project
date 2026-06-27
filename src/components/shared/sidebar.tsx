@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   Trash2,
   BookA,
+  Code2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -274,6 +275,32 @@ export function Sidebar() {
               {!isCollapsed && (
                 <span className="truncate animate-in fade-in slide-in-from-left-2 duration-300">
                   Glossário Técnico
+                </span>
+              )}
+            </a>
+          </Link>
+
+          <Link href="/developer/api" passHref legacyBehavior>
+            <a
+              className={cn(
+                "flex items-center gap-3 p-2.5 rounded-xl text-xs font-semibold transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-transparent relative",
+                pathname.startsWith("/developer/api") ? "text-orange-500 bg-orange-500/10 border-orange-500/20" : ""
+              )}
+              title={isCollapsed ? "API" : undefined}
+            >
+              <div
+                className={cn(
+                  "absolute left-0 top-0 bottom-0 w-1 transition-all duration-200",
+                  pathname.startsWith("/developer/api")
+                    ? "bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.6)]"
+                    : "bg-transparent"
+                )}
+                style={{ borderRadius: "0 4px 4px 0" }}
+              />
+              <Code2 className="h-4.5 w-4.5 shrink-0 ml-1" />
+              {!isCollapsed && (
+                <span className="truncate animate-in fade-in slide-in-from-left-2 duration-300">
+                  API & Integrações
                 </span>
               )}
             </a>
