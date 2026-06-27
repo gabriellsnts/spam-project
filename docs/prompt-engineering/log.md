@@ -44,3 +44,12 @@ Dificuldade: Nenhuma.
 Correção aplicada: Nenhuma.
 Melhoria de UX sugerida pela IA: Adicionado um botão 'Gerar Nova Chave' que simula um loading visual (ícone RefreshCcw com animate-spin) antes de alterar a chave na tela, dando uma percepção de ação real.
 
+
+[RF76] Exportar Resultados em Múltiplos Formatos
+
+Prompt usado: RF76 - criar componente genérico ExportDropdown com opções CSV, JSON, PDF e adicionar no header da página de risco de crédito.
+Funcionou bem: Criação do DropdownMenu baseado no shadcn/ui. Botão substituiu o botão antigo estático de exportar PDF.
+Dificuldade: Nenhuma.
+Correção aplicada: Nenhuma.
+Melhoria de UX sugerida pela IA: Adição de ícones distintos para cada formato (FileSpreadsheet, FileJson, FileText) e um micro-delay simulando o download, onde o ícone temporariamente muda para um 'Check' de sucesso antes do menu fechar/reiniciar.
+
