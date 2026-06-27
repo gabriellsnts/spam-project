@@ -6,7 +6,8 @@ import { useDomain, DomainType } from "@/lib/context/domain-context";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserManagement } from "@/components/shared/user-management";
-import { Sun, Moon, Laptop, Shield, User as UserIcon, Calendar, Building, Tag, Mail, Settings, Play } from "lucide-react";
+import { ThemeCustomizer } from "@/components/shared/theme-customizer";
+import { Sun, Moon, Laptop, Shield, User as UserIcon, Calendar, Building, Tag, Mail, Settings, Play, Paintbrush } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function ProfilePage() {
@@ -110,6 +111,15 @@ export default function ProfilePage() {
               >
                 <Shield className="h-4 w-4 mr-2" />
                 Gestão Administrativa
+              </TabsTrigger>
+            )}
+            {isAdmin && (
+              <TabsTrigger 
+                value="theme" 
+                className="text-xs font-semibold px-4 py-2 rounded-lg data-[state=active]:bg-zinc-850 data-[state=active]:text-emerald-400 data-[state=active]:border-zinc-700/50 data-[state=active]:shadow-sm"
+              >
+                <Paintbrush className="h-4 w-4 mr-2" />
+                Customização de Tema
               </TabsTrigger>
             )}
           </TabsList>
@@ -428,6 +438,13 @@ export default function ProfilePage() {
         {isAdmin && (
           <TabsContent value="admin" className="outline-none">
             <UserManagement />
+          </TabsContent>
+        )}
+
+        {/* Conteúdo: Customização de Tema (RF53) */}
+        {isAdmin && (
+          <TabsContent value="theme" className="outline-none">
+            <ThemeCustomizer />
           </TabsContent>
         )}
       </Tabs>

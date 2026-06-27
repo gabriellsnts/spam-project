@@ -206,3 +206,22 @@
 
 ### 3. Impacto e Resultados Técnicos (A Conclusão)
 - Otimização do tráfego de notificações via consolidação inteligente client-side, mitigando e-mails redundantes, além de plena auditoria técnica e rastreabilidade nos logs do sistema em conformidade com as regras operacionais.
+
+---
+
+## 📅 2026-06-27 — RF53 — Customização de Tema com Cores Personalizadas (Branding Corporativo e WCAG 2.1)
+### 1. Contexto e Problemática (O Problema)
+- Necessidade de customizar as cores da aplicação (destaque, sucesso, alertas) para que a interface reflita a identidade visual corporativa da organização, sem que elementos de contraste visual fiquem inelegíveis ou fora dos padrões mínimos de acessibilidade de software.
+
+### 2. Solução Proposta e Fundamentação (O Desenvolvimento)
+- Desenvolvimento do painel de customização de tema `ThemeCustomizer` sob a aba dedicada no perfil administrativo `/profile`, visível unicamente para Administradores.
+- Implementação de seletores visuais de cores (color pickers) integrados a caixas de entrada hexadecimais, com atualização de visualização em tempo real (instant preview) de componentes chaves da aplicação.
+- Criação de regras de sobrescrita e mapeamento global em `globals.css` utilizando variáveis CSS HSL injetadas no `:root` sob o atributo `data-custom-theme="true"` para reestilizar elementos contendo cores de Tailwind padrão.
+- Algoritmo de validação de legibilidade em tempo real segundo padrões de acessibilidade WCAG 2.1 (AA), medindo a proporção de contraste em tempo real contra o fundo ativo e exibindo alertas destacados em caso de desconformidade (< 4.5:1).
+- Suporte para salvar múltiplos temas personalizados no `localStorage`, exclusão e alternância ágil de temas visuais, além do botão de redefinição para restaurar os padrões visuais originais.
+- Dispositivo de Modo Demo no perfil para carga de 4 presets corporativos pré-definidos (como Tech Blue e Warm Orange).
+- Registro detalhado e rastreável de todas as ações de tema no Log de Auditoria do sistema (contendo data, hora, admin responsável e cores editadas).
+
+### 3. Impacto e Resultados Técnicos (A Conclusão)
+- Uniformidade estética em toda a aplicação sob branding corporativo sob demanda, mantendo controle rígido e auditável de acessibilidade e rastreamento em conformidade com as regras de governança visual corporativas.
+

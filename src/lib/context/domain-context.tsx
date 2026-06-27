@@ -12,6 +12,19 @@ export interface AuditLog {
   action: string;
 }
 
+export interface CustomThemeColors {
+  primary: string;
+  success: string;
+  alert: string;
+}
+
+export interface CustomTheme {
+  id: string;
+  name: string;
+  colors: CustomThemeColors;
+}
+
+
 export interface Alert {
   id: string;
   domain: DomainType;
@@ -260,6 +273,11 @@ interface DomainContextProps {
   clearSentEmails: () => void;
   showPremiumToast: (message: string, type?: "success" | "error") => void;
   simulateCriticalAlertsBatch: () => void;
+  activeCustomTheme: CustomTheme | null;
+  customThemes: CustomTheme[];
+  applyCustomTheme: (theme: CustomTheme | null) => void;
+  saveCustomTheme: (name: string, colors: CustomThemeColors) => void;
+  deleteCustomTheme: (id: string) => void;
 }
 
 const DomainContext = createContext<DomainContextProps | undefined>(undefined);
@@ -462,6 +480,45 @@ const DEFAULT_THRESHOLDS: Record<DomainType, number> = {
   "credit-risk": 60
 };
 
+// Conversor de Hexadecimal para HSL (RF53)
+function hexToHsl(hex: string): { h: number; s: number; l: number; str: string } {
+  hex = hex.replace(/^#/, '');
+  if (hex.length === 3) {
+    hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+  }
+  const r = parseInt(hex.substring(0, 2), 16) / 255;
+  const g = parseInt(hex.substring(2, 4), 16) / 255;
+  const b = parseInt(hex.substring(4, 6), 16) / 255;
+  
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h = 0;
+  let s = 0;
+  const l = (max + min) / 2;
+  
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
+    }
+    h /= 6;
+  }
+  
+  const hDeg = Math.round(h * 360);
+  const sPct = Math.round(s * 100);
+  const lPct = Math.round(l * 100);
+  
+  return {
+    h: hDeg,
+    s: sPct,
+    l: lPct,
+    str: `${hDeg} ${sPct}% ${lPct}%`
+  };
+}
+
 export function DomainProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -475,6 +532,8 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
   const [confirmSwitchOpen, setConfirmSwitchOpen] = useState(false);
   const [pendingDomain, setPendingDomain] = useState<DomainType | null>(null);
   const [theme, setThemeState] = useState<"light" | "dark" | "auto">("dark");
+  const [activeCustomTheme, setActiveCustomTheme] = useState<CustomTheme | null>(null);
+  const [customThemes, setCustomThemes] = useState<CustomTheme[]>([]);
   const [alertThresholds, setAlertThresholds] = useState<Record<DomainType, number>>(DEFAULT_THRESHOLDS);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [activeUtilityPanel, setActiveUtilityPanel] = useState<"alerts" | "logs" | "predictions" | "menu" | null>(null);
@@ -622,6 +681,40 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let integrityErrorFound = false;
     const failedDomains: DomainType[] = [];
+
+    // Carregar configurações de tema customizado (RF53)
+    const savedCustomThemes = localStorage.getItem("spam-custom-themes");
+    if (savedCustomThemes) {
+      try {
+        setCustomThemes(JSON.parse(savedCustomThemes));
+      } catch (e) {
+        console.error("Erro ao carregar temas salvos:", e);
+      }
+    }
+
+    const savedActiveCustomTheme = localStorage.getItem("spam-active-custom-theme");
+    if (savedActiveCustomTheme) {
+      try {
+        const themeObj = JSON.parse(savedActiveCustomTheme);
+        setActiveCustomTheme(themeObj);
+        
+        // Injetar variáveis CSS imediatamente para evitar flicker visual (CA02)
+        const root = window.document.documentElement;
+        root.setAttribute("data-custom-theme", "true");
+        
+        const primaryHsl = hexToHsl(themeObj.colors.primary).str;
+        const successHsl = hexToHsl(themeObj.colors.success).str;
+        const alertHsl = hexToHsl(themeObj.colors.alert).str;
+        const warningHsl = hexToHsl("#f59e0b").str;
+
+        root.style.setProperty("--theme-primary-hsl", primaryHsl);
+        root.style.setProperty("--theme-success-hsl", successHsl);
+        root.style.setProperty("--theme-alert-hsl", alertHsl);
+        root.style.setProperty("--theme-warning-hsl", warningHsl);
+      } catch (e) {
+        console.error("Erro ao carregar tema customizado ativo:", e);
+      }
+    }
 
     const savedUser = sessionStorage.getItem("spam-user");
     let initialUser: User | null = null;
@@ -1653,6 +1746,72 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     addLogWithProfile(userProfile, logMsg);
   }, [currentUser, userProfile, addLogWithProfile, setUsers]);
 
+  const applyCustomTheme = useCallback((themeObj: CustomTheme | null) => {
+    setActiveCustomTheme(themeObj);
+    const root = document.documentElement;
+    if (themeObj) {
+      localStorage.setItem("spam-active-custom-theme", JSON.stringify(themeObj));
+      root.setAttribute("data-custom-theme", "true");
+      
+      const primaryHsl = hexToHsl(themeObj.colors.primary).str;
+      const successHsl = hexToHsl(themeObj.colors.success).str;
+      const alertHsl = hexToHsl(themeObj.colors.alert).str;
+      const warningHsl = hexToHsl("#f59e0b").str;
+
+      root.style.setProperty("--theme-primary-hsl", primaryHsl);
+      root.style.setProperty("--theme-success-hsl", successHsl);
+      root.style.setProperty("--theme-alert-hsl", alertHsl);
+      root.style.setProperty("--theme-warning-hsl", warningHsl);
+    } else {
+      localStorage.removeItem("spam-active-custom-theme");
+      root.setAttribute("data-custom-theme", "false");
+      root.style.removeProperty("--theme-primary-hsl");
+      root.style.removeProperty("--theme-success-hsl");
+      root.style.removeProperty("--theme-alert-hsl");
+      root.style.removeProperty("--theme-warning-hsl");
+    }
+  }, []);
+
+  const saveCustomTheme = useCallback((name: string, colors: CustomThemeColors) => {
+    const newTheme: CustomTheme = {
+      id: `theme-${Math.random().toString(36).substring(2, 9)}`,
+      name,
+      colors
+    };
+    
+    setCustomThemes(prev => {
+      const next = [...prev.filter(t => t.name !== name), newTheme];
+      localStorage.setItem("spam-custom-themes", JSON.stringify(next));
+      return next;
+    });
+
+    showPremiumToast(`Tema "${name}" salvo com sucesso!`, "success");
+  }, []);
+
+  const deleteCustomTheme = useCallback((id: string) => {
+    setCustomThemes(prev => {
+      const next = prev.filter(t => t.id !== id);
+      localStorage.setItem("spam-custom-themes", JSON.stringify(next));
+      return next;
+    });
+    
+    setActiveCustomTheme(prev => {
+      if (prev && prev.id === id) {
+        localStorage.removeItem("spam-active-custom-theme");
+        const root = document.documentElement;
+        root.setAttribute("data-custom-theme", "false");
+        root.style.removeProperty("--theme-primary-hsl");
+        root.style.removeProperty("--theme-success-hsl");
+        root.style.removeProperty("--theme-alert-hsl");
+        root.style.removeProperty("--theme-warning-hsl");
+        return null;
+      }
+      return prev;
+    });
+
+    showPremiumToast("Tema removido com sucesso!", "success");
+  }, []);
+
   const toggleTheme = useCallback(() => {
     setThemeState((prev) => {
       let next: "light" | "dark" | "auto" = "dark";
@@ -2076,6 +2235,11 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         clearSentEmails,
         showPremiumToast,
         simulateCriticalAlertsBatch,
+        activeCustomTheme,
+        customThemes,
+        applyCustomTheme,
+        saveCustomTheme,
+        deleteCustomTheme,
       }}
     >
       {children}
