@@ -17,3 +17,12 @@ Dificuldade: Refatorar o \CreditRiskPage\ para usar o histórico global em vez do
 Correção aplicada: Para resolver o acesso aos logs, foi passado um mock de controle de role onde apenas o 'Super Admin' ou usuários nulos (deslogados) podem executar edição nas áreas críticas.
 Melhoria de UX sugerida pela IA: No painel de Previsões, cada card inclui atalho para as páginas dos domínios em vez de apenas texto, com micro-interações de destaque.
 
+
+[RF49] Recuperar Dados Excluídos Acidentalmente (Lixeira)
+
+Prompt usado: Implementação em lote (6 RFs de UI fáceis). RF49 - criar rota /admin/trash/page.tsx com tabela simulando itens excluídos e botão de restaurar.
+Funcionou bem: Criação da UI de Lixeira usando componentes do shadcn (Card, Button, Input) e Tailwind para a tabela. Rota adicionada na Sidebar.
+Dificuldade: O componente Table padrão do shadcn não estava inicializado no projeto, então optei por usar uma tabela HTML nativa estilizada com Tailwind para evitar a necessidade de rodar comandos de instalação do shadcn/ui no meio do lote.
+Correção aplicada: Utilizada tabela nativa. Link para a Lixeira inserido na barra lateral com ícone respectivo.
+Melhoria de UX sugerida pela IA: Inclusão de um Toast simulado para dar feedback visual imediato ao usuário quando um item é 'restaurado' ou 'excluído', aumentando a interatividade da página estática.
+

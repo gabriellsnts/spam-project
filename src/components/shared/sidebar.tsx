@@ -15,6 +15,7 @@ import {
   Database,
   ShieldCheck,
   Trash2,
+  BookA,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -247,6 +248,32 @@ export function Sidebar() {
               {!isCollapsed && (
                 <span className="truncate animate-in fade-in slide-in-from-left-2 duration-300">
                   Lixeira
+                </span>
+              )}
+            </a>
+          </Link>
+          
+          <Link href="/docs/glossary" passHref legacyBehavior>
+            <a
+              className={cn(
+                "flex items-center gap-3 p-2.5 rounded-xl text-xs font-semibold transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-transparent relative",
+                pathname.startsWith("/docs/glossary") ? "text-sky-500 bg-sky-500/10 border-sky-500/20" : ""
+              )}
+              title={isCollapsed ? "Glossário" : undefined}
+            >
+              <div
+                className={cn(
+                  "absolute left-0 top-0 bottom-0 w-1 transition-all duration-200",
+                  pathname.startsWith("/docs/glossary")
+                    ? "bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.6)]"
+                    : "bg-transparent"
+                )}
+                style={{ borderRadius: "0 4px 4px 0" }}
+              />
+              <BookA className="h-4.5 w-4.5 shrink-0 ml-1" />
+              {!isCollapsed && (
+                <span className="truncate animate-in fade-in slide-in-from-left-2 duration-300">
+                  Glossário Técnico
                 </span>
               )}
             </a>
