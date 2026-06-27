@@ -1,17 +1,61 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useDomain } from "@/lib/context/domain-context";
+import { useDomain, DomainType } from "@/lib/context/domain-context";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserManagement } from "@/components/shared/user-management";
-import { Sun, Moon, Laptop, Shield, User as UserIcon, Calendar, Building, Tag } from "lucide-react";
+import { Sun, Moon, Laptop, Shield, User as UserIcon, Calendar, Building, Tag, Mail, Settings, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function ProfilePage() {
-  const { currentUser, isAuthLoading, theme, setTheme } = useDomain();
+  const {
+    currentUser,
+    isAuthLoading,
+    theme,
+    setTheme,
+    emailConfig,
+    updateEmailConfig,
+    showPremiumToast,
+    simulateCriticalAlertsBatch
+  } = useDomain();
   const router = useRouter();
+
+  const [localEmail, setLocalEmail] = useState("");
+  const [localEnabledDomains, setLocalEnabledDomains] = useState<Record<DomainType, boolean>>({
+    maintenance: true,
+    demand: true,
+    churn: true,
+    "credit-risk": true
+  });
+
+  useEffect(() => {
+    if (emailConfig) {
+      setLocalEmail(emailConfig.email);
+      setLocalEnabledDomains(emailConfig.enabledDomains);
+    }
+  }, [emailConfig]);
+
+  const handleSaveEmailConfig = () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (localEmail && !emailRegex.test(localEmail)) {
+      showPremiumToast("Por favor, insira um e-mail válido.", "error");
+      return;
+    }
+    
+    updateEmailConfig({
+      email: localEmail,
+      enabledDomains: localEnabledDomains
+    });
+  };
+
+  const handleToggleDomain = (domain: DomainType, checked: boolean) => {
+    setLocalEnabledDomains(prev => ({
+      ...prev,
+      [domain]: checked
+    }));
+  };
 
   // Redireciona se não estiver logado
   useEffect(() => {
@@ -225,6 +269,154 @@ export default function ProfilePage() {
                       <div className="text-xs font-bold text-slate-900 dark:text-zinc-200">Sistema</div>
                       <div className="text-[10px] text-slate-650 dark:text-zinc-500 mt-0.5">Sincroniza com as cores do seu SO</div>
                     </div>
+                  </button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Configuração de Notificações por E-mail (RF41) */}
+            <Card className="md:col-span-3 border-zinc-200 dark:border-border/80 bg-white/70 dark:bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-xl overflow-hidden">
+              <CardHeader className="border-b border-zinc-200/50 dark:border-zinc-800/50 pb-4">
+                <CardTitle className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
+                  <Mail className="h-4.5 w-4.5 text-emerald-500" />
+                  Configuração de Notificações por E-mail
+                </CardTitle>
+                <CardDescription className="text-xs text-slate-700 dark:text-zinc-500">
+                  Configure seu e-mail para receber alertas preditivos críticos em tempo real e ative individualmente para cada domínio.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6 pb-8 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Formulário de Email */}
+                  <div className="md:col-span-1 space-y-4 flex flex-col justify-between">
+                    <div className="space-y-2">
+                      <label htmlFor="email-input" className="text-xs font-bold text-slate-750 dark:text-zinc-300 block">
+                        E-mail do Gestor
+                      </label>
+                      <input
+                        id="email-input"
+                        type="email"
+                        value={localEmail}
+                        onChange={(e) => setLocalEmail(e.target.value)}
+                        placeholder="gestor@empresa.com"
+                        className="w-full text-xs bg-zinc-100 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 focus:border-emerald-500/50"
+                      />
+                    </div>
+                    
+                    <button
+                      onClick={handleSaveEmailConfig}
+                      className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-555 text-white font-bold text-xs transition-colors shadow-lg shadow-emerald-600/10 cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      Salvar Configurações
+                    </button>
+                  </div>
+
+                  {/* Switches de Domínios */}
+                  <div className="md:col-span-2 space-y-4">
+                    <div className="text-xs font-black text-slate-750 dark:text-zinc-300 uppercase tracking-wider block">
+                      Ativação por Domínio de Origem
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* Manutenção */}
+                      <div className="flex items-center justify-between p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800/80 bg-zinc-100/40 dark:bg-zinc-950/20">
+                        <div>
+                          <div className="text-xs font-bold text-slate-900 dark:text-zinc-200 flex items-center gap-1.5">
+                            <span className="h-2 w-2 rounded-full bg-amber-500 shrink-0" />
+                            Manutenção
+                          </div>
+                          <span className="text-[10px] text-slate-650 dark:text-zinc-550 block mt-0.5">Falhas físicas e sensores</span>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={localEnabledDomains.maintenance}
+                            onChange={(e) => handleToggleDomain("maintenance", e.target.checked)}
+                            className="sr-only peer"
+                          />
+                          <div className="w-9 h-5 bg-zinc-300 dark:bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                        </label>
+                      </div>
+
+                      {/* Demanda */}
+                      <div className="flex items-center justify-between p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800/80 bg-zinc-100/40 dark:bg-zinc-950/20">
+                        <div>
+                          <div className="text-xs font-bold text-slate-900 dark:text-zinc-200 flex items-center gap-1.5">
+                            <span className="h-2 w-2 rounded-full bg-blue-500 shrink-0" />
+                            Demanda
+                          </div>
+                          <span className="text-[10px] text-slate-650 dark:text-zinc-550 block mt-0.5">Ruptura de estoque</span>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={localEnabledDomains.demand}
+                            onChange={(e) => handleToggleDomain("demand", e.target.checked)}
+                            className="sr-only peer"
+                          />
+                          <div className="w-9 h-5 bg-zinc-300 dark:bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                        </label>
+                      </div>
+
+                      {/* Churn */}
+                      <div className="flex items-center justify-between p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800/80 bg-zinc-100/40 dark:bg-zinc-950/20">
+                        <div>
+                          <div className="text-xs font-bold text-slate-900 dark:text-zinc-200 flex items-center gap-1.5">
+                            <span className="h-2 w-2 rounded-full bg-rose-500 shrink-0" />
+                            Churn de Clientes
+                          </div>
+                          <span className="text-[10px] text-slate-650 dark:text-zinc-550 block mt-0.5">Risco de cancelamento</span>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={localEnabledDomains.churn}
+                            onChange={(e) => handleToggleDomain("churn", e.target.checked)}
+                            className="sr-only peer"
+                          />
+                          <div className="w-9 h-5 bg-zinc-300 dark:bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                        </label>
+                      </div>
+
+                      {/* Crédito */}
+                      <div className="flex items-center justify-between p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800/80 bg-zinc-100/40 dark:bg-zinc-950/20">
+                        <div>
+                          <div className="text-xs font-bold text-slate-900 dark:text-zinc-200 flex items-center gap-1.5">
+                            <span className="h-2 w-2 rounded-full bg-purple-500 shrink-0" />
+                            Risco de Crédito
+                          </div>
+                          <span className="text-[10px] text-slate-650 dark:text-zinc-550 block mt-0.5">Score de crédito e inadimplência</span>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={localEnabledDomains["credit-risk"]}
+                            onChange={(e) => handleToggleDomain("credit-risk", e.target.checked)}
+                            className="sr-only peer"
+                          />
+                          <div className="w-9 h-5 bg-zinc-300 dark:bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Modo Demo */}
+                <div className="pt-6 border-t border-zinc-200 dark:border-zinc-800/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="space-y-0.5">
+                    <div className="text-xs font-bold text-slate-900 dark:text-zinc-200 flex items-center gap-2">
+                      <Settings className="h-3.5 w-3.5 text-zinc-500" />
+                      Ferramentas de Simulação (Modo Demo)
+                    </div>
+                    <p className="text-[10px] text-slate-650 dark:text-zinc-550">
+                      Gere múltiplos alertas críticos simulados para ver a regra de agrupamento consolidando o e-mail em tempo real.
+                    </p>
+                  </div>
+                  <button
+                    onClick={simulateCriticalAlertsBatch}
+                    className="px-4 py-2.5 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-700 bg-zinc-100/50 dark:bg-zinc-950/20 text-slate-700 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-250 font-bold text-xs transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Play className="h-3.5 w-3.5" />
+                    Simular Disparo Crítico em Lote
                   </button>
                 </div>
               </CardContent>

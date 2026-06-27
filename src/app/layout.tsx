@@ -5,6 +5,7 @@ import { DomainProvider } from "@/lib/context/domain-context";
 import { LoadingOverlay } from "@/components/shared/loading-overlay";
 import { ConfirmSwitchDialog } from "@/components/shared/confirm-switch-dialog";
 import { AuthGuard } from "@/components/shared/auth-guard";
+import { EmailNotificationsRenderer } from "@/components/shared/email-notifications-renderer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,6 +28,7 @@ export default function RootLayout({
           </AuthGuard>
           <LoadingOverlay />
           <ConfirmSwitchDialog />
+          <EmailNotificationsRenderer />
         </DomainProvider>
       </body>
     </html>

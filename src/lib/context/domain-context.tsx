@@ -162,6 +162,24 @@ export interface RetrainingCycle {
   testSize: number;
 }
 
+export interface EmailNotificationsConfig {
+  email: string;
+  enabledDomains: Record<DomainType, boolean>;
+}
+
+export interface SimulatedEmail {
+  id: string;
+  recipient: string;
+  domain: DomainType;
+  timestamp: number;
+  alerts: {
+    item: string;
+    value: string | number;
+    threshold: number;
+    timestamp: number;
+  }[];
+}
+
 interface DomainContextProps {
   activeDomain: DomainType | null;
   logs: AuditLog[];
@@ -236,6 +254,12 @@ interface DomainContextProps {
   trainedModelsByAlgorithm: Record<DomainType, Record<string, TrainedModel | null>>;
   currentView: string;
   setCurrentView: (view: string) => void;
+  emailConfig: EmailNotificationsConfig;
+  updateEmailConfig: (config: EmailNotificationsConfig) => void;
+  sentEmails: SimulatedEmail[];
+  clearSentEmails: () => void;
+  showPremiumToast: (message: string, type?: "success" | "error") => void;
+  simulateCriticalAlertsBatch: () => void;
 }
 
 const DomainContext = createContext<DomainContextProps | undefined>(undefined);
@@ -459,6 +483,27 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
   const [periodFilter, setPeriodFilter] = useState<"all" | "24h" | "7d" | "30d">("all");
   const isAlertsInitialized = useRef(false);
   const isPredictionHistoryInitialized = useRef(false);
+
+  // Email Notification States (RF41)
+  const [emailConfig, setEmailConfig] = useState<EmailNotificationsConfig>({
+    email: "",
+    enabledDomains: {
+      maintenance: true,
+      demand: true,
+      churn: true,
+      "credit-risk": true
+    }
+  });
+  const [sentEmails, setSentEmails] = useState<SimulatedEmail[]>([]);
+  const emailBufferRef = useRef<Record<string, {
+    alerts: {
+      item: string;
+      value: string | number;
+      threshold: number;
+      timestamp: number;
+    }[];
+    timerId: NodeJS.Timeout | null;
+  }>>({});
 
   // Auth states
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -728,6 +773,16 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
+    // Carregar configurações de e-mail (RF41)
+    const savedEmailConfig = localStorage.getItem("spam-email-notifications");
+    if (savedEmailConfig) {
+      try {
+        setEmailConfig(JSON.parse(savedEmailConfig));
+      } catch (e) {
+        console.error("Erro ao carregar configurações de e-mail:", e);
+      }
+    }
+
     // Carregar alertas
     let loadedAlerts: Alert[] = [];
     const savedAlerts = localStorage.getItem("spam-alerts");
@@ -986,6 +1041,65 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("spam-privacy-notice-text", text);
   }, []);
 
+  const queueEmailNotification = useCallback((
+    domain: DomainType,
+    alertItem: { item: string; value: string | number; threshold: number; timestamp: number }
+  ) => {
+    if (!emailConfig.email) return;
+
+    if (!emailBufferRef.current[domain]) {
+      emailBufferRef.current[domain] = {
+        alerts: [],
+        timerId: null
+      };
+    }
+
+    const buffer = emailBufferRef.current[domain];
+    buffer.alerts.push(alertItem);
+
+    if (buffer.timerId) {
+      clearTimeout(buffer.timerId);
+    }
+
+    buffer.timerId = setTimeout(() => {
+      const alertsToSend = [...buffer.alerts];
+      buffer.alerts = [];
+      buffer.timerId = null;
+
+      if (alertsToSend.length === 0) return;
+
+      const emailId = `EML-${domain.substring(0, 3).toUpperCase()}-${Math.random().toString(36).substring(2, 9).toUpperCase()}-${Date.now()}`;
+      
+      const newEmail: SimulatedEmail = {
+        id: emailId,
+        recipient: emailConfig.email,
+        domain: domain,
+        timestamp: Date.now(),
+        alerts: alertsToSend
+      };
+
+      setSentEmails(prev => [newEmail, ...prev]);
+
+      // Registrar no Log de Auditoria Técnica global do sistema (CA06)
+      const valuesStr = alertsToSend.map(a => a.value).join(", ");
+      const itemsStr = alertsToSend.map(a => a.item).join(", ");
+      
+      const newLog = {
+        id: `LOG-${Math.random().toString(36).substring(2, 9).toUpperCase()}-${Date.now()}`,
+        profile: "Sistema",
+        username: "Sistema",
+        accessProfile: "Sistema",
+        timestamp: Date.now(),
+        action: `[Email Sent] E-mail de notificação enviado para ${emailConfig.email} (Domínio: ${DOMAINS[domain].name}) contendo ${alertsToSend.length} alerta(s) crítico(s). Itens: [${itemsStr}]. Valores: [${valuesStr}].`
+      };
+      setLogs((prev) => {
+        const next = [newLog, ...prev];
+        localStorage.setItem("spam-audit-logs", JSON.stringify(next));
+        return next;
+      });
+    }, 2000);
+  }, [emailConfig.email]);
+
   const addAlert = useCallback((newAlertData: Omit<Alert, "id" | "timestamp" | "recognized">) => {
     const newAlert: Alert = {
       ...newAlertData,
@@ -999,7 +1113,68 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     // Add to Audit Logs
     const criticalityName = newAlertData.criticality === "high" ? "Alto" : "Médio";
     addLog(`[Alert Triggered] Novo alerta preditivo (${criticalityName}) no domínio '${DOMAINS[newAlertData.domain].name}': ${newAlertData.item} - Valor: ${newAlertData.value}.`);
+
+    // Interceptar alertas críticos para envio de e-mail (RF41)
+    if (newAlertData.criticality === "high" && emailConfig.email) {
+      const isEnabled = emailConfig.enabledDomains[newAlertData.domain];
+      if (isEnabled) {
+        queueEmailNotification(newAlert.domain, {
+          item: newAlert.item,
+          value: newAlert.value,
+          threshold: alertThresholds[newAlert.domain],
+          timestamp: newAlert.timestamp
+        });
+      }
+    }
+  }, [addLog, emailConfig, alertThresholds, queueEmailNotification]);
+
+  const updateEmailConfig = useCallback((config: EmailNotificationsConfig) => {
+    setEmailConfig(config);
+    localStorage.setItem("spam-email-notifications", JSON.stringify(config));
+    showPremiumToast("Configurações de e-mail salvas com sucesso!", "success");
+    addLog(`[Config Update] Configurações de notificação por e-mail atualizadas (Destinatário: ${config.email}).`);
   }, [addLog]);
+
+  const clearSentEmails = useCallback(() => {
+    setSentEmails([]);
+  }, []);
+
+  const simulateCriticalAlertsBatch = useCallback(() => {
+    if (!emailConfig.email) {
+      showPremiumToast("Por favor, configure e salve seu e-mail no perfil antes de rodar o teste.", "error");
+      return;
+    }
+
+    showPremiumToast("Disparando 3 alertas críticos fictícios simultâneos para simulação em lote...", "success");
+
+    const mockAlerts = [
+      {
+        domain: "maintenance" as DomainType,
+        item: "Turbina Hidráulica T-800",
+        value: "Vibração: 7.8 mm/s",
+        metric: "Vibração RMS",
+        criticality: "high" as const
+      },
+      {
+        domain: "maintenance" as DomainType,
+        item: "Gerador de Energia G-20",
+        value: "Temperatura: 95°C",
+        metric: "Temperatura Estator",
+        criticality: "high" as const
+      },
+      {
+        domain: "maintenance" as DomainType,
+        item: "Compressor de Ar C-10",
+        value: "Pressão: 12.4 bar",
+        metric: "Pressão Manométrica",
+        criticality: "high" as const
+      }
+    ];
+
+    mockAlerts.forEach(alert => {
+      addAlert(alert);
+    });
+  }, [addAlert, emailConfig.email]);
 
   const recognizeAlert = useCallback((id: string) => {
     setAlerts(prev => 
@@ -1895,6 +2070,12 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         selectedAlgorithms,
         setSelectedAlgorithm,
         trainedModelsByAlgorithm,
+        emailConfig,
+        updateEmailConfig,
+        sentEmails,
+        clearSentEmails,
+        showPremiumToast,
+        simulateCriticalAlertsBatch,
       }}
     >
       {children}
