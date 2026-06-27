@@ -11,6 +11,10 @@ import { FeatureImportanceChart } from "@/components/shared/feature-importance-c
 import { Input } from "@/components/ui/input";
 import { AlertThresholdSettings } from "@/components/shared/alert-threshold-settings";
 import { ComparisonView } from "@/components/shared/comparison-view";
+import { ExportDropdown } from "@/components/shared/export-dropdown";
+import { ShareAnalysisDialog } from "@/components/shared/share-analysis-dialog";
+import { ModelCertificateDialog } from "@/components/shared/model-certificate-dialog";
+import { GlossaryTooltip } from "@/components/shared/glossary-tooltip";
 
 type RiskLevel = "all" | "high" | "medium" | "low";
 
@@ -325,10 +329,7 @@ export default function CreditRiskPage() {
     }, 600);
   };
 
-  const handleExport = () => {
-    window.print();
-    addLog("Relatório consolidado exportado para PDF via impressão.");
-  };
+  // Mock para simulação da função de salvar relatório
 
   const mockFeatures = [
     { name: "Histórico de Pagamentos", weight: 0.40, description: "Frequência e atrasos em pagamentos de créditos anteriores." },
@@ -365,9 +366,17 @@ export default function CreditRiskPage() {
         </div>
 
         <div className="flex flex-col sm:flex-row items-center gap-2 relative z-10">
-          <Button variant="outline" size="sm" onClick={handleExport} className="text-xs">
-            Exportar Relatório (PDF)
-          </Button>
+          {activeModel && (
+            <ModelCertificateDialog 
+              modelId={activeModel.modelId}
+              algorithm={activeModel.algorithm}
+              accuracy={activeModel.metrics.accuracy || 0}
+              f1Score={activeModel.metrics.f1Score || 0}
+              validationDate={activeModel.timestamp ? new Date(activeModel.timestamp).toISOString() : new Date().toISOString()}
+            />
+          )}
+          <ShareAnalysisDialog />
+          <ExportDropdown data={filteredAndSortedProposals} filenamePrefix="risco_credito" />
           {!activeModel ? (
             <div className="flex items-center gap-2 text-amber-500 bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-500/20 text-xs font-semibold font-sans">
               <AlertCircle className="h-4 w-4" />
@@ -454,7 +463,7 @@ export default function CreditRiskPage() {
         <Card className="bg-card border-border transition-colors duration-300">
           <CardHeader className="pb-2">
             <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
-              Exposição de Carteira (VaR)
+              Exposição de Carteira (<GlossaryTooltip termId="3">VaR</GlossaryTooltip>)
             </CardDescription>
             <CardTitle className="text-2xl font-black text-foreground">{metrics.totalExposure}</CardTitle>
           </CardHeader>

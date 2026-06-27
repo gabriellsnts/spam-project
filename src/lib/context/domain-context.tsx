@@ -227,6 +227,24 @@ export interface SimulatedEmail {
     threshold: number;
     timestamp: number;
   }[];
+
+export type GlossaryCategory = "Geral" | "Machine Learning" | "Métricas" | "Logística" | "Previsão";
+
+export interface GlossaryTerm {
+  id: string;
+  term: string;
+  definition: string;
+  category: GlossaryCategory;
+  relatedTerms?: string[];
+}
+
+export interface TrashItem {
+  id: string;
+  name: string;
+  type: string;
+  deletedAt: string;
+  deletedBy: string;
+
 }
 
 interface DomainContextProps {
@@ -318,6 +336,19 @@ interface DomainContextProps {
   setLanguage: (lang: LanguageType) => void;
   t: (key: string) => string;
   getDomainName: (type: DomainType) => string;
+
+  // Glossary fields:
+  glossary: GlossaryTerm[];
+  addGlossaryTerm: (term: Omit<GlossaryTerm, "id">) => void;
+  updateGlossaryTerm: (id: string, term: Omit<GlossaryTerm, "id">) => void;
+  deleteGlossaryTerm: (id: string) => void;
+  getGlossaryTerm: (id: string) => GlossaryTerm | undefined;
+  // Trash fields:
+  trashItems: TrashItem[];
+  restoreTrashItems: (ids: string[]) => void;
+  deleteTrashItemsPermanently: (ids: string[]) => void;
+  emptyTrash: () => void;
+
 }
 
 const DomainContext = createContext<DomainContextProps | undefined>(undefined);
@@ -559,6 +590,27 @@ function hexToHsl(hex: string): { h: number; s: number; l: number; str: string }
   };
 }
 
+const DEFAULT_GLOSSARY: GlossaryTerm[] = [
+  { id: "1", term: "Churn Rate", definition: "A taxa de cancelamento de clientes em um determinado período. Representa a porcentagem de assinantes que deixaram de usar o serviço.", category: "Métricas", relatedTerms: ["6"] },
+  { id: "2", term: "OEE (Overall Equipment Effectiveness)", definition: "Eficiência Global do Equipamento. É uma métrica padrão ouro para medir a produtividade de manufatura, combinando Disponibilidade, Desempenho e Qualidade.", category: "Geral" },
+  { id: "3", term: "VaR (Value at Risk)", definition: "Valor em Risco. Uma medida estatística usada para quantificar o nível de risco financeiro em um portfólio, empresa ou investimento em um período específico.", category: "Métricas" },
+  { id: "4", term: "Overfitting", definition: "Quando um modelo de machine learning se ajusta muito bem aos dados de treinamento, mas perde a capacidade de generalizar para dados novos e não vistos.", category: "Machine Learning", relatedTerms: ["5"] },
+  { id: "5", term: "Underfitting", definition: "Quando um modelo é simples demais e não consegue capturar a relação subjacente nos dados de treinamento, apresentando baixa precisão tanto no treino quanto no teste.", category: "Machine Learning", relatedTerms: ["4"] },
+  { id: "6", term: "NPS (Net Promoter Score)", definition: "Métrica de lealdade do cliente que mede a disposição dos clientes em recomendar os produtos ou serviços da empresa para outros.", category: "Métricas", relatedTerms: ["1"] },
+  { id: "7", term: "Feature Engineering", definition: "Processo de usar o conhecimento do domínio para extrair características (features) dos dados brutos e melhorar o desempenho dos algoritmos de aprendizado de máquina.", category: "Machine Learning" },
+  { id: "8", term: "Data Lineage", definition: "Rastreabilidade do ciclo de vida dos dados, desde sua origem até os pontos onde são consumidos, detalhando as transformações que sofreram no caminho.", category: "Geral" },
+  { id: "9", term: "Lead Time", definition: "Tempo total gasto desde a iniciação de um processo até a sua conclusão, essencial no planejamento logístico.", category: "Logística" },
+  { id: "10", term: "Acurácia", definition: "A proporção de predições corretas em relação ao total de predições realizadas por um modelo.", category: "Métricas", relatedTerms: ["11"] },
+  { id: "11", term: "F1-Score", definition: "Média harmônica entre Precisão e Recall. Muito útil quando as classes estão desbalanceadas.", category: "Métricas", relatedTerms: ["10"] }
+];
+
+const DEFAULT_TRASH: TrashItem[] = [
+  { id: "TRASH-01", name: "Modelo Random Forest - Teste 1", type: "Modelo Preditivo", deletedAt: new Date(Date.now() - 2 * 86400000).toISOString(), deletedBy: "Administrador do Sistema" },
+  { id: "TRASH-02", name: "Relatório Financeiro Q3", type: "Arquivo CSV", deletedAt: new Date(Date.now() - 5 * 86400000).toISOString(), deletedBy: "João Silva" },
+  { id: "TRASH-03", name: "Filtro Personalizado 'Alta Evasão'", type: "Configuração", deletedAt: new Date(Date.now() - 10 * 86400000).toISOString(), deletedBy: "Administrador do Sistema" },
+];
+
+
 export function DomainProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -609,6 +661,14 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [users, setUsers] = useState<User[]>([]);
+
+  // Glossary state
+  const [glossary, setGlossary] = useState<GlossaryTerm[]>([]);
+  const isGlossaryInitialized = useRef(false);
+
+  // Trash state
+  const [trashItems, setTrashItems] = useState<TrashItem[]>([]);
+  const isTrashInitialized = useRef(false);
 
   const userProfile = currentUser ? currentUser.profileName : "Visitante";
 
@@ -967,6 +1027,41 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         loadedAlerts = JSON.parse(savedAlerts);
       } catch (e) {
         console.error("Erro ao carregar alertas:", e);
+
+    const savedGlossary = localStorage.getItem("spam-glossary");
+    if (savedGlossary) {
+      try {
+        setGlossary(JSON.parse(savedGlossary));
+      } catch (e) {
+        console.error("Erro ao carregar glossário:", e);
+        setGlossary(DEFAULT_GLOSSARY);
+      }
+    } else {
+      setGlossary(DEFAULT_GLOSSARY);
+      localStorage.setItem("spam-glossary", JSON.stringify(DEFAULT_GLOSSARY));
+    }
+    isGlossaryInitialized.current = true;
+
+    const savedTrash = localStorage.getItem("spam-trash");
+    if (savedTrash) {
+      try {
+        setTrashItems(JSON.parse(savedTrash));
+      } catch {
+        setTrashItems(DEFAULT_TRASH);
+      }
+    } else {
+      setTrashItems(DEFAULT_TRASH);
+      localStorage.setItem("spam-trash", JSON.stringify(DEFAULT_TRASH));
+    }
+    isTrashInitialized.current = true;
+
+    const savedAlerts = localStorage.getItem("spam-alerts");
+    if (savedAlerts) {
+      try {
+        setAlerts(JSON.parse(savedAlerts));
+      } catch {
+        setAlerts([]);
+
       }
     } else {
       loadedAlerts = [
@@ -1390,6 +1485,67 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     if (!isPredictionHistoryInitialized.current) return;
     localStorage.setItem("spam-prediction-history", JSON.stringify(predictionHistory));
   }, [predictionHistory]);
+
+  useEffect(() => {
+    if (!isGlossaryInitialized.current) return;
+    localStorage.setItem("spam-glossary", JSON.stringify(glossary));
+  }, [glossary]);
+
+  const addGlossaryTerm = useCallback((term: Omit<GlossaryTerm, "id">) => {
+    const newTerm: GlossaryTerm = {
+      ...term,
+      id: Math.random().toString(36).substring(2, 9).toUpperCase()
+    };
+    setGlossary(prev => {
+      const next = [...prev, newTerm].sort((a, b) => a.term.localeCompare(b.term));
+      return next;
+    });
+    addLog(`[Glossário] Novo termo adicionado: '${term.term}' na categoria '${term.category}'.`);
+  }, [addLog]);
+
+  const updateGlossaryTerm = useCallback((id: string, term: Omit<GlossaryTerm, "id">) => {
+    setGlossary(prev => {
+      const next = prev.map(t => t.id === id ? { ...t, ...term } : t);
+      return next.sort((a, b) => a.term.localeCompare(b.term));
+    });
+    addLog(`[Glossário] Termo atualizado: '${term.term}'.`);
+  }, [addLog]);
+
+  const deleteGlossaryTerm = useCallback((id: string) => {
+    let termName = "";
+    setGlossary(prev => {
+      const term = prev.find(t => t.id === id);
+      if (term) termName = term.term;
+      return prev.filter(t => t.id !== id);
+    });
+    if (termName) {
+      addLog(`[Glossário] Termo excluído permanentemente: '${termName}'.`);
+    }
+  }, [addLog]);
+
+  const getGlossaryTerm = useCallback((id: string) => {
+    return glossary.find(t => t.id === id);
+  }, [glossary]);
+
+  useEffect(() => {
+    if (!isTrashInitialized.current) return;
+    localStorage.setItem("spam-trash", JSON.stringify(trashItems));
+  }, [trashItems]);
+
+  const restoreTrashItems = useCallback((ids: string[]) => {
+    setTrashItems(prev => prev.filter(item => !ids.includes(item.id)));
+    addLog(`[Lixeira] ${ids.length} item(ns) restaurado(s) com sucesso.`);
+  }, [addLog]);
+
+  const deleteTrashItemsPermanently = useCallback((ids: string[]) => {
+    setTrashItems(prev => prev.filter(item => !ids.includes(item.id)));
+    addLog(`[Lixeira] ${ids.length} item(ns) excluído(s) permanentemente.`);
+  }, [addLog]);
+
+  const emptyTrash = useCallback(() => {
+    setTrashItems([]);
+    addLog("[Lixeira] A lixeira foi esvaziada completamente.");
+  }, [addLog]);
 
   // Synchronize alerts state to localStorage and update dashboard / health states
   useEffect(() => {
@@ -2383,6 +2539,17 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         setLanguage,
         t,
         getDomainName,
+
+        glossary,
+        addGlossaryTerm,
+        updateGlossaryTerm,
+        deleteGlossaryTerm,
+        getGlossaryTerm,
+        trashItems,
+        restoreTrashItems,
+        deleteTrashItemsPermanently,
+        emptyTrash,
+
       }}
     >
       {children}
