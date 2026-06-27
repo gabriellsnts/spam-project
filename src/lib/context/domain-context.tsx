@@ -172,6 +172,14 @@ export interface GlossaryTerm {
   relatedTerms?: string[];
 }
 
+export interface TrashItem {
+  id: string;
+  name: string;
+  type: string;
+  deletedAt: string;
+  deletedBy: string;
+}
+
 interface DomainContextProps {
   activeDomain: DomainType | null;
   logs: AuditLog[];
@@ -244,6 +252,11 @@ interface DomainContextProps {
   updateGlossaryTerm: (id: string, term: Omit<GlossaryTerm, "id">) => void;
   deleteGlossaryTerm: (id: string) => void;
   getGlossaryTerm: (id: string) => GlossaryTerm | undefined;
+  // Trash fields:
+  trashItems: TrashItem[];
+  restoreTrashItems: (ids: string[]) => void;
+  deleteTrashItemsPermanently: (ids: string[]) => void;
+  emptyTrash: () => void;
 }
 
 const DomainContext = createContext<DomainContextProps | undefined>(undefined);
@@ -383,6 +396,12 @@ const DEFAULT_GLOSSARY: GlossaryTerm[] = [
   { id: "11", term: "F1-Score", definition: "Média harmônica entre Precisão e Recall. Muito útil quando as classes estão desbalanceadas.", category: "Métricas", relatedTerms: ["10"] }
 ];
 
+const DEFAULT_TRASH: TrashItem[] = [
+  { id: "TRASH-01", name: "Modelo Random Forest - Teste 1", type: "Modelo Preditivo", deletedAt: new Date(Date.now() - 2 * 86400000).toISOString(), deletedBy: "Administrador do Sistema" },
+  { id: "TRASH-02", name: "Relatório Financeiro Q3", type: "Arquivo CSV", deletedAt: new Date(Date.now() - 5 * 86400000).toISOString(), deletedBy: "João Silva" },
+  { id: "TRASH-03", name: "Filtro Personalizado 'Alta Evasão'", type: "Configuração", deletedAt: new Date(Date.now() - 10 * 86400000).toISOString(), deletedBy: "Administrador do Sistema" },
+];
+
 export function DomainProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -411,6 +430,10 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
   // Glossary state
   const [glossary, setGlossary] = useState<GlossaryTerm[]>([]);
   const isGlossaryInitialized = useRef(false);
+
+  // Trash state
+  const [trashItems, setTrashItems] = useState<TrashItem[]>([]);
+  const isTrashInitialized = useRef(false);
 
   const userProfile = currentUser ? currentUser.profileName : "Visitante";
 
@@ -571,6 +594,19 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem("spam-glossary", JSON.stringify(DEFAULT_GLOSSARY));
     }
     isGlossaryInitialized.current = true;
+
+    const savedTrash = localStorage.getItem("spam-trash");
+    if (savedTrash) {
+      try {
+        setTrashItems(JSON.parse(savedTrash));
+      } catch (e) {
+        setTrashItems(DEFAULT_TRASH);
+      }
+    } else {
+      setTrashItems(DEFAULT_TRASH);
+      localStorage.setItem("spam-trash", JSON.stringify(DEFAULT_TRASH));
+    }
+    isTrashInitialized.current = true;
 
     const savedAlerts = localStorage.getItem("spam-alerts");
     if (savedAlerts) {
@@ -881,6 +917,26 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
   const getGlossaryTerm = useCallback((id: string) => {
     return glossary.find(t => t.id === id);
   }, [glossary]);
+
+  useEffect(() => {
+    if (!isTrashInitialized.current) return;
+    localStorage.setItem("spam-trash", JSON.stringify(trashItems));
+  }, [trashItems]);
+
+  const restoreTrashItems = useCallback((ids: string[]) => {
+    setTrashItems(prev => prev.filter(item => !ids.includes(item.id)));
+    addLog(`[Lixeira] ${ids.length} item(ns) restaurado(s) com sucesso.`);
+  }, [addLog]);
+
+  const deleteTrashItemsPermanently = useCallback((ids: string[]) => {
+    setTrashItems(prev => prev.filter(item => !ids.includes(item.id)));
+    addLog(`[Lixeira] ${ids.length} item(ns) excluído(s) permanentemente.`);
+  }, [addLog]);
+
+  const emptyTrash = useCallback(() => {
+    setTrashItems([]);
+    addLog("[Lixeira] A lixeira foi esvaziada completamente.");
+  }, [addLog]);
 
   // Synchronize alerts state to localStorage and update dashboard / health states
   useEffect(() => {
@@ -1646,6 +1702,10 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         updateGlossaryTerm,
         deleteGlossaryTerm,
         getGlossaryTerm,
+        trashItems,
+        restoreTrashItems,
+        deleteTrashItemsPermanently,
+        emptyTrash,
       }}
     >
       {children}

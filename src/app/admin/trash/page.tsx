@@ -1,176 +1,260 @@
 "use client";
 
 import React, { useState } from "react";
-import { 
-  Trash2, 
-  RefreshCcw, 
-  Search, 
-  Filter, 
-  FileText, 
-  Database, 
-  AlertCircle 
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Trash2, RotateCcw, AlertTriangle, FileWarning, CheckSquare, Square, Inbox } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-type DeletedItem = {
-  id: string;
-  name: string;
-  type: "Dataset" | "Modelo" | "Análise";
-  deletedAt: string;
-  deletedBy: string;
-  size: string;
-};
-
-const initialItems: DeletedItem[] = [
-  { id: "1", name: "base_clientes_2023_v1.csv", type: "Dataset", deletedAt: "2026-06-25T14:30:00", deletedBy: "admin@spam.com", size: "45 MB" },
-  { id: "2", name: "modelo_churn_xgb_antigo", type: "Modelo", deletedAt: "2026-06-24T09:15:00", deletedBy: "joao.silva", size: "120 MB" },
-  { id: "3", name: "relatorio_risco_q1.pdf", type: "Análise", deletedAt: "2026-06-20T16:45:00", deletedBy: "maria.souza", size: "2.4 MB" },
-  { id: "4", name: "historico_transacoes_bruto", type: "Dataset", deletedAt: "2026-06-15T11:20:00", deletedBy: "admin@spam.com", size: "1.2 GB" },
-];
+import { useDomain } from "@/lib/context/domain-context";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 
 export default function TrashPage() {
-  const [items, setItems] = useState<DeletedItem[]>(initialItems);
+  const { trashItems, restoreTrashItems, deleteTrashItemsPermanently, emptyTrash, currentUser } = useDomain();
+  
   const [search, setSearch] = useState("");
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  
+  // Modals state
+  const [isConfirmEmptyOpen, setIsConfirmEmptyOpen] = useState(false);
+  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+  
+  // Feedback toast mock state
+  const [toastMsg, setToastMsg] = useState<{title: string, desc: string, type: "success" | "error"} | null>(null);
 
-  const showToast = (message: string) => {
-    setToastMessage(message);
-    setTimeout(() => setToastMessage(null), 3000);
-  };
+  const isAdmin = currentUser?.accessProfile === "Super Admin";
 
-  const handleRestore = (id: string, name: string) => {
-    setItems(items.filter(item => item.id !== id));
-    showToast(`"${name}" foi restaurado com sucesso.`);
-  };
-
-  const handlePermanentDelete = (id: string, name: string) => {
-    if (confirm(`Tem certeza que deseja excluir permanentemente "${name}"? Esta ação não pode ser desfeita.`)) {
-      setItems(items.filter(item => item.id !== id));
-      showToast(`"${name}" foi excluído permanentemente.`);
-    }
-  };
-
-  const filteredItems = items.filter(item => 
+  const filteredItems = trashItems.filter(item => 
     item.name.toLowerCase().includes(search.toLowerCase()) || 
-    item.type.toLowerCase().includes(search.toLowerCase())
+    item.type.toLowerCase().includes(search.toLowerCase()) ||
+    item.deletedBy.toLowerCase().includes(search.toLowerCase())
   );
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case "Dataset": return <Database className="h-4 w-4 text-blue-500" />;
-      case "Modelo": return <AlertCircle className="h-4 w-4 text-purple-500" />;
-      case "Análise": return <FileText className="h-4 w-4 text-emerald-500" />;
-      default: return <FileText className="h-4 w-4" />;
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredItems.length && filteredItems.length > 0) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredItems.map(i => i.id)));
     }
+  };
+
+  const toggleSelect = (id: string) => {
+    const newSet = new Set(selectedIds);
+    if (newSet.has(id)) newSet.delete(id);
+    else newSet.add(id);
+    setSelectedIds(newSet);
+  };
+
+  const showToast = (title: string, desc: string, type: "success" | "error") => {
+    setToastMsg({ title, desc, type });
+    setTimeout(() => setToastMsg(null), 3000);
+  };
+
+  const handleRestore = (idsToRestore: string[]) => {
+    if (!isAdmin) {
+      showToast("Acesso Negado", "Apenas administradores podem restaurar itens.", "error");
+      return;
+    }
+    restoreTrashItems(idsToRestore);
+    setSelectedIds(new Set());
+    showToast("Restaurado", `${idsToRestore.length} item(ns) restaurado(s) com sucesso.`, "success");
+  };
+
+  const handlePermanentDelete = () => {
+    if (!isAdmin) return;
+    deleteTrashItemsPermanently(Array.from(selectedIds));
+    setSelectedIds(new Set());
+    setIsConfirmDeleteOpen(false);
+    showToast("Excluído", "Itens excluídos permanentemente.", "success");
+  };
+
+  const handleEmptyTrash = () => {
+    if (!isAdmin) return;
+    emptyTrash();
+    setSelectedIds(new Set());
+    setIsConfirmEmptyOpen(false);
+    showToast("Lixeira Esvaziada", "Todos os itens foram removidos.", "success");
   };
 
   return (
-    <div className="p-6 space-y-6 animate-in fade-in duration-500 max-w-7xl mx-auto">
-      {/* Fake Toast Notification */}
-      {toastMessage && (
-        <div className="fixed top-4 right-4 z-50 bg-green-600 text-white px-4 py-2 rounded-md shadow-lg flex items-center gap-2 animate-in slide-in-from-top-2">
-          <RefreshCcw className="h-4 w-4" />
-          <span className="text-sm font-medium">{toastMessage}</span>
+    <div className="p-6 max-w-5xl mx-auto space-y-6 animate-in fade-in duration-500 relative">
+      
+      {/* Toast Simulado */}
+      {toastMsg && (
+        <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-xl border flex flex-col gap-1 min-w-[250px] animate-in slide-in-from-top-5 fade-in ${
+          toastMsg.type === "success" ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-500" : "bg-rose-500/10 border-rose-500/30 text-rose-500"
+        }`}>
+          <span className="font-bold text-sm">{toastMsg.title}</span>
+          <span className="text-xs opacity-90">{toastMsg.desc}</span>
         </div>
       )}
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <Trash2 className="h-8 w-8 text-destructive" />
+            <Trash2 className="h-8 w-8 text-rose-500" />
             Lixeira
           </h1>
-          <p className="text-muted-foreground mt-1">
-            Gerencie e recupere dados, modelos ou análises excluídos acidentalmente. Itens são mantidos por 30 dias.
+          <p className="text-muted-foreground mt-1 text-sm">
+            Itens excluídos permanecem aqui por 30 dias antes da exclusão automática definitiva.
           </p>
         </div>
-        <Button variant="outline" className="text-destructive border-destructive/30 hover:bg-destructive/10">
-          Esvaziar Lixeira
-        </Button>
+
+        {isAdmin && trashItems.length > 0 && (
+          <Button 
+            variant="destructive" 
+            className="gap-2 bg-rose-600 hover:bg-rose-700 text-white shadow-lg shadow-rose-500/20"
+            onClick={() => setIsConfirmEmptyOpen(true)}
+          >
+            <AlertTriangle className="h-4 w-4" />
+            Esvaziar Lixeira
+          </Button>
+        )}
       </div>
 
-      <Card className="border-border bg-card/50 backdrop-blur">
-        <CardHeader className="pb-3 border-b border-border/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-2 w-full md:w-96">
-            <Search className="h-4 w-4 text-muted-foreground absolute ml-3" />
-            <Input 
-              placeholder="Buscar itens excluídos..." 
-              className="pl-9 bg-background/50"
+      <Card className="bg-card/40 backdrop-blur border-border/50 shadow-xl overflow-hidden">
+        <CardHeader className="border-b border-border/30 bg-muted/20 pb-4">
+          <div className="flex flex-col sm:flex-row justify-between gap-4 items-center">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2 text-foreground/80">
+              <FileWarning className="h-4 w-4 text-amber-500" />
+              Itens Retidos ({trashItems.length})
+            </CardTitle>
+            <Input
+              placeholder="Pesquisar itens excluídos..."
+              className="max-w-xs h-9 bg-background/50 border-border/50 text-xs"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <Button variant="secondary" size="sm" className="gap-2">
-            <Filter className="h-4 w-4" />
-            Filtrar
-          </Button>
+          
+          {selectedIds.size > 0 && isAdmin && (
+            <div className="mt-4 p-2 bg-sky-500/10 border border-sky-500/20 rounded-md flex items-center justify-between animate-in fade-in zoom-in-95">
+              <span className="text-xs font-semibold text-sky-500 ml-2">
+                {selectedIds.size} item(ns) selecionado(s)
+              </span>
+              <div className="flex gap-2">
+                <Button size="sm" onClick={() => handleRestore(Array.from(selectedIds))} className="h-7 text-[10px] bg-emerald-600 hover:bg-emerald-500 text-white gap-1">
+                  <RotateCcw className="h-3 w-3" /> Restaurar
+                </Button>
+                <Button size="sm" variant="destructive" onClick={() => setIsConfirmDeleteOpen(true)} className="h-7 text-[10px] bg-rose-600 hover:bg-rose-500 gap-1">
+                  <Trash2 className="h-3 w-3" /> Excluir
+                </Button>
+              </div>
+            </div>
+          )}
         </CardHeader>
         <CardContent className="p-0">
           {filteredItems.length === 0 ? (
-            <div className="p-12 text-center text-muted-foreground flex flex-col items-center">
-              <Trash2 className="h-12 w-12 mb-3 opacity-20" />
-              <p>Nenhum item encontrado na lixeira.</p>
+            <div className="py-16 text-center flex flex-col items-center justify-center">
+              <Inbox className="h-12 w-12 text-muted-foreground/30 mb-3" />
+              <p className="text-muted-foreground text-sm font-medium">Nenhum item encontrado.</p>
+              <p className="text-xs text-muted-foreground/60 mt-1">A lixeira está limpa no momento.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="text-xs text-muted-foreground uppercase bg-muted/20 border-b border-border/50">
-                  <tr>
-                    <th className="px-6 py-4 font-medium">Nome do Item</th>
-                    <th className="px-6 py-4 font-medium">Tipo</th>
-                    <th className="px-6 py-4 font-medium">Tamanho</th>
-                    <th className="px-6 py-4 font-medium">Excluído Por</th>
-                    <th className="px-6 py-4 font-medium">Data de Exclusão</th>
-                    <th className="px-6 py-4 font-medium text-right">Ações</th>
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-border/30 bg-muted/10 text-xs text-muted-foreground uppercase tracking-wider">
+                    <th className="p-4 w-12">
+                      <button onClick={toggleSelectAll} className="text-muted-foreground hover:text-foreground transition-colors">
+                        {selectedIds.size === filteredItems.length && filteredItems.length > 0 ? (
+                          <CheckSquare className="h-4 w-4 text-sky-500" />
+                        ) : (
+                          <Square className="h-4 w-4" />
+                        )}
+                      </button>
+                    </th>
+                    <th className="p-4 font-semibold">Nome do Item</th>
+                    <th className="p-4 font-semibold">Tipo</th>
+                    <th className="p-4 font-semibold">Excluído Em</th>
+                    <th className="p-4 font-semibold">Excluído Por</th>
+                    <th className="p-4 text-right font-semibold">Ações</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border/50">
-                  {filteredItems.map((item) => (
-                    <tr key={item.id} className="hover:bg-muted/10 transition-colors">
-                      <td className="px-6 py-4 font-medium text-foreground flex items-center gap-3">
-                        {getTypeIcon(item.type)}
-                        {item.name}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground">
-                          {item.type}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-muted-foreground">{item.size}</td>
-                      <td className="px-6 py-4 text-muted-foreground">{item.deletedBy}</td>
-                      <td className="px-6 py-4 text-muted-foreground">
-                        {new Date(item.deletedAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                      </td>
-                      <td className="px-6 py-4 text-right space-x-2">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="text-emerald-500 hover:text-emerald-600 hover:bg-emerald-500/10"
-                          onClick={() => handleRestore(item.id, item.name)}
-                          title="Restaurar Item"
-                        >
-                          <RefreshCcw className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                          onClick={() => handlePermanentDelete(item.id, item.name)}
-                          title="Excluir Permanentemente"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
+                <tbody className="text-sm divide-y divide-border/20">
+                  {filteredItems.map((item) => {
+                    const isSelected = selectedIds.has(item.id);
+                    return (
+                      <tr key={item.id} className={`hover:bg-muted/10 transition-colors ${isSelected ? "bg-sky-500/[0.02]" : ""}`}>
+                        <td className="p-4">
+                          <button onClick={() => toggleSelect(item.id)} className="text-muted-foreground hover:text-foreground transition-colors">
+                            {isSelected ? (
+                              <CheckSquare className="h-4 w-4 text-sky-500" />
+                            ) : (
+                              <Square className="h-4 w-4" />
+                            )}
+                          </button>
+                        </td>
+                        <td className="p-4 font-medium text-foreground">{item.name}</td>
+                        <td className="p-4 text-muted-foreground text-xs">
+                          <span className="px-2 py-1 bg-muted/50 rounded-md border border-border/50">{item.type}</span>
+                        </td>
+                        <td className="p-4 text-muted-foreground text-xs">
+                          {new Date(item.deletedAt).toLocaleDateString("pt-BR", {
+                            day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit"
+                          })}
+                        </td>
+                        <td className="p-4 text-muted-foreground text-xs">{item.deletedBy}</td>
+                        <td className="p-4 text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10"
+                              onClick={() => handleRestore([item.id])}
+                              title="Restaurar"
+                              disabled={!isAdmin}
+                            >
+                              <RotateCcw className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
           )}
         </CardContent>
       </Card>
+
+      {/* Confirm Esvaziar Modal */}
+      <Dialog open={isConfirmEmptyOpen} onOpenChange={setIsConfirmEmptyOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-rose-500">
+              <AlertTriangle className="h-5 w-5" />
+              Esvaziar Lixeira?
+            </DialogTitle>
+            <DialogDescription>
+              Esta ação removerá <strong>todos os {trashItems.length} itens</strong> da lixeira permanentemente. Não será possível recuperá-los.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setIsConfirmEmptyOpen(false)}>Cancelar</Button>
+            <Button variant="destructive" onClick={handleEmptyTrash} className="bg-rose-600 hover:bg-rose-700">Sim, Esvaziar Tudo</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirm Excluir Lote Modal */}
+      <Dialog open={isConfirmDeleteOpen} onOpenChange={setIsConfirmDeleteOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-rose-500">
+              <AlertTriangle className="h-5 w-5" />
+              Excluir Itens Selecionados?
+            </DialogTitle>
+            <DialogDescription>
+              Você está prestes a excluir <strong>{selectedIds.size} item(ns)</strong> permanentemente. Esta ação não pode ser desfeita.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setIsConfirmDeleteOpen(false)}>Cancelar</Button>
+            <Button variant="destructive" onClick={handlePermanentDelete} className="bg-rose-600 hover:bg-rose-700">Confirmar Exclusão</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
