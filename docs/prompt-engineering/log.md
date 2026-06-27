@@ -71,3 +71,12 @@ Dificuldade: Nenhuma.
 Correção aplicada: Nenhuma.
 Melhoria de UX sugerida pela IA: O botão do certificado só aparece se houver um modelo treinado e ativo, evitando estados vazios. O botão de 'Baixar PDF' já foi deixado como placeholder estrutural na UI.
 
+
+[RF55] Glossário Técnico Avançado
+
+Prompt usado: Implementar todos os CAs do RF55, incluindo CRUD no contexto global, tooltips espalhados no sistema e filtro por categorias/termos relacionados.
+Funcionou bem: Uso do contexto global para manter o estado persistente do glossário entre navegações, possibilitando o funcionamento do Tooltip genérico e o CRUD no painel administrativo.
+Dificuldade: Renderizar tooltips globais sem instalar novas dependências radx-ui.
+Correção aplicada: Criação de um componente de Tooltip customizado leve (GlossaryTooltip) utilizando css e tailwind absoluto para não quebrar estilos locais.
+Melhoria de UX sugerida pela IA: Filtros rápidos por tags em cima da tabela e scroll automático ancorado ao clicar nos termos relacionados na tela do Glossário.
+

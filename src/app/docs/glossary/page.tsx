@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useDomain, GlossaryTerm, GlossaryCategory } from "@/lib/context/domain-context";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 
 export default function GlossaryPage() {
   const { glossary, addGlossaryTerm, updateGlossaryTerm, deleteGlossaryTerm, currentUser } = useDomain();
@@ -70,7 +69,7 @@ export default function GlossaryPage() {
   });
 
   const scrollToTerm = (id: string) => {
-    const element = document.getElementById(\`term-\${id}\`);
+    const element = document.getElementById(`term-${id}`);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'center' });
       element.classList.add('bg-sky-500/10', 'border-sky-500/50');
@@ -118,11 +117,11 @@ export default function GlossaryPage() {
                 <button
                   key={cat}
                   onClick={() => setCategoryFilter(cat)}
-                  className={\`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors \${
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
                     categoryFilter === cat 
                       ? "bg-sky-500/20 text-sky-400 border border-sky-500/30" 
                       : "bg-muted text-muted-foreground hover:bg-muted/80 border border-transparent"
-                  }\`}
+                  }`}
                 >
                   {cat}
                 </button>
@@ -144,7 +143,7 @@ export default function GlossaryPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {filteredTerms.map((item) => (
                 <div 
-                  id={\`term-\${item.id}\`}
+                  id={`term-${item.id}`}
                   key={item.id} 
                   className="group p-5 rounded-xl border border-border/50 bg-background/30 hover:bg-muted/10 transition-all duration-300 relative flex flex-col h-full"
                 >
@@ -213,11 +212,11 @@ export default function GlossaryPage() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>Termo</Label>
+              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Termo</label>
               <Input value={term} onChange={(e) => setTerm(e.target.value)} placeholder="Ex: Lead Time" />
             </div>
             <div className="space-y-2">
-              <Label>Categoria</Label>
+              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Categoria</label>
               <select 
                 className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-sky-500"
                 value={category}
@@ -229,7 +228,7 @@ export default function GlossaryPage() {
               </select>
             </div>
             <div className="space-y-2">
-              <Label>Definição</Label>
+              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Definição</label>
               <textarea 
                 className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-sky-500 resize-none"
                 value={definition} 
