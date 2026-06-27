@@ -10,6 +10,7 @@ import { predictCreditRisk } from "@/lib/predictive-engine";
 import { FeatureImportanceChart } from "@/components/shared/feature-importance-chart";
 import { Input } from "@/components/ui/input";
 import { AlertThresholdSettings } from "@/components/shared/alert-threshold-settings";
+import { ExportDropdown } from "@/components/shared/export-dropdown";
 
 type RiskLevel = "all" | "high" | "medium" | "low";
 
@@ -353,9 +354,7 @@ export default function CreditRiskPage() {
         </div>
 
         <div className="flex flex-col sm:flex-row items-center gap-2 relative z-10">
-          <Button variant="outline" size="sm" onClick={handleExport} className="text-xs">
-            Exportar Relatório (PDF)
-          </Button>
+          <ExportDropdown />
           {!activeModel ? (
             <div className="flex items-center gap-2 text-amber-500 bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-500/20 text-xs font-semibold">
               <AlertCircle className="h-4 w-4" />

@@ -35,3 +35,12 @@ Dificuldade: Nenhuma.
 Correção aplicada: Nenhuma necessária.
 Melhoria de UX sugerida pela IA: Adicionado um 'badge' (tag) para categorizar cada termo (Métricas, Machine Learning, Geral), facilitando a leitura rápida e organização visual.
 
+
+[RF64] Suportar Predição em Tempo Real via API REST
+
+Prompt usado: RF64 - criar rota /developer/api/page.tsx com painel estático exibindo chave de API e snippet cURL.
+Funcionou bem: Uso do componente Input readOnly e botões de copy-to-clipboard com feedback visual (ícone de Check verde temporário).
+Dificuldade: Nenhuma.
+Correção aplicada: Nenhuma.
+Melhoria de UX sugerida pela IA: Adicionado um botão 'Gerar Nova Chave' que simula um loading visual (ícone RefreshCcw com animate-spin) antes de alterar a chave na tela, dando uma percepção de ação real.
+
