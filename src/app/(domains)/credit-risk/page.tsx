@@ -10,6 +10,7 @@ import { predictCreditRisk } from "@/lib/predictive-engine";
 import { FeatureImportanceChart } from "@/components/shared/feature-importance-chart";
 import { Input } from "@/components/ui/input";
 import { AlertThresholdSettings } from "@/components/shared/alert-threshold-settings";
+import { ComparisonView } from "@/components/shared/comparison-view";
 
 type RiskLevel = "all" | "high" | "medium" | "low";
 
@@ -1006,22 +1007,7 @@ export default function CreditRiskPage() {
     )}
 
     {currentView === "comparison" && (
-      <div className="space-y-6 animate-in fade-in duration-300">
-        <Card className="bg-card border-border transition-colors duration-300 shadow-md">
-          <CardHeader>
-            <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
-              <Sparkles className="h-4 w-4 text-emerald-500" />
-              Comparação Real vs Previsto
-            </CardTitle>
-            <CardDescription className="text-[11px] text-muted-foreground">
-              Módulo de validação de assertividade do modelo preditivo.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="py-8 text-center text-muted-foreground text-xs font-sans">
-            Esta área está reservada para o módulo de comparação entre dados reais e previsões (RF32).
-          </CardContent>
-        </Card>
-      </div>
+      <ComparisonView domain="credit-risk" />
     )}
 
       {/* Container Oculto na tela, visível apenas no Print (CA06) */}
