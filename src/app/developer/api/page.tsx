@@ -5,7 +5,6 @@ import { Code2, Copy, Check, Key, RefreshCcw, Terminal, Eye, EyeOff, BookOpen, A
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDomain } from "@/lib/context/domain-context";
 
 export default function DeveloperApiPage() {
@@ -17,6 +16,7 @@ export default function DeveloperApiPage() {
   const [copiedCode, setCopiedCode] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showKey, setShowKey] = useState(false); // CA02: Show/Hide Key
+  const [activeTab, setActiveTab] = useState("curl"); // Local state for tabs
 
   // Check localStorage for persisted key on mount
   useEffect(() => {
@@ -222,36 +222,49 @@ axios.post(url, data, {
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-4">
-            <Tabs defaultValue="curl" className="w-full">
+            <div className="w-full">
               <div className="flex items-center justify-between mb-4">
-                <TabsList className="bg-muted/50 border border-border/50">
-                  <TabsTrigger value="curl">cURL</TabsTrigger>
-                  <TabsTrigger value="python">Python</TabsTrigger>
-                  <TabsTrigger value="node">Node.js</TabsTrigger>
-                </TabsList>
+                <div className="flex bg-muted/50 border border-border/50 rounded-md p-1 gap-1">
+                  <button 
+                    onClick={() => setActiveTab("curl")} 
+                    className={`px-3 py-1.5 text-sm font-medium rounded-sm transition-colors ${activeTab === "curl" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                  >
+                    cURL
+                  </button>
+                  <button 
+                    onClick={() => setActiveTab("python")} 
+                    className={`px-3 py-1.5 text-sm font-medium rounded-sm transition-colors ${activeTab === "python" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                  >
+                    Python
+                  </button>
+                  <button 
+                    onClick={() => setActiveTab("node")} 
+                    className={`px-3 py-1.5 text-sm font-medium rounded-sm transition-colors ${activeTab === "node" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                  >
+                    Node.js
+                  </button>
+                </div>
               </div>
 
-              {Object.entries(snippets).map(([lang, code]) => (
-                <TabsContent key={lang} value={lang} className="relative mt-0 animate-in fade-in zoom-in-95">
-                  <div className="absolute right-2 top-2 z-10">
-                    <Button 
-                      variant="secondary" 
-                      size="sm"
-                      onClick={() => handleCopyCode(code)}
-                      className="h-7 text-[10px] gap-1.5 bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-600"
-                    >
-                      {copiedCode ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
-                      {copiedCode ? 'Copiado!' : 'Copiar'}
-                    </Button>
-                  </div>
-                  <div className="rounded-md bg-[#0d1117] border border-border/50 p-4 pt-10 overflow-x-auto">
-                    <pre className="text-xs font-mono text-emerald-400/90 leading-relaxed">
-                      <code>{code}</code>
-                    </pre>
-                  </div>
-                </TabsContent>
-              ))}
-            </Tabs>
+              <div className="relative mt-0 animate-in fade-in zoom-in-95">
+                <div className="absolute right-2 top-2 z-10">
+                  <Button 
+                    variant="secondary" 
+                    size="sm"
+                    onClick={() => handleCopyCode(snippets[activeTab as keyof typeof snippets])}
+                    className="h-7 text-[10px] gap-1.5 bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-600"
+                  >
+                    {copiedCode ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
+                    {copiedCode ? 'Copiado!' : 'Copiar'}
+                  </Button>
+                </div>
+                <div className="rounded-md bg-[#0d1117] border border-border/50 p-4 pt-10 overflow-x-auto">
+                  <pre className="text-xs font-mono text-emerald-400/90 leading-relaxed">
+                    <code>{snippets[activeTab as keyof typeof snippets]}</code>
+                  </pre>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>

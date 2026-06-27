@@ -2,11 +2,11 @@
 
 import React, { useState } from "react";
 import { BookA, Search, BookOpen, Plus, Edit, Trash2, ArrowRight } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useDomain, GlossaryTerm, GlossaryCategory } from "@/lib/context/domain-context";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 export default function GlossaryPage() {
   const { glossary, addGlossaryTerm, updateGlossaryTerm, deleteGlossaryTerm, currentUser } = useDomain();

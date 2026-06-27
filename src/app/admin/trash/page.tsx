@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Trash2, RotateCcw, AlertTriangle, FileWarning, CheckSquare, Square, Inbox } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useDomain } from "@/lib/context/domain-context";

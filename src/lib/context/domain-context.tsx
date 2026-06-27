@@ -599,7 +599,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     if (savedTrash) {
       try {
         setTrashItems(JSON.parse(savedTrash));
-      } catch (e) {
+      } catch {
         setTrashItems(DEFAULT_TRASH);
       }
     } else {
@@ -612,8 +612,8 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     if (savedAlerts) {
       try {
         setAlerts(JSON.parse(savedAlerts));
-      } catch (e) {
-        console.error("Erro ao carregar alertas:", e);
+      } catch {
+        setAlerts([]);
       }
     } else {
       const initialAlerts: Alert[] = [

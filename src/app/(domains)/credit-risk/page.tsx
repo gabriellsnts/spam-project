@@ -327,10 +327,7 @@ export default function CreditRiskPage() {
     }, 600);
   };
 
-  const handleExport = () => {
-    window.print();
-    addLog("Relatório consolidado exportado para PDF via impressão.");
-  };
+  // Mock para simulação da função de salvar relatório
 
   const mockFeatures = [
     { name: "Histórico de Pagamentos", weight: 0.40, description: "Frequência e atrasos em pagamentos de créditos anteriores." },
@@ -363,11 +360,11 @@ export default function CreditRiskPage() {
               algorithm={activeModel.algorithm}
               accuracy={activeModel.metrics.accuracy || 0}
               f1Score={activeModel.metrics.f1Score || 0}
-              validationDate={activeModel.trainedAt || new Date().toISOString()}
+              validationDate={activeModel.timestamp ? new Date(activeModel.timestamp).toISOString() : new Date().toISOString()}
             />
           )}
           <ShareAnalysisDialog />
-          <ExportDropdown data={paginatedData} filenamePrefix="risco_credito" />
+          <ExportDropdown data={filteredAndSortedProposals} filenamePrefix="risco_credito" />
           {!activeModel ? (
             <div className="flex items-center gap-2 text-amber-500 bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-500/20 text-xs font-semibold">
               <AlertCircle className="h-4 w-4" />

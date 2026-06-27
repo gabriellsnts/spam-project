@@ -12,11 +12,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface ExportDropdownProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data?: any[];
   filenamePrefix?: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function ExportDropdown({ data = [], filenamePrefix = "export" }: ExportDropdownProps) {
   const [exportingFormat, setExportingFormat] = useState<string | null>(null);
 

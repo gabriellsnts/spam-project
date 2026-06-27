@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
-import { Award, CheckCircle2, Download, ShieldCheck, Printer } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Award, CheckCircle2, ShieldCheck, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
