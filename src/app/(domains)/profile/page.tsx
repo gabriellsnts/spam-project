@@ -6,7 +6,8 @@ import { useDomain, DomainType } from "@/lib/context/domain-context";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserManagement } from "@/components/shared/user-management";
-import { Sun, Moon, Laptop, Shield, User as UserIcon, Calendar, Building, Tag, Mail, Settings, Play } from "lucide-react";
+import { ThemeCustomizer } from "@/components/shared/theme-customizer";
+import { Sun, Moon, Laptop, Shield, User as UserIcon, Calendar, Building, Tag, Mail, Settings, Play, Paintbrush, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function ProfilePage() {
@@ -18,7 +19,10 @@ export default function ProfilePage() {
     emailConfig,
     updateEmailConfig,
     showPremiumToast,
-    simulateCriticalAlertsBatch
+    simulateCriticalAlertsBatch,
+    language,
+    setLanguage,
+    t
   } = useDomain();
   const router = useRouter();
 
@@ -101,7 +105,7 @@ export default function ProfilePage() {
               className="text-xs font-semibold px-4 py-2 rounded-lg data-[state=active]:bg-zinc-850 data-[state=active]:text-foreground data-[state=active]:border-zinc-700/50 data-[state=active]:shadow-sm"
             >
               <UserIcon className="h-4 w-4 mr-2" />
-              Preferências
+              {t("preferences")}
             </TabsTrigger>
             {isAdmin && (
               <TabsTrigger 
@@ -109,7 +113,16 @@ export default function ProfilePage() {
                 className="text-xs font-semibold px-4 py-2 rounded-lg data-[state=active]:bg-zinc-850 data-[state=active]:text-emerald-400 data-[state=active]:border-zinc-700/50 data-[state=active]:shadow-sm"
               >
                 <Shield className="h-4 w-4 mr-2" />
-                Gestão Administrativa
+                {t("admin_management")}
+              </TabsTrigger>
+            )}
+            {isAdmin && (
+              <TabsTrigger 
+                value="theme" 
+                className="text-xs font-semibold px-4 py-2 rounded-lg data-[state=active]:bg-zinc-850 data-[state=active]:text-emerald-400 data-[state=active]:border-zinc-700/50 data-[state=active]:shadow-sm"
+              >
+                <Paintbrush className="h-4 w-4 mr-2" />
+                {t("theme_customization")}
               </TabsTrigger>
             )}
           </TabsList>
@@ -149,14 +162,14 @@ export default function ProfilePage() {
                 <div className="flex items-center justify-between text-slate-700 dark:text-zinc-400">
                   <span className="flex items-center gap-2">
                     <Building className="h-4 w-4 text-zinc-500" />
-                    Departamento
+                    {t("department") || "Departamento"}
                   </span>
                   <span className="font-semibold text-zinc-900 dark:text-zinc-200">{currentUser.department}</span>
                 </div>
                 <div className="flex items-center justify-between text-slate-700 dark:text-zinc-400">
                   <span className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-zinc-500" />
-                    Último Acesso
+                    {t("last_access") || "Último Acesso"}
                   </span>
                   <span className="font-semibold text-zinc-900 dark:text-zinc-200">
                     {currentUser.lastLogin 
@@ -166,7 +179,7 @@ export default function ProfilePage() {
                           hour: "2-digit",
                           minute: "2-digit"
                         })
-                      : "Recém-logado"}
+                      : (t("just_logged_in") || "Recém-logado")}
                   </span>
                 </div>
               </CardContent>
@@ -177,10 +190,10 @@ export default function ProfilePage() {
               <CardHeader>
                 <CardTitle className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
                   <Laptop className="h-4.5 w-4.5 text-emerald-500" />
-                  Aparência do Painel
+                  {t("dashboard_appearance") || "Aparência do Painel"}
                 </CardTitle>
                 <CardDescription className="text-xs text-slate-700 dark:text-zinc-500">
-                  Ajuste a paleta visual do ecossistema. O tema automático detecta e aplica a preferência do seu dispositivo.
+                  {t("dashboard_appearance_desc") || "Ajuste a paleta visual do ecossistema. O tema automático detecta e aplica a preferência do seu dispositivo."}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6 pb-8">
@@ -205,8 +218,8 @@ export default function ProfilePage() {
                       <Sun className="h-5 w-5" />
                     </div>
                     <div className="text-center">
-                      <div className="text-xs font-bold text-slate-900 dark:text-zinc-200">Modo Claro</div>
-                      <div className="text-[10px] text-slate-650 dark:text-zinc-500 mt-0.5">Interface clara e suave</div>
+                      <div className="text-xs font-bold text-slate-900 dark:text-zinc-200">{t("light_mode") || "Modo Claro"}</div>
+                      <div className="text-[10px] text-slate-650 dark:text-zinc-500 mt-0.5">{t("light_mode_desc") || "Interface clara e suave"}</div>
                     </div>
                   </button>
 
@@ -229,8 +242,8 @@ export default function ProfilePage() {
                       <Moon className="h-5 w-5" />
                     </div>
                     <div className="text-center">
-                      <div className="text-xs font-bold text-slate-900 dark:text-zinc-200">Modo Escuro</div>
-                      <div className="text-[10px] text-slate-650 dark:text-zinc-500 mt-0.5">Foco visual com economia de energia</div>
+                      <div className="text-xs font-bold text-slate-900 dark:text-zinc-200">{t("dark_mode") || "Modo Escuro"}</div>
+                      <div className="text-[10px] text-slate-650 dark:text-zinc-500 mt-0.5">{t("dark_mode_desc") || "Foco visual com economia de energia"}</div>
                     </div>
                   </button>
 
@@ -240,7 +253,7 @@ export default function ProfilePage() {
                     className={cn(
                       "flex flex-col items-center justify-center p-5 rounded-xl border transition-all duration-300 gap-3 group relative overflow-hidden cursor-pointer",
                       theme === "auto"
-                        ? "bg-white dark:bg-zinc-950/80 border-emerald-500/40 text-slate-900 dark:text-foreground shadow-md ring-1 ring-emerald-500/20"
+                        ? "bg-white dark:bg-zinc-950/80 border-emerald-550/10 border-emerald-500/40 text-slate-900 dark:text-foreground shadow-md ring-1 ring-emerald-500/20"
                         : "bg-zinc-100 dark:bg-zinc-950/30 border-zinc-300 dark:border-zinc-800 text-slate-700 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 hover:border-zinc-400 dark:hover:border-zinc-700/80 hover:bg-zinc-200/50 dark:hover:bg-zinc-950/50 shadow-sm dark:shadow-none"
                     )}
                   >
@@ -266,9 +279,67 @@ export default function ProfilePage() {
                       </svg>
                     </div>
                     <div className="text-center">
-                      <div className="text-xs font-bold text-slate-900 dark:text-zinc-200">Sistema</div>
-                      <div className="text-[10px] text-slate-650 dark:text-zinc-500 mt-0.5">Sincroniza com as cores do seu SO</div>
+                      <div className="text-xs font-bold text-slate-900 dark:text-zinc-200">{t("system_mode") || "Sistema"}</div>
+                      <div className="text-[10px] text-slate-650 dark:text-zinc-500 mt-0.5">{t("system_mode_desc") || "Sincroniza com as cores do seu SO"}</div>
                     </div>
+                  </button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Seletor de Idioma (RF54) */}
+            <Card className="md:col-span-2 border-zinc-200 dark:border-border/80 bg-white/70 dark:bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-xl">
+              <CardHeader>
+                <CardTitle className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
+                  <Globe className="h-4.5 w-4.5 text-emerald-500" />
+                  {language === "en" ? "Interface Language" : language === "es" ? "Idioma de la Interfaz" : "Idioma da Interface"}
+                </CardTitle>
+                <CardDescription className="text-xs text-slate-700 dark:text-zinc-500">
+                  {language === "en" ? "Choose your preferred language for navigating the application." : language === "es" ? "Elija su idioma preferido para navegar en la aplicación." : "Escolha o idioma de sua preferência para navegar na aplicação."}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {/* Português */}
+                  <button
+                    onClick={() => setLanguage("pt")}
+                    className={cn(
+                      "flex flex-col items-center justify-center p-5 rounded-xl border transition-all duration-300 gap-2 cursor-pointer",
+                      language === "pt"
+                        ? "bg-white dark:bg-zinc-950/80 border-emerald-500/40 text-slate-900 dark:text-foreground shadow-md ring-1 ring-emerald-500/20"
+                        : "bg-zinc-100 dark:bg-zinc-950/30 border-zinc-300 dark:border-zinc-800 text-slate-700 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-zinc-950/50 shadow-sm"
+                    )}
+                  >
+                    <span className="text-2xl">🇧🇷</span>
+                    <span className="text-xs font-bold">Português (BR)</span>
+                  </button>
+
+                  {/* Inglês */}
+                  <button
+                    onClick={() => setLanguage("en")}
+                    className={cn(
+                      "flex flex-col items-center justify-center p-5 rounded-xl border transition-all duration-300 gap-2 cursor-pointer",
+                      language === "en"
+                        ? "bg-white dark:bg-zinc-950/80 border-emerald-500/40 text-slate-900 dark:text-foreground shadow-md ring-1 ring-emerald-500/20"
+                        : "bg-zinc-100 dark:bg-zinc-950/30 border-zinc-300 dark:border-zinc-800 text-slate-700 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-zinc-950/50 shadow-sm"
+                    )}
+                  >
+                    <span className="text-2xl">🇺🇸</span>
+                    <span className="text-xs font-bold">English (US)</span>
+                  </button>
+
+                  {/* Espanhol */}
+                  <button
+                    onClick={() => setLanguage("es")}
+                    className={cn(
+                      "flex flex-col items-center justify-center p-5 rounded-xl border transition-all duration-300 gap-2 cursor-pointer",
+                      language === "es"
+                        ? "bg-white dark:bg-zinc-950/80 border-emerald-500/40 text-slate-900 dark:text-foreground shadow-md ring-1 ring-emerald-500/20"
+                        : "bg-zinc-100 dark:bg-zinc-950/30 border-zinc-300 dark:border-zinc-800 text-slate-700 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-zinc-950/50 shadow-sm"
+                    )}
+                  >
+                    <span className="text-2xl">🇪🇸</span>
+                    <span className="text-xs font-bold">Español</span>
                   </button>
                 </div>
               </CardContent>
@@ -428,6 +499,13 @@ export default function ProfilePage() {
         {isAdmin && (
           <TabsContent value="admin" className="outline-none">
             <UserManagement />
+          </TabsContent>
+        )}
+
+        {/* Conteúdo: Customização de Tema (RF53) */}
+        {isAdmin && (
+          <TabsContent value="theme" className="outline-none">
+            <ThemeCustomizer />
           </TabsContent>
         )}
       </Tabs>

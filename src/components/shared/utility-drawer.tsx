@@ -40,7 +40,10 @@ export function UtilityDrawer() {
     periodFilter,
     setPeriodFilter,
     predictionHistory,
-    clearPredictionHistory
+    clearPredictionHistory,
+    t,
+    language,
+    getDomainName
   } = useDomain();
 
   const [filter, setFilter] = useState<"all" | "unrecognized">("unrecognized");
@@ -207,7 +210,7 @@ export function UtilityDrawer() {
       const dateObj = new Date(alert.timestamp);
       const dateStr = dateObj.toLocaleDateString("pt-BR");
       const timeStr = dateObj.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-      const domainName = DOMAINS[alert.domain]?.name || alert.domain;
+      const domainName = getDomainName(alert.domain) || alert.domain;
       const statusStr = alert.recognized ? "Reconhecido" : "Pendente";
       const criticalityStr = alert.criticality === "high" ? "Alto" : "Médio";
       
@@ -284,7 +287,7 @@ export function UtilityDrawer() {
       const dateObj = new Date(pred.timestamp);
       const dateStr = dateObj.toLocaleDateString("pt-BR");
       const timeStr = dateObj.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-      const domainName = DOMAINS[pred.domain]?.name || pred.domain;
+      const domainName = getDomainName(pred.domain) || pred.domain;
       
       const escape = (val: string | number) => {
         const str = String(val);
@@ -331,7 +334,7 @@ export function UtilityDrawer() {
       return [
         d.toLocaleDateString("pt-BR"),
         d.toLocaleTimeString("pt-BR"),
-        DOMAINS[alert.domain]?.name || alert.domain,
+        getDomainName(alert.domain) || alert.domain,
         `"${alert.item.replace(/"/g, '""')}"`,
         `"${alert.metric.replace(/"/g, '""')}"`,
         `"${String(alert.value).replace(/"/g, '""')}"`,
@@ -346,7 +349,7 @@ export function UtilityDrawer() {
       return [
         d.toLocaleDateString("pt-BR"),
         d.toLocaleTimeString("pt-BR"),
-        DOMAINS[pred.domain]?.name || pred.domain,
+        getDomainName(pred.domain) || pred.domain,
         `"${pred.item.replace(/"/g, '""')}"`,
         `"${pred.predictionResult.replace(/"/g, '""')}"`
       ];
@@ -391,29 +394,29 @@ export function UtilityDrawer() {
                 onClick={() => setActiveUtilityPanel("menu")}
                 className="h-7 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition px-2 py-0 flex items-center justify-center gap-1 shrink-0 align-middle"
               >
-                ← Voltar
+                {"← " + t("back")}
               </Button>
             )}
             <div className="flex items-center gap-2 min-w-0 flex-1">
               {isMenu ? (
                 <>
                   <Menu className="h-5 w-5 text-muted-foreground shrink-0" />
-                  <h2 className="text-md font-semibold text-foreground truncate">Menu Principal</h2>
+                  <h2 className="text-md font-semibold text-foreground truncate">{t("main_menu")}</h2>
                 </>
               ) : isAlerts ? (
                 <>
                   <Bell className="h-5 w-5 text-muted-foreground shrink-0" />
-                  <h2 className="text-md font-semibold text-foreground truncate">Alertas do Sistema</h2>
+                  <h2 className="text-md font-semibold text-foreground truncate">{t("system_alerts")}</h2>
                 </>
               ) : isPredictions ? (
                 <>
                   <History className="h-5 w-5 text-muted-foreground shrink-0" />
-                  <h2 className="text-md font-semibold text-foreground truncate">Histórico de Previsões</h2>
+                  <h2 className="text-md font-semibold text-foreground truncate">{t("predictions_history")}</h2>
                 </>
               ) : (
                 <>
                   <ShieldCheck className="h-5 w-5 text-emerald-500 shrink-0" />
-                  <h2 className="text-md font-semibold text-foreground truncate">Log de Auditoria Interna</h2>
+                  <h2 className="text-md font-semibold text-foreground truncate">{t("audit_logs")}</h2>
                 </>
               )}
             </div>
@@ -465,7 +468,7 @@ export function UtilityDrawer() {
             <div className="flex-1 overflow-y-auto py-6 space-y-6 select-none scrollbar-thin px-2">
               <div className="space-y-1">
                 <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-3 px-2">
-                  Sistema
+                  {language === "en" ? "System" : language === "es" ? "Sistema" : "Sistema"}
                 </h3>
                 <button
                   onClick={() => setActiveUtilityPanel("alerts")}
@@ -475,7 +478,7 @@ export function UtilityDrawer() {
                     <div className="p-1.5 rounded-md bg-muted group-hover:bg-muted/80 transition-colors">
                       <Bell className="h-4 w-4" />
                     </div>
-                    <span className="text-sm font-medium">Alertas do Sistema</span>
+                    <span className="text-sm font-medium">{t("system_alerts")}</span>
                   </div>
                   {unrecognizedAlerts.length > 0 && (
                     <span className="px-1.5 py-0.5 rounded-md bg-rose-500/10 text-rose-500 text-[10px] font-bold">
@@ -491,7 +494,7 @@ export function UtilityDrawer() {
                     <div className="p-1.5 rounded-md bg-muted group-hover:bg-muted/80 transition-colors">
                       <ShieldCheck className="h-4 w-4" />
                     </div>
-                    <span className="text-sm font-medium">Log de Auditoria</span>
+                    <span className="text-sm font-medium">{t("audit_logs")}</span>
                   </div>
                   <ChevronRight className="h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity" />
                 </button>
@@ -503,7 +506,7 @@ export function UtilityDrawer() {
                     <div className="p-1.5 rounded-md bg-muted group-hover:bg-muted/80 transition-colors">
                       <History className="h-4 w-4" />
                     </div>
-                    <span className="text-sm font-medium">Histórico de Previsões</span>
+                    <span className="text-sm font-medium">{t("predictions_history")}</span>
                   </div>
                   <ChevronRight className="h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity" />
                 </button>
@@ -515,7 +518,7 @@ export function UtilityDrawer() {
                     className="w-full text-xs font-bold border-border hover:bg-muted text-foreground"
                   >
                     <Download className="h-3.5 w-3.5 mr-1.5" />
-                    Relatório Consolidado
+                    {language === "en" ? "Consolidated Report" : language === "es" ? "Reporte Conso." : "Relatório Consolidado"}
                   </Button>
                 </div>
               </div>
@@ -524,10 +527,9 @@ export function UtilityDrawer() {
 
               <div className="space-y-1">
                 <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-3 px-2">
-                  Módulos de Domínio
+                  {language === "en" ? "Domain Modules" : language === "es" ? "Módulos de Dominio" : "Módulos de Domínio"}
                 </h3>
                 {(Object.keys(DOMAINS) as DomainType[]).map((domainType) => {
-                  const domain = DOMAINS[domainType];
                   return (
                     <button
                       key={domainType}
@@ -541,7 +543,7 @@ export function UtilityDrawer() {
                         <div className="p-1.5 rounded-md bg-muted group-hover:bg-muted/80 transition-colors">
                           {getDomainIcon(domainType)}
                         </div>
-                        <span className="text-sm font-medium">{domain.name}</span>
+                        <span className="text-sm font-medium">{getDomainName(domainType)}</span>
                       </div>
                       <ChevronRight className="h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity" />
                     </button>
@@ -562,7 +564,7 @@ export function UtilityDrawer() {
                 <div className="p-1.5 rounded-md bg-muted group-hover:bg-rose-500/20 transition-colors">
                   <LogOut className="h-4 w-4" />
                 </div>
-                <span className="text-sm font-medium">Sair</span>
+                <span className="text-sm font-medium">{t("logout")}</span>
               </button>
             </div>
           </div>
@@ -581,7 +583,7 @@ export function UtilityDrawer() {
                     : "border-transparent text-muted-foreground hover:text-foreground"
                 )}
               >
-                Ativos ({unrecognizedAlerts.length})
+                {t("active_alerts") || "Ativos"} ({unrecognizedAlerts.length})
               </button>
               <button
                 onClick={() => setFilter("all")}
@@ -592,45 +594,45 @@ export function UtilityDrawer() {
                     : "border-transparent text-muted-foreground hover:text-foreground"
                 )}
               >
-                Histórico ({alerts.length})
+                {t("history") || "Histórico"} ({alerts.length})
               </button>
             </div>
 
-            {filter === "all" && (
+             {filter === "all" && (
               <div className="flex flex-col gap-2.5 p-3 bg-muted/30 border border-border/10 rounded-xl mt-3 mx-1 shrink-0">
                 <div className="flex items-center gap-2">
                   {/* Filtro de Domínio */}
                   <div className="flex-1 flex flex-col gap-1">
                     <label className="text-[8px] uppercase tracking-wider font-extrabold text-muted-foreground">
-                      Domínio
+                      {t("domain") || "Domínio"}
                     </label>
                     <select
                       value={domainFilter}
                       onChange={(e) => setDomainFilter(e.target.value as DomainType | "all")}
                       className="bg-background border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer"
                     >
-                      <option value="all">Todos</option>
-                      <option value="maintenance">Manutenção</option>
-                      <option value="demand">Demanda</option>
-                      <option value="churn">Retenção</option>
-                      <option value="credit-risk">Crédito</option>
+                      <option value="all">{language === "en" ? "All" : language === "es" ? "Todos" : "Todos"}</option>
+                      <option value="maintenance">{language === "en" ? "Maintenance" : language === "es" ? "Mantenimiento" : "Manutenção"}</option>
+                      <option value="demand">{language === "en" ? "Demand" : language === "es" ? "Demanda" : "Demanda"}</option>
+                      <option value="churn">{language === "en" ? "Churn" : language === "es" ? "Retención" : "Retenção"}</option>
+                      <option value="credit-risk">{language === "en" ? "Credit" : language === "es" ? "Crédito" : "Crédito"}</option>
                     </select>
                   </div>
 
                   {/* Filtro de Período */}
                   <div className="flex-1 flex flex-col gap-1">
                     <label className="text-[8px] uppercase tracking-wider font-extrabold text-muted-foreground">
-                      Período
+                      {t("period") || "Período"}
                     </label>
                     <select
                       value={periodFilter}
                       onChange={(e) => setPeriodFilter(e.target.value as "all" | "24h" | "7d" | "30d")}
                       className="bg-background border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer"
                     >
-                      <option value="all">Todos</option>
-                      <option value="24h">Últimas 24h</option>
-                      <option value="7d">Últimos 7 dias</option>
-                      <option value="30d">Últimos 30 dias</option>
+                      <option value="all">{language === "en" ? "All" : language === "es" ? "Todos" : "Todos"}</option>
+                      <option value="24h">{language === "en" ? "Last 24h" : language === "es" ? "Últimas 24h" : "Últimas 24h"}</option>
+                      <option value="7d">{language === "en" ? "Last 7 days" : language === "es" ? "Últimos 7 días" : "Últimos 7 dias"}</option>
+                      <option value="30d">{language === "en" ? "Last 30 days" : language === "es" ? "Últimos 30 dias" : "Últimos 30 dias"}</option>
                     </select>
                   </div>
                 </div>
@@ -642,7 +644,7 @@ export function UtilityDrawer() {
                   className="w-full h-8 text-[11px] font-bold bg-green-500 hover:bg-green-600 text-zinc-950 transition-colors flex items-center justify-center gap-1.5 rounded-md"
                 >
                   <Download className="h-3.5 w-3.5" />
-                  Exportar CSV
+                  {t("export_csv") || "Exportar CSV"}
                 </Button>
               </div>
             )}
@@ -652,11 +654,10 @@ export function UtilityDrawer() {
               {displayedAlerts.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-center p-6 text-muted-foreground">
                   <Bell className="h-10 w-10 text-muted-foreground/40 mb-2 stroke-[1.5]" />
-                  <p className="text-sm">Nenhum alerta encontrado.</p>
+                  <p className="text-sm">{t("no_alerts_found")}</p>
                 </div>
               ) : (
                 displayedAlerts.map((alert) => {
-                  const domainInfo = DOMAINS[alert.domain];
                   const isHigh = alert.criticality === "high";
 
                   return (
@@ -685,7 +686,7 @@ export function UtilityDrawer() {
                               )}
                             >
                               {getDomainIcon(alert.domain)}
-                              {domainInfo.name.split(" ")[0]}
+                              {getDomainName(alert.domain).split(" ")[0]}
                             </span>
                             
                             <span
@@ -696,7 +697,9 @@ export function UtilityDrawer() {
                                   : "bg-amber-500/10 text-amber-500 border border-amber-500/20"
                               )}
                             >
-                              {isHigh ? "Crítico (Alto)" : "Atenção (Médio)"}
+                              {isHigh 
+                                ? (language === "en" ? "Critical (High)" : language === "es" ? "Crítico (Alto)" : "Crítico (Alto)") 
+                                : (language === "en" ? "Warning (Med)" : language === "es" ? "Atención (Medio)" : "Atenção (Médio)")}
                             </span>
 
                             {/* Status Badge */}
@@ -708,7 +711,9 @@ export function UtilityDrawer() {
                                   : "bg-amber-500/15 text-amber-500 border border-amber-500/30 animate-pulse"
                               )}
                             >
-                              {alert.recognized ? "Reconhecido" : "Pendente"}
+                              {alert.recognized 
+                                ? (language === "en" ? "Acknowledged" : language === "es" ? "Reconocido" : "Reconhecido") 
+                                : (language === "en" ? "Pending" : language === "es" ? "Pendiente" : "Pendente")}
                             </span>
                           </div>
                           
@@ -757,12 +762,12 @@ export function UtilityDrawer() {
                                 className="h-6 text-[9px] font-black bg-muted border border-border/80 hover:bg-green-500/10 hover:border-green-500 hover:text-green-500 text-foreground transition-all duration-200 px-2 flex items-center gap-1"
                               >
                                 <Check className="h-3 w-3" />
-                                Reconhecer
+                                {t("acknowledge") || "Reconhecer"}
                               </Button>
                             ) : (
                               <span className="text-[9px] text-muted-foreground/60 font-bold flex items-center gap-0.5 select-none py-0.5 px-1.5 bg-background/20 border border-border/20 rounded">
                                 <Check className="h-3 w-3 text-emerald-500/70" />
-                                Reconhecido
+                                {language === "en" ? "Acknowledged" : language === "es" ? "Reconocido" : "Reconhecido"}
                               </span>
                             )
                           ) : (
@@ -770,11 +775,11 @@ export function UtilityDrawer() {
                             alert.recognized ? (
                               <span className="text-[9px] text-muted-foreground font-bold flex items-center gap-0.5 select-none py-0.5 px-1.5 bg-background/20 border border-border/20 rounded">
                                 <Check className="h-3 w-3 text-emerald-500/70" />
-                                Reconhecido
+                                {language === "en" ? "Acknowledged" : language === "es" ? "Reconocido" : "Reconhecido"}
                               </span>
                             ) : (
                               <span className="text-[9px] text-amber-500/80 font-bold flex items-center gap-0.5 select-none py-0.5 px-1.5 bg-background/20 border border-border/20 rounded">
-                                Pendente
+                                {language === "en" ? "Pending" : language === "es" ? "Pendiente" : "Pendente"}
                               </span>
                             )
                           )}
@@ -788,7 +793,7 @@ export function UtilityDrawer() {
                               handleClose();
                             }}
                             className="h-6 w-6 p-0 text-zinc-500 hover:text-primary hover:bg-primary/5 transition"
-                            title={`Ir para o painel de ${domainInfo.name}`}
+                            title={language === "en" ? `Go to dashboard of ${getDomainName(alert.domain)}` : language === "es" ? `Ir al panel de ${getDomainName(alert.domain)}` : `Ir para o painel de ${getDomainName(alert.domain)}`}
                           >
                             <ExternalLink className="h-3.5 w-3.5" />
                           </Button>
@@ -803,7 +808,9 @@ export function UtilityDrawer() {
             {/* Footer Actions */}
             <div className="pt-4 border-t border-border/20 bg-transparent flex items-center justify-between shrink-0">
               <span className="text-xs text-muted-foreground font-mono">
-                {filter === "all" ? `Alertas exibidos: ${displayedAlerts.length}` : `Alertas ativos: ${unrecognizedAlerts.length}`}
+                {filter === "all" 
+                  ? (language === "en" ? `Alerts displayed: ${displayedAlerts.length}` : language === "es" ? `Alertas mostradas: ${displayedAlerts.length}` : `Alertas exibidos: ${displayedAlerts.length}`) 
+                  : (language === "en" ? `Active alerts: ${unrecognizedAlerts.length}` : language === "es" ? `Alertas activas: ${unrecognizedAlerts.length}` : `Alertas ativos: ${unrecognizedAlerts.length}`)}
               </span>
               {alerts.length > 0 && (
                 <Button
@@ -813,7 +820,7 @@ export function UtilityDrawer() {
                   className="h-7 text-xs text-rose-500 hover:text-rose-455 hover:bg-rose-500/5 font-bold transition flex items-center gap-1.5"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
-                  Limpar Tudo
+                  {t("clear_all") || "Limpar Tudo"}
                 </Button>
               )}
             </div>
@@ -827,35 +834,35 @@ export function UtilityDrawer() {
                 {/* Filtro de Domínio */}
                 <div className="flex-1 flex flex-col gap-1">
                   <label className="text-[8px] uppercase tracking-wider font-extrabold text-muted-foreground">
-                    Domínio
+                    {t("domain") || "Domínio"}
                   </label>
                   <select
                     value={domainFilter}
                     onChange={(e) => setDomainFilter(e.target.value as DomainType | "all")}
                     className="bg-background border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer"
                   >
-                    <option value="all">Todos</option>
-                    <option value="maintenance">Manutenção</option>
-                    <option value="demand">Demanda</option>
-                    <option value="churn">Retenção</option>
-                    <option value="credit-risk">Crédito</option>
+                    <option value="all">{language === "en" ? "All" : language === "es" ? "Todos" : "Todos"}</option>
+                    <option value="maintenance">{language === "en" ? "Maintenance" : language === "es" ? "Mantenimiento" : "Manutenção"}</option>
+                    <option value="demand">{language === "en" ? "Demand" : language === "es" ? "Demanda" : "Demanda"}</option>
+                    <option value="churn">{language === "en" ? "Churn" : language === "es" ? "Retención" : "Retenção"}</option>
+                    <option value="credit-risk">{language === "en" ? "Credit" : language === "es" ? "Crédito" : "Crédito"}</option>
                   </select>
                 </div>
 
                 {/* Filtro de Período */}
                 <div className="flex-1 flex flex-col gap-1">
                   <label className="text-[8px] uppercase tracking-wider font-extrabold text-muted-foreground">
-                    Período
+                    {t("period") || "Período"}
                   </label>
                   <select
                     value={periodFilter}
                     onChange={(e) => setPeriodFilter(e.target.value as "all" | "24h" | "7d" | "30d")}
                     className="bg-background border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer"
                   >
-                    <option value="all">Todos</option>
-                    <option value="24h">Últimas 24h</option>
-                    <option value="7d">Últimos 7 dias</option>
-                    <option value="30d">Últimos 30 dias</option>
+                    <option value="all">{language === "en" ? "All" : language === "es" ? "Todos" : "Todos"}</option>
+                    <option value="24h">{language === "en" ? "Last 24h" : language === "es" ? "Últimas 24h" : "Últimas 24h"}</option>
+                    <option value="7d">{language === "en" ? "Last 7 days" : language === "es" ? "Últimos 7 días" : "Últimos 7 dias"}</option>
+                    <option value="30d">{language === "en" ? "Last 30 days" : language === "es" ? "Últimos 30 dias" : "Últimos 30 dias"}</option>
                   </select>
                 </div>
               </div>
@@ -867,7 +874,7 @@ export function UtilityDrawer() {
                 className="w-full h-8 text-[11px] font-bold bg-green-500 hover:bg-green-600 text-zinc-950 transition-colors flex items-center justify-center gap-1.5 rounded-md"
               >
                 <Download className="h-3.5 w-3.5" />
-                Exportar CSV
+                {t("export_csv") || "Exportar CSV"}
               </Button>
             </div>
 
@@ -875,15 +882,14 @@ export function UtilityDrawer() {
               {displayedPredictions.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-center p-6 text-muted-foreground">
                   <History className="h-10 w-10 text-muted-foreground/40 mb-2 stroke-[1.5]" />
-                  <p className="text-sm">Nenhuma previsão encontrada.</p>
+                  <p className="text-sm">{t("no_predictions_found")}</p>
                 </div>
               ) : (
                 displayedPredictions.map((pred) => {
-                  const domainInfo = DOMAINS[pred.domain];
-                  const detailInfo = pred.details?.probabilidadeRetorno 
-                    ? `Retorno: ${pred.details.probabilidadeRetorno}%` 
+                  const detailInfo = pred.details?.probabilidadeRetorno  
+                    ? `${language === "en" ? "Return" : language === "es" ? "Retorno" : "Retorno"}: ${pred.details.probabilidadeRetorno}%` 
                     : pred.details?.probabilidadeFalha 
-                      ? `Falha: ${pred.details.probabilidadeFalha}%` 
+                      ? `${language === "en" ? "Failure" : language === "es" ? "Fallo" : "Falha"}: ${pred.details.probabilidadeFalha}%` 
                       : "";
 
                   return (
@@ -904,7 +910,7 @@ export function UtilityDrawer() {
                               )}
                             >
                               {getDomainIcon(pred.domain)}
-                              {domainInfo.name.split(" ")[0]}
+                              {getDomainName(pred.domain).split(" ")[0]}
                             </span>
                             <span
                               className={cn(
@@ -926,7 +932,7 @@ export function UtilityDrawer() {
 
                       {detailInfo && (
                         <div className="flex items-center justify-between bg-background/20 dark:bg-background/50 px-2.5 py-1.5 rounded-lg border border-border/20 text-[10px]">
-                          <span className="text-muted-foreground text-[10px] font-medium">Confiança/Probab.:</span>
+                          <span className="text-muted-foreground text-[10px] font-medium">{language === "en" ? "Confidence/Prob." : language === "es" ? "Confianza/Probab." : "Confiança/Probab."}:</span>
                           <span className="font-mono font-bold text-[10px] text-blue-400">
                             {detailInfo}
                           </span>
@@ -955,7 +961,7 @@ export function UtilityDrawer() {
                               handleClose();
                             }}
                             className="h-6 w-6 p-0 text-muted-foreground hover:text-primary hover:bg-primary/5 transition"
-                            title={`Ir para o painel de ${domainInfo.name}`}
+                            title={language === "en" ? `Go to dashboard of ${getDomainName(pred.domain)}` : language === "es" ? `Ir al panel de ${getDomainName(pred.domain)}` : `Ir para o painel de ${getDomainName(pred.domain)}`}
                           >
                             <ExternalLink className="h-3.5 w-3.5" />
                           </Button>
@@ -970,7 +976,7 @@ export function UtilityDrawer() {
             {/* Footer Actions */}
             <div className="pt-4 border-t border-border/20 bg-transparent flex items-center justify-between shrink-0">
               <span className="text-xs text-muted-foreground font-mono">
-                Registros: {displayedPredictions.length}
+                {language === "en" ? "Records:" : language === "es" ? "Registros:" : "Registros:"} {displayedPredictions.length}
               </span>
               {predictionHistory.length > 0 && (
                 <Button
@@ -980,7 +986,7 @@ export function UtilityDrawer() {
                   className="h-7 text-xs text-rose-500 hover:text-rose-455 hover:bg-rose-500/5 font-bold transition flex items-center gap-1.5"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
-                  Limpar Histórico
+                  {t("clear_history") || "Limpar Histórico"}
                 </Button>
               )}
             </div>
@@ -1129,11 +1135,11 @@ export function UtilityDrawer() {
                   <table className="w-full text-left border-collapse text-[10px] min-w-[500px]">
                     <thead>
                       <tr className="border-b border-border/25 bg-muted/60 text-muted-foreground font-bold uppercase tracking-wider select-none">
-                        <th className="p-3 w-[75px] shrink-0 font-extrabold">Data</th>
-                        <th className="p-3 w-[65px] shrink-0 font-extrabold">Horário</th>
-                        <th className="p-3 w-[100px] font-extrabold">Usuário</th>
-                        <th className="p-3 w-[95px] font-extrabold">Perfil</th>
-                        <th className="p-3 font-extrabold">Ação</th>
+                        <th className="p-3 w-[75px] shrink-0 font-extrabold">{t("date")}</th>
+                        <th className="p-3 w-[65px] shrink-0 font-extrabold">{t("time")}</th>
+                        <th className="p-3 w-[100px] font-extrabold">{t("user")}</th>
+                        <th className="p-3 w-[95px] font-extrabold">{t("profile")}</th>
+                        <th className="p-3 font-extrabold">{t("action")}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border/15">
@@ -1167,7 +1173,7 @@ export function UtilityDrawer() {
                   <div className="flex items-center justify-between pb-4 border-b border-border/20 mb-4 shrink-0">
                     <h3 className="text-xs font-bold text-foreground flex items-center gap-2">
                       <ShieldCheck className="h-4.5 w-4.5 text-emerald-500" />
-                      Detalhes do Registro
+                      {language === "en" ? "Record Details" : language === "es" ? "Detalles del Registro" : "Detalhes do Registro"}
                     </h3>
                     <button
                       onClick={() => setSelectedLog(null)}
@@ -1180,36 +1186,36 @@ export function UtilityDrawer() {
                   <div className="flex-1 overflow-y-auto space-y-4 text-[11px] scrollbar-thin pr-1">
                     <div className="bg-muted/40 border border-border/15 rounded-xl p-3.5 space-y-3">
                       <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground font-semibold">ID do Registro:</span>
+                        <span className="text-muted-foreground font-semibold">{t("log_id") || "ID do Registro:"}</span>
                         <span className="font-mono font-bold text-foreground bg-muted px-1.5 py-0.5 rounded border border-border/20">#{selectedLog.id}</span>
                       </div>
                       <div className="flex justify-between items-center border-t border-border/10 pt-2.5">
-                        <span className="text-muted-foreground font-semibold">Data da Ação:</span>
+                        <span className="text-muted-foreground font-semibold">{t("action_date") || "Data da Ação:"}</span>
                         <span className="font-bold text-foreground">{new Date(selectedLog.timestamp).toLocaleDateString("pt-BR")}</span>
                       </div>
                       <div className="flex justify-between items-center border-t border-border/10 pt-2.5">
-                        <span className="text-muted-foreground font-semibold">Horário da Ação:</span>
+                        <span className="text-muted-foreground font-semibold">{t("action_time") || "Horário da Ação:"}</span>
                         <span className="font-bold text-foreground font-mono">{new Date(selectedLog.timestamp).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</span>
                       </div>
                     </div>
 
                     <div className="bg-muted/40 border border-border/15 rounded-xl p-3.5 space-y-3">
                       <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground font-semibold">Usuário:</span>
+                        <span className="text-muted-foreground font-semibold">{t("user")}:</span>
                         <span className="font-bold text-foreground">{selectedLog.username}</span>
                       </div>
                       <div className="flex justify-between items-center border-t border-border/10 pt-2.5">
-                        <span className="text-muted-foreground font-semibold">Perfil de Acesso:</span>
+                        <span className="text-muted-foreground font-semibold">{language === "en" ? "Access Profile:" : language === "es" ? "Perfil de Acceso:" : "Perfil de Acesso:"}</span>
                         <span className="font-bold text-foreground">{selectedLog.accessProfile}</span>
                       </div>
                       <div className="flex justify-between items-center border-t border-border/10 pt-2.5">
-                        <span className="text-muted-foreground font-semibold">Escopo (Sistema/Usuário):</span>
+                        <span className="text-muted-foreground font-semibold">{language === "en" ? "Scope (System/User):" : language === "es" ? "Alcance (Sistema/Usuario):" : "Escopo (Sistema/Usuário):"}</span>
                         <span className="font-bold text-muted-foreground">{selectedLog.profile}</span>
                       </div>
                     </div>
 
                     <div className="bg-muted/40 border border-border/15 rounded-xl p-3.5 space-y-2">
-                      <span className="text-muted-foreground font-semibold block">Descrição da Ação:</span>
+                      <span className="text-muted-foreground font-semibold block">{language === "en" ? "Action Description:" : language === "es" ? "Descripción de la Acción:" : "Descrição da Ação:"}</span>
                       <p className="text-foreground leading-relaxed font-bold bg-background p-3 rounded-lg border border-border/20 break-words whitespace-pre-wrap font-mono text-[10px]">
                         {selectedLog.action}
                       </p>
@@ -1222,7 +1228,7 @@ export function UtilityDrawer() {
                       onClick={() => setSelectedLog(null)}
                       className="w-full text-xs font-bold bg-muted border border-border/30 text-foreground hover:bg-muted/80"
                     >
-                      Voltar para a Listagem
+                      {t("back_to_list") || "Voltar para a Listagem"}
                     </Button>
                   </div>
                 </div>
@@ -1232,7 +1238,7 @@ export function UtilityDrawer() {
             {/* Footer Actions */}
             <div className="pt-4 border-t border-border/20 bg-transparent flex items-center justify-between shrink-0">
               <span className="text-xs text-muted-foreground font-mono">
-                Registros ativos: {logs.length}
+                {language === "en" ? "Active records:" : language === "es" ? "Registros activos:" : "Registros ativos:"} {logs.length}
               </span>
               {logs.length > 0 && (
                 <Button
@@ -1242,7 +1248,7 @@ export function UtilityDrawer() {
                   className="h-7 text-xs text-rose-500 hover:text-rose-455 hover:bg-rose-500/5 font-bold transition flex items-center gap-1.5"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
-                  Limpar Logs
+                  {t("clear_logs") || "Limpar Logs"}
                 </Button>
               )}
             </div>

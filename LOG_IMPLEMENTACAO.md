@@ -206,3 +206,41 @@
 
 ### 3. Impacto e Resultados Técnicos (A Conclusão)
 - Otimização do tráfego de notificações via consolidação inteligente client-side, mitigando e-mails redundantes, além de plena auditoria técnica e rastreabilidade nos logs do sistema em conformidade com as regras operacionais.
+
+---
+
+## 📅 2026-06-27 — RF53 — Customização de Tema com Cores Personalizadas (Branding Corporativo e WCAG 2.1)
+### 1. Contexto e Problemática (O Problema)
+- Necessidade de customizar as cores da aplicação (destaque, sucesso, alertas) para que a interface reflita a identidade visual corporativa da organização, sem que elementos de contraste visual fiquem inelegíveis ou fora dos padrões mínimos de acessibilidade de software.
+
+### 2. Solução Proposta e Fundamentação (O Desenvolvimento)
+- Desenvolvimento do painel de customização de tema `ThemeCustomizer` sob a aba dedicada no perfil administrativo `/profile`, visível unicamente para Administradores.
+- Implementação de seletores visuais de cores (color pickers) integrados a caixas de entrada hexadecimais, com atualização de visualização em tempo real (instant preview) de componentes chaves da aplicação.
+- Criação de regras de sobrescrita e mapeamento global em `globals.css` utilizando variáveis CSS HSL injetadas no `:root` sob o atributo `data-custom-theme="true"` para reestilizar elementos contendo cores de Tailwind padrão.
+- Algoritmo de validação de legibilidade em tempo real segundo padrões de acessibilidade WCAG 2.1 (AA), medindo a proporção de contraste em tempo real contra o fundo ativo e exibindo alertas destacados em caso de desconformidade (< 4.5:1).
+- Suporte para salvar múltiplos temas personalizados no `localStorage`, exclusão e alternância ágil de temas visuais, além do botão de redefinição para restaurar os padrões visuais originais.
+- Dispositivo de Modo Demo no perfil para carga de 4 presets corporativos pré-definidos (como Tech Blue e Warm Orange).
+- Registro detalhado e rastreável de todas as ações de tema no Log de Auditoria do sistema (contendo data, hora, admin responsável e cores editadas).
+
+### 3. Impacto e Resultados Técnicos (A Conclusão)
+- Uniformidade estética em toda a aplicação sob branding corporativo sob demanda, mantendo controle rígido e auditável de acessibilidade e rastreamento em conformidade com as regras de governança visual corporativas.
+
+---
+
+## 📅 2026-06-27 — RF54 — Interface em Múltiplos Idiomas (Tradução Profissional e Contextual)
+### 1. Contexto e Problemática (O Problema)
+- Necessidade de tornar o sistema preditivo acessível a usuários internacionais ou preferentes de diferentes línguas (Português Brasileiro, Inglês e Espanhol), eliminando as barreiras linguísticas e garantindo precisão contextual no uso de terminologias técnicas de negócios.
+
+### 2. Solução Proposta e Fundamentação (O Desenvolvimento)
+- Criação e estruturação da base de dados de internacionalização em `src/lib/translations.ts` cobrindo o mapeamento de mais de 90 chaves e termos da interface.
+- Acoplamento do suporte a idioma nativo e de funções dinâmicas de tradução (`language`, `setLanguage`, `t`, e `getDomainName`) no contexto global de estados (`DomainContext`).
+- Implementação de um seletor dinâmico de idiomas no formato dropdown com bandeiras no cabeçalho principal (`header.tsx`) para acesso rápido e alta visibilidade, além da aba de configurações no Hub de Perfil Administrativo (`/profile`).
+- Mapeamento e substituição de strings estáticas por referências multilíngues nas principais partes do sistema: Sidebar, Header, Profile (incluindo cartão de usuário, configurações de aparência e modo claro/escuro), e no Drawer de Utilidades (tabelas e detalhes de Logs de Auditoria, abas de Alertas Críticos, histórico e filtros de Previsões, além das exportações em CSV de dados consolidados).
+- Inclusão do Modo Demo nas configurações de perfil para facilitar a alternância de tradução e testes de visualização instantâneos.
+- Registro automático das ações de mudança de idioma no Log de Auditoria Técnica para plena conformidade e rastreabilidade de preferências.
+
+### 3. Impacto e Resultados Técnicos (A Conclusão)
+- Interface de usuário multilíngue ágil e responsiva, com cabeçalho traduzível e detecção dinâmica de módulos do domínio, reduzindo de forma drástica a fricção cognitiva e simplificando o fluxo de predição e auditoria para usuários globais sem dependência de extensões ou tradutores de terceiros.
+
+
+

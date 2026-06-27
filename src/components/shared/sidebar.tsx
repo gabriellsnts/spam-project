@@ -14,7 +14,7 @@ import {
 import { cn } from "@/lib/utils";
 
 export function Sidebar() {
-  const { activeDomain, logs, currentView, setCurrentView } = useDomain();
+  const { activeDomain, logs, currentView, setCurrentView, t } = useDomain();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const getActiveDotColorClass = (type: DomainType) => {
@@ -76,11 +76,11 @@ export function Sidebar() {
         return (
           <div className="space-y-1.5">
             <div className="flex justify-between text-[10px] text-muted-foreground">
-              <span>Sensores</span>
-              <span className="text-emerald-500 font-semibold">Ativos (IoT)</span>
+              <span>{t("sensors")}</span>
+              <span className="text-emerald-500 font-semibold">{t("active_iot")}</span>
             </div>
             <div className="flex justify-between text-[10px] text-muted-foreground">
-              <span>OEE Geral</span>
+              <span>{t("overall_oee")}</span>
               <span className="text-foreground font-semibold">84.0%</span>
             </div>
           </div>
@@ -89,11 +89,11 @@ export function Sidebar() {
         return (
           <div className="space-y-1.5">
             <div className="flex justify-between text-[10px] text-muted-foreground">
-              <span>Modelo</span>
+              <span>{t("model")}</span>
               <span className="text-sky-500 font-semibold font-mono text-[9px]">Prophet-ML</span>
             </div>
             <div className="flex justify-between text-[10px] text-muted-foreground">
-              <span>Acurácia</span>
+              <span>{t("accuracy")}</span>
               <span className="text-foreground font-semibold">93.8%</span>
             </div>
           </div>
@@ -102,11 +102,11 @@ export function Sidebar() {
         return (
           <div className="space-y-1.5">
             <div className="flex justify-between text-[10px] text-muted-foreground">
-              <span>Monitorando</span>
-              <span className="text-violet-500 font-semibold">Contas Ent.</span>
+              <span>{t("monitoring_label")}</span>
+              <span className="text-violet-500 font-semibold">{t("enterprise_accounts")}</span>
             </div>
             <div className="flex justify-between text-[10px] text-muted-foreground">
-              <span>NPS Geral</span>
+              <span>{t("overall_nps")}</span>
               <span className="text-foreground font-semibold">78 pt</span>
             </div>
           </div>
@@ -115,11 +115,11 @@ export function Sidebar() {
         return (
           <div className="space-y-1.5">
             <div className="flex justify-between text-[10px] text-muted-foreground">
-              <span>VaR Risco</span>
+              <span>{t("risk_var")}</span>
               <span className="text-emerald-500 font-semibold">R$ 1.2M</span>
             </div>
             <div className="flex justify-between text-[10px] text-muted-foreground">
-              <span>Default (PD)</span>
+              <span>{t("default_pd")}</span>
               <span className="text-foreground font-semibold">1.80%</span>
             </div>
           </div>
@@ -130,32 +130,32 @@ export function Sidebar() {
   const viewItems = [
     {
       id: "monitoring",
-      name: "Painel de Monitoramento",
-      desc: "Métricas & KPIs em tempo real",
+      name: t("monitoring"),
+      desc: t("monitoring_desc"),
       icon: BarChart3
     },
     {
       id: "simulation",
-      name: "Sandbox de Simulação",
+      name: t("simulation"),
       desc: activeDomain === "maintenance"
-        ? "Estressar parâmetros IoT"
+        ? t("simulate_iot")
         : activeDomain === "demand"
-        ? "Simular pico de demanda"
+        ? t("simulate_demand")
         : activeDomain === "churn"
-        ? "Simular cancelamento"
-        : "Estressar risco de crédito",
+        ? t("simulate_churn")
+        : t("simulate_credit"),
       icon: Sliders
     },
     {
       id: "calibration",
-      name: "Calibração do Modelo",
-      desc: "Treinamento & base CSV",
+      name: t("calibration"),
+      desc: t("calibration_desc"),
       icon: Settings
     },
     {
       id: "comparison",
-      name: "Comparação Real vs Previsto",
-      desc: "Acurácia & dados reais (RF32)",
+      name: t("comparison"),
+      desc: t("comparison_desc"),
       icon: Sparkles
     }
   ];
@@ -171,7 +171,7 @@ export function Sidebar() {
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
         className="absolute -right-3 top-6 z-30 h-6 w-6 rounded-full border border-border bg-background flex items-center justify-center cursor-pointer shadow-md hover:bg-muted text-muted-foreground hover:text-foreground transition-all duration-200"
-        title={isCollapsed ? "Expandir menu" : "Recolher menu"}
+        title={isCollapsed ? t("expand_menu") : t("collapse_menu")}
       >
         {isCollapsed ? (
           <ChevronRight className="h-3.5 w-3.5" />
@@ -184,7 +184,7 @@ export function Sidebar() {
       <div className="p-3 space-y-6 flex-1 flex flex-col overflow-y-auto">
         {!isCollapsed && activeDomain && (
           <div className="px-3 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest animate-in fade-in duration-300">
-            Ferramentas Internas
+            {t("internal_tools")}
           </div>
         )}
 
@@ -244,7 +244,7 @@ export function Sidebar() {
           ) : (
             !isCollapsed && (
               <div className="px-3 py-6 text-center text-xs text-muted-foreground">
-                Nenhum módulo selecionado. Use o menu hambúrguer para abrir um módulo analítico.
+                {t("no_domain_selected")}
               </div>
             )
           )}
@@ -256,7 +256,7 @@ export function Sidebar() {
         <div className="p-4 m-3 rounded-2xl bg-card border border-border shadow-inner text-xs space-y-2.5 animate-in fade-in duration-300">
           <div className="font-bold text-foreground flex items-center gap-1.5">
             <span className={cn("h-1.5 w-1.5 rounded-full", getActiveDotColorClass(activeDomain))} />
-            <span>Módulo Ativo</span>
+            <span>{t("active_module")}</span>
           </div>
           {renderActiveDomainMetric()}
         </div>
@@ -267,7 +267,7 @@ export function Sidebar() {
         <ShieldCheck className="h-4 w-4 shrink-0" />
         {!isCollapsed && (
           <span className="animate-in fade-in duration-300">
-            Eventos Logs: {logs.length}
+            {t("log_events")} {logs.length}
           </span>
         )}
       </div>

@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { translations, LanguageType } from "@/lib/translations";
 
 export interface AuditLog {
   id: string;
@@ -11,6 +12,19 @@ export interface AuditLog {
   timestamp: number;
   action: string;
 }
+
+export interface CustomThemeColors {
+  primary: string;
+  success: string;
+  alert: string;
+}
+
+export interface CustomTheme {
+  id: string;
+  name: string;
+  colors: CustomThemeColors;
+}
+
 
 export interface Alert {
   id: string;
@@ -45,11 +59,21 @@ export interface DomainMetadata {
   iconName: string;
 }
 
+let currentModuleLanguage: LanguageType = "pt";
+
 export const DOMAINS: Record<DomainType, DomainMetadata> = {
   "maintenance": {
     id: "maintenance",
-    name: "Manutenção de Equipamentos",
-    description: "Análise preditiva de falhas em máquinas, ciclos de vida útil e cronograma de manutenção preventiva baseada em sensores.",
+    get name() {
+      if (currentModuleLanguage === "en") return "Equipment Maintenance";
+      if (currentModuleLanguage === "es") return "Mantenimiento de Equipos";
+      return "Manutenção de Equipamentos";
+    },
+    get description() {
+      if (currentModuleLanguage === "en") return "Predictive analysis of machine failures, lifecycle, and preventive maintenance schedule based on sensors.";
+      if (currentModuleLanguage === "es") return "Análisis predictivo de fallas de máquinas, ciclo de vida y cronograma de mantenimiento preventivo basado en sensores.";
+      return "Análise preditiva de falhas em máquinas, ciclos de vida útil e cronograma de manutenção preventiva baseada em sensores.";
+    },
     color: "amber",
     accentClass: "text-amber-500 bg-amber-500/10 border-amber-500/30",
     bgGradient: "from-amber-600/20 via-zinc-900 to-zinc-950",
@@ -58,8 +82,16 @@ export const DOMAINS: Record<DomainType, DomainMetadata> = {
   },
   "demand": {
     id: "demand",
-    name: "Previsão de Demanda",
-    description: "Modelagem de séries temporais para projeção de vendas, estoques e sazonalidades com inteligência estatística.",
+    get name() {
+      if (currentModuleLanguage === "en") return "Demand Forecasting";
+      if (currentModuleLanguage === "es") return "Previsión de Demanda";
+      return "Previsão de Demanda";
+    },
+    get description() {
+      if (currentModuleLanguage === "en") return "Time series modeling for sales, inventory, and seasonality projections with statistical intelligence.";
+      if (currentModuleLanguage === "es") return "Modelado de series temporales para proyección de ventas, inventarios y estacionalidades con inteligencia estadística.";
+      return "Modelagem de séries temporais para projeção de vendas, estoques e sazonalidades com inteligência estatística.";
+    },
     color: "sky",
     accentClass: "text-sky-500 bg-sky-500/10 border-sky-500/30",
     bgGradient: "from-sky-600/20 via-zinc-900 to-zinc-950",
@@ -68,8 +100,16 @@ export const DOMAINS: Record<DomainType, DomainMetadata> = {
   },
   "churn": {
     id: "churn",
-    name: "Retenção de Clientes",
-    description: "Identificação de padrões de cancelamento, score de risco de rotatividade de clientes e ações de engajamento direcionadas.",
+    get name() {
+      if (currentModuleLanguage === "en") return "Customer Retention";
+      if (currentModuleLanguage === "es") return "Retención de Clientes";
+      return "Retenção de Clientes";
+    },
+    get description() {
+      if (currentModuleLanguage === "en") return "Identification of cancellation patterns, customer churn risk scores, and targeted engagement actions.";
+      if (currentModuleLanguage === "es") return "Identificación de patrones de cancelación, puntuación de riesgo de rotación de clientes y acciones de fidelización dirigidas.";
+      return "Identificação de padrões de cancelamento, score de risco de rotatividade de clientes e ações de engajamento direcionadas.";
+    },
     color: "violet",
     accentClass: "text-violet-500 bg-violet-500/10 border-violet-500/30",
     bgGradient: "from-violet-600/20 via-zinc-900 to-zinc-950",
@@ -78,8 +118,16 @@ export const DOMAINS: Record<DomainType, DomainMetadata> = {
   },
   "credit-risk": {
     id: "credit-risk",
-    name: "Risco de Crédito",
-    description: "Avaliação de risco de crédito de clientes, score de adimplência e análise de probabilidade de inadimplência.",
+    get name() {
+      if (currentModuleLanguage === "en") return "Credit Risk";
+      if (currentModuleLanguage === "es") return "Riesgo de Crédito";
+      return "Risco de Crédito";
+    },
+    get description() {
+      if (currentModuleLanguage === "en") return "Evaluation of customer credit risk, solvency score, and analysis of default probability.";
+      if (currentModuleLanguage === "es") return "Evaluación del riesgo crediticio de los clientes, puntuación de solvencia y análisis de la probabilidad de impago.";
+      return "Avaliação de risco de crédito de clientes, score de adimplência e análise de probabilidade de inadimplência.";
+    },
     color: "emerald",
     accentClass: "text-emerald-500 bg-emerald-500/10 border-emerald-500/30",
     bgGradient: "from-emerald-600/20 via-zinc-900 to-zinc-950",
@@ -117,6 +165,7 @@ export interface User {
   status: "ativo" | "inativo";
   passwordHash?: string;
   theme?: "light" | "dark" | "auto";
+  language?: LanguageType;
 }
 
 export interface TrainedModel {
@@ -260,6 +309,15 @@ interface DomainContextProps {
   clearSentEmails: () => void;
   showPremiumToast: (message: string, type?: "success" | "error") => void;
   simulateCriticalAlertsBatch: () => void;
+  activeCustomTheme: CustomTheme | null;
+  customThemes: CustomTheme[];
+  applyCustomTheme: (theme: CustomTheme | null) => void;
+  saveCustomTheme: (name: string, colors: CustomThemeColors) => void;
+  deleteCustomTheme: (id: string) => void;
+  language: LanguageType;
+  setLanguage: (lang: LanguageType) => void;
+  t: (key: string) => string;
+  getDomainName: (type: DomainType) => string;
 }
 
 const DomainContext = createContext<DomainContextProps | undefined>(undefined);
@@ -462,6 +520,45 @@ const DEFAULT_THRESHOLDS: Record<DomainType, number> = {
   "credit-risk": 60
 };
 
+// Conversor de Hexadecimal para HSL (RF53)
+function hexToHsl(hex: string): { h: number; s: number; l: number; str: string } {
+  hex = hex.replace(/^#/, '');
+  if (hex.length === 3) {
+    hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+  }
+  const r = parseInt(hex.substring(0, 2), 16) / 255;
+  const g = parseInt(hex.substring(2, 4), 16) / 255;
+  const b = parseInt(hex.substring(4, 6), 16) / 255;
+  
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h = 0;
+  let s = 0;
+  const l = (max + min) / 2;
+  
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
+    }
+    h /= 6;
+  }
+  
+  const hDeg = Math.round(h * 360);
+  const sPct = Math.round(s * 100);
+  const lPct = Math.round(l * 100);
+  
+  return {
+    h: hDeg,
+    s: sPct,
+    l: lPct,
+    str: `${hDeg} ${sPct}% ${lPct}%`
+  };
+}
+
 export function DomainProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -475,6 +572,9 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
   const [confirmSwitchOpen, setConfirmSwitchOpen] = useState(false);
   const [pendingDomain, setPendingDomain] = useState<DomainType | null>(null);
   const [theme, setThemeState] = useState<"light" | "dark" | "auto">("dark");
+  const [activeCustomTheme, setActiveCustomTheme] = useState<CustomTheme | null>(null);
+  const [customThemes, setCustomThemes] = useState<CustomTheme[]>([]);
+  const [language, setLanguageState] = useState<LanguageType>("pt");
   const [alertThresholds, setAlertThresholds] = useState<Record<DomainType, number>>(DEFAULT_THRESHOLDS);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [activeUtilityPanel, setActiveUtilityPanel] = useState<"alerts" | "logs" | "predictions" | "menu" | null>(null);
@@ -623,12 +723,88 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     let integrityErrorFound = false;
     const failedDomains: DomainType[] = [];
 
+    // Carregar configurações de idioma (RF54)
+    const savedLanguage = localStorage.getItem("spam-language") as LanguageType | null;
+    let finalLanguage: LanguageType = "pt";
+
+    if (savedLanguage) {
+      finalLanguage = savedLanguage;
+      currentModuleLanguage = savedLanguage;
+      setLanguageState(savedLanguage);
+    } else {
+      // Detecção automática do idioma do navegador (CA04)
+      const browserLang = navigator.language.toLowerCase();
+      if (browserLang.startsWith("en")) {
+        finalLanguage = "en";
+      } else if (browserLang.startsWith("es")) {
+        finalLanguage = "es";
+      } else {
+        finalLanguage = "pt";
+      }
+
+      localStorage.setItem("spam-language", finalLanguage);
+      currentModuleLanguage = finalLanguage;
+      setLanguageState(finalLanguage);
+
+      // Exibir toast informativo
+      const toastMsgs = {
+        pt: "Definimos seu idioma como Português Brasileiro com base nas configurações do seu navegador. Você pode alterá-lo nas configurações de perfil.",
+        en: "We set your language to English automatically based on your browser settings. You can change it at any time in your profile.",
+        es: "Hemos configurado su idioma a Español automáticamente según la configuración de su navegador. Puede cambiarlo en su perfil."
+      };
+      
+      setTimeout(() => {
+        showPremiumToast(toastMsgs[finalLanguage], "success");
+      }, 1000);
+    }
+
+    // Carregar configurações de tema customizado (RF53)
+    const savedCustomThemes = localStorage.getItem("spam-custom-themes");
+    if (savedCustomThemes) {
+      try {
+        setCustomThemes(JSON.parse(savedCustomThemes));
+      } catch (e) {
+        console.error("Erro ao carregar temas salvos:", e);
+      }
+    }
+
+    const savedActiveCustomTheme = localStorage.getItem("spam-active-custom-theme");
+    if (savedActiveCustomTheme) {
+      try {
+        const themeObj = JSON.parse(savedActiveCustomTheme);
+        setActiveCustomTheme(themeObj);
+        
+        // Injetar variáveis CSS imediatamente para evitar flicker visual (CA02)
+        const root = window.document.documentElement;
+        root.setAttribute("data-custom-theme", "true");
+        
+        const primaryHsl = hexToHsl(themeObj.colors.primary).str;
+        const successHsl = hexToHsl(themeObj.colors.success).str;
+        const alertHsl = hexToHsl(themeObj.colors.alert).str;
+        const warningHsl = hexToHsl("#f59e0b").str;
+
+        root.style.setProperty("--theme-primary-hsl", primaryHsl);
+        root.style.setProperty("--theme-success-hsl", successHsl);
+        root.style.setProperty("--theme-alert-hsl", alertHsl);
+        root.style.setProperty("--theme-warning-hsl", warningHsl);
+      } catch (e) {
+        console.error("Erro ao carregar tema customizado ativo:", e);
+      }
+    }
+
     const savedUser = sessionStorage.getItem("spam-user");
     let initialUser: User | null = null;
     if (savedUser) {
       try {
         initialUser = JSON.parse(savedUser);
         setCurrentUser(initialUser);
+        
+        if (initialUser && initialUser.language) {
+          finalLanguage = initialUser.language;
+          currentModuleLanguage = initialUser.language;
+          setLanguageState(initialUser.language);
+          localStorage.setItem("spam-language", initialUser.language);
+        }
       } catch (e) {
         console.error("Erro ao carregar usuário salvo:", e);
       }
@@ -1653,6 +1829,128 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     addLogWithProfile(userProfile, logMsg);
   }, [currentUser, userProfile, addLogWithProfile, setUsers]);
 
+  const applyCustomTheme = useCallback((themeObj: CustomTheme | null) => {
+    setActiveCustomTheme(themeObj);
+    const root = document.documentElement;
+    if (themeObj) {
+      localStorage.setItem("spam-active-custom-theme", JSON.stringify(themeObj));
+      root.setAttribute("data-custom-theme", "true");
+      
+      const primaryHsl = hexToHsl(themeObj.colors.primary).str;
+      const successHsl = hexToHsl(themeObj.colors.success).str;
+      const alertHsl = hexToHsl(themeObj.colors.alert).str;
+      const warningHsl = hexToHsl("#f59e0b").str;
+
+      root.style.setProperty("--theme-primary-hsl", primaryHsl);
+      root.style.setProperty("--theme-success-hsl", successHsl);
+      root.style.setProperty("--theme-alert-hsl", alertHsl);
+      root.style.setProperty("--theme-warning-hsl", warningHsl);
+    } else {
+      localStorage.removeItem("spam-active-custom-theme");
+      root.setAttribute("data-custom-theme", "false");
+      root.style.removeProperty("--theme-primary-hsl");
+      root.style.removeProperty("--theme-success-hsl");
+      root.style.removeProperty("--theme-alert-hsl");
+      root.style.removeProperty("--theme-warning-hsl");
+    }
+  }, []);
+
+  const saveCustomTheme = useCallback((name: string, colors: CustomThemeColors) => {
+    const newTheme: CustomTheme = {
+      id: `theme-${Math.random().toString(36).substring(2, 9)}`,
+      name,
+      colors
+    };
+    
+    setCustomThemes(prev => {
+      const next = [...prev.filter(t => t.name !== name), newTheme];
+      localStorage.setItem("spam-custom-themes", JSON.stringify(next));
+      return next;
+    });
+
+    showPremiumToast(`Tema "${name}" salvo com sucesso!`, "success");
+  }, []);
+
+  const deleteCustomTheme = useCallback((id: string) => {
+    setCustomThemes(prev => {
+      const next = prev.filter(t => t.id !== id);
+      localStorage.setItem("spam-custom-themes", JSON.stringify(next));
+      return next;
+    });
+    
+    setActiveCustomTheme(prev => {
+      if (prev && prev.id === id) {
+        localStorage.removeItem("spam-active-custom-theme");
+        const root = document.documentElement;
+        root.setAttribute("data-custom-theme", "false");
+        root.style.removeProperty("--theme-primary-hsl");
+        root.style.removeProperty("--theme-success-hsl");
+        root.style.removeProperty("--theme-alert-hsl");
+        root.style.removeProperty("--theme-warning-hsl");
+        return null;
+      }
+      return prev;
+    });
+
+    showPremiumToast("Tema removido com sucesso!", "success");
+  }, []);
+
+  const t = useCallback((key: string): string => {
+    const dictionary = translations[language] as Record<string, string>;
+    if (dictionary && dictionary[key]) {
+      return dictionary[key];
+    }
+    // fallback to pt
+    const fallbackDict = translations["pt"] as Record<string, string>;
+    if (fallbackDict && fallbackDict[key]) {
+      return fallbackDict[key];
+    }
+    return key;
+  }, [language]);
+
+  const getDomainName = useCallback((type: DomainType): string => {
+    switch (type) {
+      case "maintenance":
+        return t("maintenance_name");
+      case "demand":
+        return t("demand_name");
+      case "churn":
+        return t("churn_name");
+      case "credit-risk":
+        return t("credit_risk_name");
+      default:
+        return "";
+    }
+  }, [t]);
+
+  const setLanguage = useCallback((lang: LanguageType) => {
+    setLanguageState(lang);
+    currentModuleLanguage = lang;
+    localStorage.setItem("spam-language", lang);
+
+    // Salvar preferência de idioma no perfil de usuário logado (CA03)
+    if (currentUser) {
+      const updatedUser = { ...currentUser, language: lang };
+      setCurrentUser(updatedUser);
+      sessionStorage.setItem("spam-user", JSON.stringify(updatedUser));
+
+      setUsers((prevUsers) => {
+        const nextUsers = prevUsers.map((u) => 
+          u.username === currentUser.username ? { ...u, language: lang } : u
+        );
+        localStorage.setItem("spam-users", JSON.stringify(nextUsers));
+        return nextUsers;
+      });
+    }
+
+    const logMsgs = {
+      pt: `Idioma alterado para Português.`,
+      en: `Language changed to English.`,
+      es: `Idioma cambiado a Español.`
+    };
+    addLogWithProfile(userProfile, logMsgs[lang] || `Idioma alterado para ${lang}`);
+  }, [currentUser, userProfile, addLogWithProfile, setUsers]);
+
   const toggleTheme = useCallback(() => {
     setThemeState((prev) => {
       let next: "light" | "dark" | "auto" = "dark";
@@ -2076,6 +2374,15 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         clearSentEmails,
         showPremiumToast,
         simulateCriticalAlertsBatch,
+        activeCustomTheme,
+        customThemes,
+        applyCustomTheme,
+        saveCustomTheme,
+        deleteCustomTheme,
+        language,
+        setLanguage,
+        t,
+        getDomainName,
       }}
     >
       {children}
