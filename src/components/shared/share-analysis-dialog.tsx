@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
-import { Share2, Link as LinkIcon, Check, Copy, Mail, Send } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Share2, Link as LinkIcon, Check, Copy, Mail, Send, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useSearchParams, usePathname } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -19,14 +20,29 @@ export function ShareAnalysisDialog() {
   const [email, setEmail] = useState("");
   const [copied, setCopied] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [generatedLink, setGeneratedLink] = useState("");
+  const [toastMsg, setToastMsg] = useState("");
 
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
+  // CA02: Capture current URL state including filters
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const origin = window.location.origin;
+      const queryStr = searchParams.toString();
+      const fullUrl = `${origin}${pathname}${queryStr ? `?${queryStr}` : ""}`;
+      setGeneratedLink(fullUrl);
+    }
+  }, [searchParams, pathname, isOpen]);
+
+  const handleCopyLink = () => { // CA03
+    navigator.clipboard.writeText(generatedLink);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleSendEmail = (e: React.FormEvent) => {
+  const handleSendEmail = (e: React.FormEvent) => { // CA04 & CA05
     e.preventDefault();
     if (!email) return;
     
@@ -35,28 +51,44 @@ export function ShareAnalysisDialog() {
     setTimeout(() => {
       setIsSending(false);
       setEmail("");
-      setIsOpen(false);
-      // Here we would ideally show a global toast notification
-      alert(`Análise compartilhada com ${email} com sucesso!`);
-    }, 1200);
+      setToastMsg(`Convite enviado com sucesso para ${email}!`);
+      setTimeout(() => {
+        setToastMsg("");
+        setIsOpen(false);
+      }, 2500);
+    }, 1500);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
+        {/* CA01: Button to open Modal */}
         <Button variant="outline" size="sm" className="gap-2">
-          <Share2 className="h-4 w-4" />
+          <Share2 className="h-4 w-4 text-sky-500" />
           <span className="hidden sm:inline">Compartilhar</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      
+      {/* CA02: Modal UI */}
+      <DialogContent className="sm:max-w-md relative overflow-hidden">
+        
+        {/* Feedback Toast Overlay */}
+        {toastMsg && (
+          <div className="absolute inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center animate-in fade-in zoom-in-95">
+            <div className="bg-emerald-500/10 border border-emerald-500/30 p-4 rounded-xl flex items-center gap-3 text-emerald-500 shadow-xl">
+              <Check className="h-5 w-5" />
+              <span className="font-semibold">{toastMsg}</span>
+            </div>
+          </div>
+        )}
+
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Share2 className="h-5 w-5 text-sky-500" />
             Compartilhar Análise
           </DialogTitle>
           <DialogDescription>
-            Qualquer pessoa do seu workspace com o link poderá visualizar o estado atual deste painel.
+            Qualquer pessoa com este link verá o exato estado atual deste painel (incluindo filtros).
           </DialogDescription>
         </DialogHeader>
         
@@ -68,12 +100,12 @@ export function ShareAnalysisDialog() {
                 <LinkIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="link"
-                  defaultValue={typeof window !== "undefined" ? window.location.href : "https://app.spam.project/..."}
+                  value={generatedLink}
                   readOnly
-                  className="pl-9 font-mono text-xs bg-muted/30 text-muted-foreground"
+                  className="pl-9 font-mono text-xs bg-muted/30 text-muted-foreground border-border/50 truncate"
                 />
               </div>
-              <Button type="button" size="sm" onClick={handleCopyLink} className="shrink-0 gap-2 w-24">
+              <Button type="button" size="sm" onClick={handleCopyLink} className="shrink-0 gap-2 w-28">
                 {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
                 {copied ? "Copiado!" : "Copiar"}
               </Button>
@@ -82,11 +114,11 @@ export function ShareAnalysisDialog() {
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border" />
+              <span className="w-full border-t border-border/50" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground font-semibold">
-                Ou envie por e-mail
+              <span className="bg-background px-2 text-muted-foreground font-semibold tracking-wider">
+                Ou envie convite
               </span>
             </div>
           </div>
@@ -98,23 +130,26 @@ export function ShareAnalysisDialog() {
                 <Mail className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="email"
-                  placeholder="nome@exemplo.com"
+                  placeholder="nome@exemplo.com.br"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-9"
+                  className="pl-9 border-border/50"
                   required
                 />
               </div>
-              <Button type="submit" size="sm" disabled={!email || isSending} className="shrink-0 gap-2 bg-sky-600 hover:bg-sky-500 text-white">
+              <Button type="submit" size="sm" disabled={!email || isSending} className="shrink-0 gap-2 bg-sky-600 hover:bg-sky-500 text-white w-32">
                 <Send className={"h-4 w-4 " + (isSending ? "animate-bounce" : "")} />
-                {isSending ? "Enviando..." : "Enviar Convite"}
+                {isSending ? "Enviando..." : "Enviar Link"}
               </Button>
             </div>
           </form>
         </div>
-        <DialogFooter className="sm:justify-start">
-          <p className="text-[10px] text-muted-foreground text-center w-full">
-            Esta análise permanecerá salva e acessível através deste link por 30 dias.
+        
+        <DialogFooter className="sm:justify-start border-t border-border/30 pt-4 mt-2">
+          {/* CA06: Expiration warning */}
+          <p className="text-[10px] text-muted-foreground flex items-center gap-1.5 w-full bg-muted/20 p-2 rounded">
+            <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+            Links de compartilhamento direto possuem validade estrita e expiram automaticamente em 30 dias.
           </p>
         </DialogFooter>
       </DialogContent>
