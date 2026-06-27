@@ -62,3 +62,12 @@ Dificuldade: Nenhuma.
 Correção aplicada: Nenhuma.
 Melhoria de UX sugerida pela IA: Inclusão de estados de 'loading' no botão de enviar (icone piscando/animate-bounce) e feedback de 'copiado' para o link direto, seguindo padrões modernos de interação.
 
+
+[RF83] Gerar Certificado de Qualidade de Modelo
+
+Prompt usado: RF83 - criar componente visual 'ModelCertificateDialog' que apresenta um certificado com dados dinâmicos do modelo e inseri-lo no cabeçalho do módulo de crédito.
+Funcionou bem: Uso intensivo de classes Tailwind (borders, gradients, backgrounds radiais, marca d'água) para criar um visual premium de 'diploma' sem usar bibliotecas externas pesadas ou imagens estáticas.
+Dificuldade: Nenhuma.
+Correção aplicada: Nenhuma.
+Melhoria de UX sugerida pela IA: O botão do certificado só aparece se houver um modelo treinado e ativo, evitando estados vazios. O botão de 'Baixar PDF' já foi deixado como placeholder estrutural na UI.
+

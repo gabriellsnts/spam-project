@@ -37,7 +37,7 @@ export function ShareAnalysisDialog() {
       setEmail("");
       setIsOpen(false);
       // Here we would ideally show a global toast notification
-      alert(\`Análise compartilhada com \${email} com sucesso!\`);
+      alert(`Análise compartilhada com ${email} com sucesso!`);
     }, 1200);
   };
 
@@ -106,7 +106,7 @@ export function ShareAnalysisDialog() {
                 />
               </div>
               <Button type="submit" size="sm" disabled={!email || isSending} className="shrink-0 gap-2 bg-sky-600 hover:bg-sky-500 text-white">
-                <Send className={\`h-4 w-4 \${isSending ? 'animate-bounce' : ''}\`} />
+                <Send className={"h-4 w-4 " + (isSending ? "animate-bounce" : "")} />
                 {isSending ? "Enviando..." : "Enviar Convite"}
               </Button>
             </div>

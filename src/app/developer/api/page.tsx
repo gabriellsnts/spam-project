@@ -92,7 +92,7 @@ export default function DeveloperApiPage() {
                 disabled={isGenerating}
                 className="gap-2 shrink-0"
               >
-                <RefreshCcw className={\`h-4 w-4 \${isGenerating ? 'animate-spin' : ''}\`} />
+                <RefreshCcw className={"h-4 w-4 " + (isGenerating ? "animate-spin" : "")} />
                 {isGenerating ? 'Gerando...' : 'Gerar Nova Chave'}
               </Button>
             </div>
