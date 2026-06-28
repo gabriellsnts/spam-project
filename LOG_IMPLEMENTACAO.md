@@ -315,3 +315,19 @@
 
 ### 3. Impacto e Resultados Técnicos (A Conclusão)
 - Garantia de build em produção estável de 100% da aplicação Next.js e conformidade com o ecossistema limpo de versionamento e repositório.
+
+---
+
+## 📅 2026-06-28 — Refatoração de Infraestrutura do Motor de Internacionalização (i18n)
+### 1. Contexto e Problemática (O Problema)
+- Havia necessidade de garantir robustez na persistência de estado do idioma selecionado no client-side e torná-lo disponível no lado do servidor (SSR/Middlewares). Adicionalmente, chaves de tradução ausentes ou enums brutos eram mostrados cruamente na interface com underline (ex: `ready_to_use`), comprometendo a qualidade visual do sistema. Equipamentos e rótulos pequenos na viewport de manutenção também apresentavam fallbacks estáticos hardcoded em PT-BR.
+
+### 2. Solução Proposta e Fundamentação (O Desenvolvimento)
+- Refatorado o `DomainProvider` para gerenciar o estado de idioma reativo (`pt`, `en`, `es`) utilizando uma estratégia de persistência dupla em `localStorage` e cookies HTTP de escopo amplo (`SameSite=Lax`).
+- Atualizado o fluxo de autenticação (`login`) para ler e sincronizar automaticamente o idioma padrão do perfil do usuário logado na inicialização e transições de rotas.
+- Implementado suporte a interpolação de strings parametrizadas no helper de tradução `t(key, params)`, permitindo injeção dinâmica de nomes de variáveis nas traduções e insights em tempo real.
+- Criada esteira de tratamento automatizado de chaves ausentes e fallbacks visuais no helper `t` que substitui underlines por espaços e aplica capitalização no primeiro caractere (saneando chaves e enums brutos na UI).
+- Realizada a internacionalização completa dos equipamentos da viewport de manutenção (`Torno CNC 01`, `Braço Robotizado A`, etc.) sob chaves dinâmicas baseadas no ID da máquina no dicionário do `translations.ts` e substituição dos termos em PT-BR hardcoded nos insights analíticos por variáveis dinâmicas.
+
+### 3. Impacto e Resultados Técnicos (A Conclusão)
+- Unificação e isolamento completo da internacionalização com dupla persistência universal, higienização em tempo de execução de chaves faltantes, acessibilidade linguística nativa e eliminação de termos estáticos na área de monitoramento de máquinas do ecossistema. 100% de estabilidade de tipos e build Next.js validado com sucesso.
