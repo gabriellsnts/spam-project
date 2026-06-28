@@ -28,7 +28,7 @@ interface AlertThresholdSettingsProps {
 
 export function AlertThresholdSettings({
   domain,
-  title = "Configuração de Limiar de Alerta",
+  title,
   min,
   max,
   step = 1,
@@ -37,13 +37,15 @@ export function AlertThresholdSettings({
   calculateCriticalCount,
   activeAlerts,
 }: AlertThresholdSettingsProps) {
-  const { alertThresholds, updateAlertThreshold, resetAlertThreshold, updateDashboardAlertCount, currentUser } = useDomain();
+  const { alertThresholds, updateAlertThreshold, resetAlertThreshold, updateDashboardAlertCount, currentUser, t } = useDomain();
 
   const appliedValue = alertThresholds[domain];
   const [draftValue, setDraftValue] = useState<number>(appliedValue);
   const [showRestoreConfirm, setShowRestoreConfirm] = useState(false);
 
   const canEdit = !currentUser || currentUser.accessProfile === "Super Admin";
+
+  const resolvedTitle = title || t("threshold_config_title");
 
   // Sync draft value when applied value changes from context (e.g. on load or reset)
   useEffect(() => {
@@ -123,10 +125,10 @@ export function AlertThresholdSettings({
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
             <AlertTriangle className={`h-4 w-4 ${styles.accent}`} />
-            {title}
+            {resolvedTitle}
           </CardTitle>
           <CardDescription className="text-[11px] text-muted-foreground">
-            Ajuste o limiar a partir do qual as previsões serão consideradas críticas e dispararão alertas operacionais.
+            {t("threshold_config_desc")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -177,26 +179,26 @@ export function AlertThresholdSettings({
           {/* Impact Preview Section */}
           <div className="p-3.5 rounded-lg border border-border/50 bg-background/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs leading-relaxed">
             <div className="space-y-0.5 flex-1">
-              <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">Prévia do Impacto (Tempo Real)</span>
+              <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">{t("impact_preview_realtime")}</span>
               <p className="text-foreground/90 font-medium">
-                Com o limiar de <strong className={styles.accent}>{draftValue} {unit}</strong>,{" "}
-                <strong className={styles.accent}>{draftCriticalCount} de {totalCount} registros</strong> seriam marcados como críticos.
+                {t("threshold_active_summary")} <strong className={styles.accent}>{draftValue} {unit}</strong>,{" "}
+                <strong className={styles.accent}>{draftCriticalCount} de {totalCount} registros</strong> {t("threshold_marked_critical")}
               </p>
               <span className="text-[10px] text-muted-foreground block">
-                Limiar atualmente ativo: <strong className="text-foreground">{appliedValue} {unit}</strong> (com {activeAlerts.length} alertas ativos).
+                {t("currently_active_threshold")} <strong className="text-foreground">{appliedValue} {unit}</strong> (com {activeAlerts.length} {t("active_alerts_count")}).
               </span>
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
               {showRestoreConfirm ? (
                 <div className="flex items-center gap-1.5 bg-rose-500/10 border border-rose-500/25 p-1 rounded-md animate-in fade-in slide-in-from-right-2">
-                  <span className="text-[9px] text-rose-500 font-bold px-1">Restaurar padrão?</span>
+                  <span className="text-[9px] text-rose-500 font-bold px-1">{t("restore_defaults_question")}</span>
                   <Button
                     size="sm"
                     onClick={handleConfirmReset}
                     className="bg-rose-600 hover:bg-rose-500 text-white font-bold h-6 text-[9px] px-2"
                   >
-                    Sim
+                    {t("yes")}
                   </Button>
                   <Button
                     size="sm"
@@ -204,7 +206,7 @@ export function AlertThresholdSettings({
                     onClick={handleCancelReset}
                     className="h-6 text-[9px] px-2 text-muted-foreground"
                   >
-                    Não
+                    {t("no")}
                   </Button>
                 </div>
               ) : (
@@ -217,7 +219,7 @@ export function AlertThresholdSettings({
                     title={canEdit ? "Restaurar limiar de alerta para o padrão de fábrica" : "Sem permissão"}
                   >
                     <RotateCcw className="h-3 w-3" />
-                    Padrão
+                    {t("default")}
                   </Button>
 
                   <Button
@@ -226,7 +228,7 @@ export function AlertThresholdSettings({
                     className={`h-8 text-[10px] font-bold font-sans ${styles.btnApply} disabled:opacity-40 disabled:cursor-not-allowed`}
                     title={canEdit ? "" : "Sem permissão para alterar"}
                   >
-                    Aplicar
+                    {t("apply")}
                   </Button>
                 </>
               )}
@@ -235,7 +237,7 @@ export function AlertThresholdSettings({
           {!canEdit && (
             <div className="text-[10px] text-amber-500 font-semibold bg-amber-500/10 border border-amber-500/20 p-2 rounded flex items-center gap-1.5">
               <AlertTriangle className="h-3.5 w-3.5" />
-              Somente Administradores têm permissão para alterar regras de threshold.
+              {t("admin_only_threshold")}
             </div>
           )}
         </CardContent>
@@ -246,18 +248,18 @@ export function AlertThresholdSettings({
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
             <ShieldCheck className="h-4 w-4 text-rose-500" />
-            Alertas Críticos Ativos
+            {t("active_critical_alerts")}
           </CardTitle>
           <CardDescription className="text-[11px] text-muted-foreground">
-            Registros que violam o limiar configurado atualmente ({appliedValue} {unit}).
+            {t("active_critical_alerts_desc")} ({appliedValue} {unit}).
           </CardDescription>
         </CardHeader>
         <CardContent className="flex-1 overflow-y-auto max-h-[160px] p-4.5 pt-1.5 space-y-2 select-none">
           {activeAlerts.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-3 text-muted-foreground py-6 border border-dashed border-border rounded-lg bg-zinc-950/10">
               <CheckCircle2 className="h-5 w-5 text-emerald-500 mb-1.5" />
-              <p className="text-[10px] font-bold">Nenhum Alerta Crítico</p>
-              <p className="text-[9px] text-muted-foreground/80">Todos os itens operam dentro da faixa de segurança.</p>
+              <p className="text-[10px] font-bold">{t("no_critical_alerts")}</p>
+              <p className="text-[9px] text-muted-foreground/80">{t("all_items_safe")}</p>
             </div>
           ) : (
             <div className="space-y-1.5">
@@ -272,10 +274,10 @@ export function AlertThresholdSettings({
                   </div>
                   <div className="flex justify-between text-[9px] text-muted-foreground mt-0.5">
                     <span>
-                      Valor: <strong className="text-rose-500 font-mono">{alert.value} {unit}</strong>
+                      {t("value_label")} <strong className="text-rose-500 font-mono">{alert.value} {unit}</strong>
                     </span>
                     <span>
-                      Limiar: <strong className="text-foreground/80 font-mono">{alert.threshold} {unit}</strong>
+                      {t("threshold_label")} <strong className="text-foreground/80 font-mono">{alert.threshold} {unit}</strong>
                     </span>
                   </div>
                   {alert.details && (

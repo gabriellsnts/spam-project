@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { AlertTriangle, ClipboardCopy, Check, Download, BarChart3, Database } from "lucide-react";
 import { DOMAIN_SCHEMAS } from "./csv-uploader";
 import { cn } from "@/lib/utils";
+import { useDomain } from "@/lib/context/domain-context";
 
 interface FileDetails {
   name: string;
@@ -44,6 +45,7 @@ interface DescriptiveStatsProps {
 }
 
 export function DescriptiveStats({ fileDetails, allRows, activeDomain }: DescriptiveStatsProps) {
+  const { t } = useDomain();
   const [copied, setCopied] = useState(false);
 
   // Função para verificar se a célula está em falta (nula/ausente)
@@ -146,32 +148,32 @@ export function DescriptiveStats({ fileDetails, allRows, activeDomain }: Descrip
   // Texto formatado para exportação (CA05)
   const summaryText = useMemo(() => {
     let text = `==================================================\n`;
-    text += `RESUMO ESTATÍSTICO DE DADOS IMPORTADOS (RF09)\n`;
+    text += `${t("stats_title") || "RESUMO ESTATÍSTICO DE DADOS IMPORTADOS (RF09)"}\n`;
     text += `==================================================\n`;
-    text += `Arquivo: ${fileDetails.name}\n`;
-    text += `Tamanho do Arquivo: ${fileDetails.size}\n`;
-    text += `Codificação: ${fileDetails.encoding}\n`;
-    text += `Delimitador Técnico: '${fileDetails.delimiter}'\n`;
-    text += `Total de Linhas: ${fileDetails.rows}\n`;
-    text += `Total de Colunas: ${fileDetails.headers.length}\n`;
-    text += `Data da Exportação: ${new Date().toLocaleString("pt-BR")}\n`;
+    text += `${t("file") || "Arquivo"}: ${fileDetails.name}\n`;
+    text += `${t("file_structure") || "Estrutura do Arquivo"}: ${fileDetails.size}\n`;
+    text += `${t("encoding") || "Codificação"}: ${fileDetails.encoding}\n`;
+    text += `${t("delimiter") || "Delimitador Técnico"}: '${fileDetails.delimiter}'\n`;
+    text += `${t("rows_processed") || "Total de Linhas"}: ${fileDetails.rows}\n`;
+    text += `${t("cols_processed") || "Total de Colunas"}: ${fileDetails.headers.length}\n`;
+    text += `${t("date") || "Data"}: ${new Date().toLocaleString()}\n`;
     text += `==================================================\n\n`;
 
     statsList.forEach(col => {
-      text += `Coluna: ${col.name} (${col.isNumeric ? "Numérica" : "Texto"})\n`;
-      text += `- Valores Ausentes (Qualidade Inicial): ${col.missingCount} (${col.missingPct.toFixed(2)}%)\n`;
+      text += `${t("column") || "Coluna"}: ${col.name} (${col.isNumeric ? (t("variable_numeric") || "Numérica") : (t("variable_text") || "Texto")})\n`;
+      text += `- ${t("missing_label") || "Valores Ausentes"}: ${col.missingCount} (${col.missingPct.toFixed(2)}%)\n`;
       if (col.isNumeric) {
-        text += `- Média Aritmética: ${col.mean.toFixed(4)}\n`;
-        text += `- Desvio Padrão: ${col.stdDev.toFixed(4)}\n`;
-        text += `- Valor Mínimo: ${col.min.toFixed(4)}\n`;
-        text += `- Valor Máximo: ${col.max.toFixed(4)}\n`;
-        text += `- Outliers Detectados: ${col.hasOutliers ? "Sim (Alerta Ativo)" : "Não"}\n`;
+        text += `- ${t("mean_label") || "Média"}: ${col.mean.toFixed(4)}\n`;
+        text += `- ${t("stddev_label") || "Desvio Padrão"}: ${col.stdDev.toFixed(4)}\n`;
+        text += `- ${t("min_label") || "Mínimo"}: ${col.min.toFixed(4)}\n`;
+        text += `- ${t("max_label") || "Máximo"}: ${col.max.toFixed(4)}\n`;
+        text += `- Outliers: ${col.hasOutliers ? "Sim" : "Não"}\n`;
       }
       text += `--------------------------------------------------\n`;
     });
 
     return text;
-  }, [fileDetails, statsList]);
+  }, [fileDetails, statsList, t]);
 
   // Copiar para a área de transferência (Clipboard) (CA05)
   const handleCopyToClipboard = async () => {
@@ -205,7 +207,7 @@ export function DescriptiveStats({ fileDetails, allRows, activeDomain }: Descrip
         <Card className="bg-card border-border hover:border-amber-500/30 transition-all duration-300 shadow-md">
           <CardHeader className="pb-2">
             <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
-              Estrutura do Arquivo
+              {t("file_structure")}
             </CardDescription>
             <CardTitle className="text-lg font-black text-foreground truncate" title={fileDetails.name}>
               {fileDetails.name}
@@ -222,15 +224,15 @@ export function DescriptiveStats({ fileDetails, allRows, activeDomain }: Descrip
         <Card className="bg-card border-border hover:border-amber-500/30 transition-all duration-300 shadow-md">
           <CardHeader className="pb-2">
             <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
-              Linhas Processadas
+              {t("rows_processed")}
             </CardDescription>
             <CardTitle className="text-2xl font-black text-foreground font-mono">
-              {fileDetails.rows.toLocaleString("pt-BR")}
+              {fileDetails.rows.toLocaleString()}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-[10px] text-muted-foreground">
-              Total de registros importados com sucesso
+              {t("rows_processed_desc")}
             </div>
           </CardContent>
         </Card>
@@ -238,7 +240,7 @@ export function DescriptiveStats({ fileDetails, allRows, activeDomain }: Descrip
         <Card className="bg-card border-border hover:border-amber-500/30 transition-all duration-300 shadow-md">
           <CardHeader className="pb-2">
             <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
-              Colunas Processadas
+              {t("cols_processed")}
             </CardDescription>
             <CardTitle className="text-2xl font-black text-foreground font-mono">
               {fileDetails.headers.length}
@@ -246,7 +248,7 @@ export function DescriptiveStats({ fileDetails, allRows, activeDomain }: Descrip
           </CardHeader>
           <CardContent>
             <div className="text-[10px] text-muted-foreground">
-              Mapeadas conforme esquema do módulo
+              {t("cols_processed_desc")}
             </div>
           </CardContent>
         </Card>
@@ -257,10 +259,10 @@ export function DescriptiveStats({ fileDetails, allRows, activeDomain }: Descrip
         <div>
           <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
             <BarChart3 className="h-4.5 w-4.5 text-amber-500" />
-            Estatísticas Descritivas e Qualidade dos Dados
+            {t("stats_title")}
           </h3>
           <p className="text-[11px] text-muted-foreground">
-            Métricas descritivas e análises de qualidade de cada variável detectada no CSV.
+            {t("stats_desc")}
           </p>
         </div>
 
@@ -274,12 +276,12 @@ export function DescriptiveStats({ fileDetails, allRows, activeDomain }: Descrip
             {copied ? (
               <>
                 <Check className="h-3.5 w-3.5 mr-1 text-emerald-500" />
-                Copiado!
+                {t("copied_btn")}
               </>
             ) : (
               <>
                 <ClipboardCopy className="h-3.5 w-3.5 mr-1" />
-                Copiar Resumo
+                {t("copy_summary_btn")}
               </>
             )}
           </Button>
@@ -290,7 +292,7 @@ export function DescriptiveStats({ fileDetails, allRows, activeDomain }: Descrip
             className="text-[10px] font-bold h-8 px-3 text-muted-foreground hover:text-foreground flex-1 sm:flex-initial"
           >
             <Download className="h-3.5 w-3.5 mr-1" />
-            Baixar Resumo (TXT)
+            {t("download_summary_txt")}
           </Button>
         </div>
       </div>
@@ -318,7 +320,7 @@ export function DescriptiveStats({ fileDetails, allRows, activeDomain }: Descrip
                     {col.name}
                   </CardTitle>
                   <CardDescription className="text-[9px] uppercase font-bold text-muted-foreground">
-                    {col.isNumeric ? "Variável Numérica" : "Variável de Texto"}
+                    {col.isNumeric ? t("variable_numeric") : t("variable_text")}
                   </CardDescription>
                 </div>
 
@@ -329,7 +331,7 @@ export function DescriptiveStats({ fileDetails, allRows, activeDomain }: Descrip
                     ? "bg-rose-500/10 text-rose-500 border-rose-500/20" 
                     : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
                 )}>
-                  Ausentes: {col.missingCount} ({col.missingPct.toFixed(1)}%)
+                  {t("missing_label")} {col.missingCount} ({col.missingPct.toFixed(1)}%)
                 </span>
               </div>
             </CardHeader>
@@ -341,19 +343,19 @@ export function DescriptiveStats({ fileDetails, allRows, activeDomain }: Descrip
                   <div className="grid grid-cols-2 gap-3">
                     <div className="p-2.5 rounded-lg bg-muted/30 border border-border/60">
                       <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider block mb-0.5">
-                        Média
+                        {t("mean_label")}
                       </span>
                       <span className="text-lg font-black text-foreground font-mono block truncate">
-                        {col.mean.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
+                        {col.mean.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
                       </span>
                     </div>
 
                     <div className="p-2.5 rounded-lg bg-muted/30 border border-border/60">
                       <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider block mb-0.5">
-                        Desvio Padrão
+                        {t("stddev_label")}
                       </span>
                       <span className="text-lg font-black text-foreground font-mono block truncate">
-                        {col.stdDev.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
+                        {col.stdDev.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
                       </span>
                     </div>
                   </div>
@@ -361,14 +363,14 @@ export function DescriptiveStats({ fileDetails, allRows, activeDomain }: Descrip
                   {/* Valores Limite (Mínimo e Máximo com Alerta de Outlier) (CA02, CA04) */}
                   <div className="flex justify-between items-center text-[11px] border-t border-border/80 pt-2.5 font-mono">
                     <div className="space-y-0.5">
-                      <span className="text-[9px] text-muted-foreground font-sans uppercase font-bold">Mínimo</span>
+                      <span className="text-[9px] text-muted-foreground font-sans uppercase font-bold">{t("min_label")}</span>
                       <div className="font-bold text-foreground">
-                        {col.min.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
+                        {col.min.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
                       </div>
                     </div>
 
                     <div className="space-y-0.5 text-right">
-                      <span className="text-[9px] text-muted-foreground font-sans uppercase font-bold block">Máximo</span>
+                      <span className="text-[9px] text-muted-foreground font-sans uppercase font-bold block">{t("max_label")}</span>
                       <div className="flex items-center justify-end gap-1.5">
                         {/* Indicador visual de Outlier ao lado da métrica de 'Valor Máximo' (CA04) */}
                         {col.hasOutliers && (
@@ -380,7 +382,7 @@ export function DescriptiveStats({ fileDetails, allRows, activeDomain }: Descrip
                           </span>
                         )}
                         <span className={cn("font-bold font-mono", col.hasOutliers ? "text-amber-500 font-extrabold" : "text-foreground")}>
-                          {col.max.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
+                          {col.max.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
                         </span>
                       </div>
                     </div>
@@ -389,7 +391,7 @@ export function DescriptiveStats({ fileDetails, allRows, activeDomain }: Descrip
               ) : (
                 <div className="flex items-center justify-center py-6 bg-muted/10 border border-dashed border-border rounded-xl">
                   <p className="text-[10px] text-muted-foreground italic text-center px-4">
-                    Variável categórica não numérica. Cálculo de tendência central e dispersão não aplicável.
+                    {t("categorical_not_applicable")}
                   </p>
                 </div>
               )}

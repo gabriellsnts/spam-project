@@ -29,7 +29,7 @@ import { ComparisonView } from "@/components/shared/comparison-view";
 import { SchedulingCard } from "@/components/shared/scheduling-card";
 
 export default function MaintenancePage() {
-  const { addLog, isTraining, trainedModels, alertThresholds, addAlert, currentView } = useDomain();
+  const { addLog, isTraining, trainedModels, alertThresholds, addAlert, currentView, t, language } = useDomain();
   const activeModel = trainedModels["maintenance"];
   const isModelObsolete = activeModel ? (Date.now() - activeModel.timestamp > 30 * 24 * 60 * 60 * 1000) : false;
   const [horizon, setHorizon] = useState<7 | 30 | 90>(30);
@@ -202,39 +202,39 @@ export default function MaintenancePage() {
 
   const generateReportText = () => {
     return `==================================================
-RELATÓRIO DE IMPACTO DE CENÁRIO HIPOTÉTICO (RF12)
+${t("report_hypothetical_title") || "RELATÓRIO DE IMPACTO DE CENÁRIO HIPOTÉTICO (RF12)"}
 ==================================================
-Equipamento          : ${selectedMachine.name}
-Código identificador : ${selectedMachine.id}-SENSOR
-Data da Simulação    : ${new Date().toLocaleString("pt-BR")}
+${t("equipment") || "Equipamento"}          : ${selectedMachine.name}
+${t("identifier_code") || "Código identificador"} : ${selectedMachine.id}-SENSOR
+${t("simulation_date") || "Data da Simulação"}    : ${new Date().toLocaleString(language === "pt" ? "pt-BR" : language === "es" ? "es-ES" : "en-US")}
 
 --------------------------------------------------
-COMPARAÇÃO DE VARIÁVEIS FÍSICAS
+${t("physical_variables_comparison") || "COMPARAÇÃO DE VARIÁVEIS FÍSICAS"}
 --------------------------------------------------
-Variável        | Estado Real (Telemetria) | Cenário Simulado
-Temperatura     | ${selectedMachine.temp.toFixed(1)} °C                 | ${sim.temp.toFixed(1)} °C
-Vibração        | ${selectedMachine.vibration.toFixed(1)} mm/s                | ${sim.vibration.toFixed(1)} mm/s
-Eficiência OEE  | ${selectedMachine.oee.toFixed(1)} %                 | ${sim.oee.toFixed(1)} %
+${t("variable") || "Variável"}        | ${t("real_state_telemetry") || "Estado Real (Telemetria)"} | ${t("simulated_scenario") || "Cenário Simulado"}
+${t("temperature") || "Temperatura"}     | ${selectedMachine.temp.toFixed(1)} °C                 | ${sim.temp.toFixed(1)} °C
+${t("vibration") || "Vibração"}        | ${selectedMachine.vibration.toFixed(1)} mm/s                | ${sim.vibration.toFixed(1)} mm/s
+${t("oee_efficiency") || "Eficiência OEE"}  | ${selectedMachine.oee.toFixed(1)} %                 | ${sim.oee.toFixed(1)} %
 
 --------------------------------------------------
-ANÁLISE DE IMPACTO PREDITIVO (RUL)
+${t("predictive_impact_analysis") || "ANÁLISE DE IMPACTO PREDITIVO (RUL)"}
 --------------------------------------------------
-RUL Atual Real  : ${realRul.toFixed(1)} horas
-RUL Simulado    : ${simRul.toFixed(1)} horas
-Variação de RUL : ${diffPct === 0 ? "Sem alteração" : `${diffPct > 0 ? "+" : ""}${diffPct.toFixed(1)}%`}
+${t("current_real_rul") || "RUL Atual Real"}  : ${realRul.toFixed(1)} horas
+${t("simulated_rul") || "RUL Simulado"}    : ${simRul.toFixed(1)} horas
+${t("rul_variation") || "Variação de RUL"} : ${diffPct === 0 ? (t("no_change") || "Sem alteração") : `${diffPct > 0 ? "+" : ""}${diffPct.toFixed(1)}%`}
 
-Status Atual    : ${selectedMachine.status.toUpperCase()}
-Status Simulado : ${simStatus.toUpperCase()}
+Status ${t("current") || "Atual"}    : ${selectedMachine.status.toUpperCase()}
+Status ${t("simulated") || "Simulado"} : ${simStatus.toUpperCase()}
 
 --------------------------------------------------
-PLANO DE CONTINGÊNCIA RECOMENDADO
+${t("recommended_contingency_plan") || "PLANO DE CONTINGÊNCIA RECOMENDADO"}
 --------------------------------------------------
 ${
   simStatus === "critical"
-    ? "ALERTA CRÍTICO: Os parâmetros simulados ultrapassaram os limites de segurança da engenharia (Temp > 80°C ou Vibração > 4.5 mm/s). Recomenda-se a interrupção imediata das atividades da máquina para manutenção corretiva e lubrificação, mitigando riscos de falha catastrófica."
+    ? (t("critical_contingency_desc") || "ALERTA CRÍTICO: Os parâmetros simulados ultrapassaram os limites de segurança da engenharia (Temp > 80°C ou Vibração > 4.5 mm/s). Recomenda-se a interrupção imediata das atividades da máquina para manutenção corretiva e lubrificação, mitigando riscos de falha catastrófica.")
     : simStatus === "warning"
-    ? "AVISO TÉCNICO: Variáveis físicas em nível de atenção. Recomenda-se programar uma vistoria preventiva nas próximas 24 horas para reajuste de calibração."
-    : "SITUAÇÃO NORMAL: O cenário simulado está dentro das faixas aceitáveis de operação. Continue monitorando as variáveis por meio da telemetria padrão."
+    ? (t("warning_contingency_desc") || "AVISO TÉCNICO: Variáveis físicas em nível de atenção. Recomenda-se programar uma vistoria preventiva nas próximas 24 horas para reajuste de calibração.")
+    : (t("normal_contingency_desc") || "SITUAÇÃO NORMAL: O cenário simulado está dentro das faixas aceitáveis de operação. Continue monitorando as variáveis por meio da telemetria padrão.")
 }
 ==================================================`;
   };
@@ -269,7 +269,6 @@ ${
     addLog("Relatório consolidado exportado para PDF via impressão.");
   };
 
-
   const mockFeatures = [
     { name: "Vibração RMS", weight: 0.45, description: "Desgaste de rolamentos e desbalanceamento mecânico." },
     { name: "Temperatura do Eixo", weight: 0.35, description: "Aquecimento excessivo por atrito ou falta de lubrificação." },
@@ -285,10 +284,10 @@ ${
         <div className="space-y-1 relative z-10">
           <div className="flex items-center gap-2 text-amber-500 font-bold text-xs uppercase tracking-widest">
             <Radio className="h-4 w-4 animate-pulse" />
-            Módulo de Manutenção Preditiva (Ativo)
+            {t("maintenance_module_title")}
           </div>
           <h2 className="text-2xl font-black text-foreground tracking-tight flex flex-wrap items-center gap-2">
-            Análise de Vibração e Falha de Máquinas
+            {t("maintenance_subtitle")}
             {activeModel && (
               <span className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-bold border font-sans ${
                 isModelObsolete 
@@ -296,18 +295,18 @@ ${
                   : "bg-emerald-500/10 text-emerald-550 dark:text-emerald-400 border-emerald-500/20 animate-pulse"
               }`}>
                 <CheckCircle2 className="h-3 w-3" />
-                {isModelObsolete ? "Modelo Obsoleto" : "Modelo Pronto para Uso"}
+                {isModelObsolete ? t("obsolete_model") || "Modelo Obsoleto" : t("ready_to_use") || "Modelo Pronto para Uso"}
               </span>
             )}
           </h2>
           <p className="text-muted-foreground text-xs">
-            Monitoramento térmico e estatísticas OEE integradas em tempo real com sensor IoT simulado.
+            {t("maintenance_desc_long")}
           </p>
         </div>
 
         <div className="flex flex-col sm:flex-row items-center gap-2 relative z-10">
           <Button variant="outline" size="sm" onClick={handleExport} className="text-xs">
-            Exportar Relatório (PDF)
+            {t("export_csv") || "Exportar Relatório"}
           </Button>
         </div>
       </div>
@@ -318,9 +317,9 @@ ${
             <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-500 text-xs font-semibold flex items-start gap-2 animate-in fade-in duration-300 font-sans">
               <AlertCircle className="h-5 w-5 shrink-0" />
               <div>
-                <p className="font-bold text-foreground">Sem Modelo Ativo Detectado</p>
+                <p className="font-bold text-foreground">{t("no_active_model")}</p>
                 <p className="text-muted-foreground mt-0.5">
-                  Para habilitar previsões e simulações completas de falhas de equipamentos, acesse a aba de Calibração e realize o treinamento com um arquivo CSV.
+                  {t("maintenance_no_model_desc")}
                 </p>
               </div>
             </div>
@@ -330,14 +329,14 @@ ${
             <Card className="bg-card border-border transition-colors duration-300">
               <CardHeader className="pb-2">
                 <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
-                  OEE Médio Operacional
+                  {t("oee_average")}
                 </CardDescription>
                 <CardTitle className="text-2xl font-black text-foreground">84.0%</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-[10px] text-muted-foreground flex items-center gap-1">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  Dentro do limite aceitável (&gt;80%)
+                  {t("within_limits")}
                 </div>
               </CardContent>
             </Card>
@@ -345,19 +344,19 @@ ${
             <Card className="bg-card border-border transition-colors duration-300">
               <CardHeader className="pb-2">
                 <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
-                  Disponibilidade
+                  {t("availability")}
                 </CardDescription>
                 <CardTitle className="text-2xl font-black text-foreground">92.4%</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-[10px] text-muted-foreground">Tempo de inatividade planejado: 2.1h</div>
+                <div className="text-[10px] text-muted-foreground">{t("planned_downtime")}</div>
               </CardContent>
             </Card>
 
             <Card className="bg-card border-border transition-colors duration-300">
               <CardHeader className="pb-2">
                 <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
-                  Alertas Ativos (Limiar)
+                  {t("active_alerts_threshold")}
                 </CardDescription>
                 <CardTitle className={`text-2xl font-black transition-colors ${
                   activeAlertsList.length > 0 ? "text-rose-500 animate-pulse" : "text-amber-500"
@@ -367,7 +366,7 @@ ${
               </CardHeader>
               <CardContent>
                 <div className="text-[10px] text-muted-foreground">
-                  {activeAlertsList.length > 0 ? `${activeAlertsList.length} falhas previstas no limiar` : "Nenhuma falha prevista no limiar"}
+                  {activeAlertsList.length > 0 ? `${activeAlertsList.length} ${t("active_plural")}` : t("no_failures_predicted")}
                 </div>
               </CardContent>
             </Card>
@@ -375,15 +374,15 @@ ${
             <Card className="bg-card border-border transition-colors duration-300">
               <CardHeader className="pb-2">
                 <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
-                  RUL Médio (Previsão)
+                  {t("average_rul")}
                 </CardDescription>
                 <CardTitle className="text-2xl font-black text-foreground">
-                  {Math.ceil(averageRul / 24)} dias
+                  {Math.ceil(averageRul / 24)} {t("days")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-[10px] text-muted-foreground">
-                  Média de vida útil restante estimada
+                  {t("average_remaining_life")}
                 </div>
               </CardContent>
             </Card>
@@ -392,19 +391,19 @@ ${
           <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg text-sm text-foreground flex gap-3">
             <Sparkles className="h-5 w-5 text-amber-500 shrink-0" />
             <div>
-              <strong className="text-amber-500 block mb-1">Insight Automático:</strong>
+              <strong className="text-amber-500 block mb-1">{t("auto_insight")}</strong>
               {simulationActive 
-                ? "O alerta crítico foi disparado. Observamos anomalia severa de vibração e temperatura no Torno CNC 01. Sugere-se parada de máquina imediata."
-                : "A linha de produção apresenta estabilidade geral. Recomenda-se realizar lubrificação no Braço Robotizado A (preventiva)."}
+                ? t("insight_critical_maintenance")
+                : t("insight_stable_maintenance")}
             </div>
           </div>
 
           <AlertThresholdSettings
             domain="maintenance"
-            title="Limiar de Vida Útil Crítica de Equipamentos (RUL)"
+            title={t("limit_lifetime_rul")}
             min={0}
             max={90}
-            unit="dias"
+            unit={t("days")}
             totalCount={machines.length}
             calculateCriticalCount={calculateCriticalCount}
             activeAlerts={activeAlertsList}
@@ -418,22 +417,22 @@ ${
                 <div className="space-y-1">
                   <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
                     <Settings className="h-4 w-4 text-muted-foreground/60" />
-                    Equipamentos sob Monitoramento
+                    {t("equipment_monitored")}
                   </CardTitle>
                   <CardDescription className="text-[11px] text-muted-foreground">
-                    Sensores acoplados monitorando vibração (mm/s RMS) e temperatura (°C) em tempo real.
+                    {t("vibration_temp_desc")}
                   </CardDescription>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Horizonte:</span>
+                  <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">{t("horizon")}</span>
                   <select
                     value={horizon}
                     onChange={(e) => setHorizon(Number(e.target.value) as 7 | 30 | 90)}
                     className="bg-background border border-border text-foreground rounded-lg text-xs px-2 py-1 focus:ring-1 focus:ring-amber-500 focus:outline-none cursor-pointer font-sans"
                   >
-                    <option value={7}>7 Dias</option>
-                    <option value={30}>30 Dias</option>
-                    <option value={90}>90 Dias</option>
+                    <option value={7}>{t("days_7")}</option>
+                    <option value={30}>{t("days_30")}</option>
+                    <option value={90}>{t("days_90")}</option>
                   </select>
                 </div>
               </CardHeader>
@@ -475,7 +474,7 @@ ${
                               {m.name}
                               {isMachineSimulated && (
                                 <span className="text-[9px] px-1 bg-amber-500/15 text-amber-500 border border-amber-500/20 rounded font-bold font-sans">
-                                  Simulando
+                                  {t("simulating")}
                                 </span>
                               )}
                             </div>
@@ -491,7 +490,7 @@ ${
                             }`}>{m.temp} °C</div>
                           </div>
                           <div>
-                            <div className="text-[9px] text-muted-foreground uppercase font-semibold">Vibração</div>
+                            <div className="text-[9px] text-muted-foreground uppercase font-semibold">{t("vibration_label").split(" ")[0]}</div>
                             <div className={`text-xs font-bold font-mono ${
                               m.vibration > 6 ? "text-rose-500" : m.vibration > 3 ? "text-amber-500" : "text-foreground/80"
                             }`}>{m.vibration} mm/s</div>
@@ -499,7 +498,7 @@ ${
                           <div>
                             <div className="text-[9px] text-muted-foreground uppercase font-semibold">OEE</div>
                             <div className={`text-xs font-bold font-mono ${
-                              m.oee < 80 ? "text-amber-500" : "text-emerald-550 dark:text-emerald-405 font-bold"
+                              m.oee < 80 ? "text-amber-500" : "text-emerald-555 dark:text-emerald-405 font-bold"
                             }`}>{m.oee}%</div>
                           </div>
                         </div>
@@ -510,7 +509,7 @@ ${
                               ? "bg-rose-500/10 text-rose-500 border-rose-500/20 animate-pulse"
                               : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
                           }`}>
-                            {requiresMaintenance ? `Manut. em < ${Math.ceil(rul / 24)}d` : "Seguro"}
+                            {requiresMaintenance ? `${t("maintenance_in")} ${Math.ceil(rul / 24)}d` : t("safe")}
                           </span>
                           <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border ${
                             m.status === "ok"
@@ -519,7 +518,7 @@ ${
                               ? "bg-amber-500/10 text-amber-500 border-amber-500/25"
                               : "bg-rose-500/10 text-rose-500 border-rose-500/25 animate-pulse"
                           }`}>
-                            {m.status === "ok" ? "Operacional" : m.status === "warning" ? "Aviso Técnico" : "Falha Crítica"}
+                            {m.status === "ok" ? t("operational") : m.status === "warning" ? t("tech_warning") : t("critical_failure")}
                           </span>
                         </div>
                       </div>
@@ -535,10 +534,10 @@ ${
                 <CardHeader>
                   <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
                     <BarChart3 className="h-4 w-4 text-muted-foreground/60" />
-                    Insights do Modelo RUL
+                    {t("rul_insights")}
                   </CardTitle>
                   <CardDescription className="text-[11px] text-muted-foreground">
-                    Vida Útil Restante (RUL) estimada por regressão linear Bayesiana.
+                    {t("rul_desc")}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -572,7 +571,7 @@ ${
                             {m.name} (RUL)
                             {simOverride && (
                               <span className="text-[8px] px-1 bg-amber-500/10 text-amber-500 rounded border border-amber-500/20 font-bold">
-                                Simulado
+                                {t("simulating")}
                               </span>
                             )}
                           </span>
@@ -599,7 +598,7 @@ ${
                     <div className="p-3 bg-rose-500/10 border border-rose-500/25 rounded-lg text-[10px] text-rose-500 animate-pulse flex items-start gap-2 mt-4">
                       <AlertTriangle className="h-4 w-4 shrink-0" />
                       <div>
-                        <strong>Alerta de Parada Imediata:</strong> Sensores registraram ou simularam temperatura excessiva ou vibração extrema. Recomenda-se vistoria urgente.
+                        <strong>{t("immediate_stop_alert")}</strong> {t("immediate_stop_desc")}
                       </div>
                     </div>
                   )}
@@ -616,9 +615,9 @@ ${
             <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-500 text-xs font-semibold flex items-start gap-2 animate-in fade-in duration-300 font-sans mb-6">
               <AlertCircle className="h-5 w-5 shrink-0" />
               <div>
-                <p className="font-bold text-foreground">Acesso Limitado: Sem Modelo Ativo</p>
+                <p className="font-bold text-foreground">{t("no_active_model_sim")}</p>
                 <p className="text-muted-foreground mt-0.5">
-                  A simulação e predição RUL exigem um modelo calibrado. Acesse a aba de Calibração para treinar um modelo utilizando dados históricos.
+                  {t("no_active_model_sim_desc")}
                 </p>
               </div>
             </div>
@@ -630,10 +629,10 @@ ${
                 <div>
                   <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
                     <Sliders className="h-4 w-4 text-amber-500" />
-                    Sandbox de Simulação
+                    {t("simulation_sandbox")}
                   </CardTitle>
                   <CardDescription className="text-[11px] text-muted-foreground">
-                    Ajuste de variáveis do equipamento selecionado.
+                    {t("adjust_variables_desc")}
                   </CardDescription>
                 </div>
                 <Button
@@ -644,13 +643,13 @@ ${
                   title="Resetar parâmetros simulados para a telemetria original"
                 >
                   <RotateCcw className="h-3.5 w-3.5 mr-1" />
-                  Resetar
+                  {t("reset")}
                 </Button>
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Preset Rápido de Anomalia */}
                 <div className="p-3 bg-amber-500/5 border border-amber-500/10 rounded-xl space-y-2">
-                  <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Preset Rápido de Anomalia</div>
+                  <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">{t("quick_anomaly_preset")}</div>
                   <div className="flex gap-2">
                     {simulationActive ? (
                       <Button
@@ -658,7 +657,7 @@ ${
                         disabled={isTraining}
                         className="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-1.5 h-8"
                       >
-                        Resetar Sensores
+                        {t("reset_sensors")}
                       </Button>
                     ) : (
                       <Button
@@ -667,7 +666,7 @@ ${
                         className="w-full bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold gap-1.5 py-1.5 h-8"
                       >
                         <AlertTriangle className="h-3.5 w-3.5" />
-                        ⚠️ Simular Anomalia (Vibração)
+                        {t("simulate_anomaly_vibration")}
                       </Button>
                     )}
                   </div>
@@ -676,7 +675,7 @@ ${
                 {/* Info Equipamento Selecionado */}
                 <div className="p-2.5 bg-muted/40 border border-border/80 rounded-xl flex items-center justify-between">
                   <div>
-                    <div className="text-[10px] text-muted-foreground font-semibold">Equipamento em Simulação:</div>
+                    <div className="text-[10px] text-muted-foreground font-semibold">{t("equipment_in_simulation")}</div>
                     <div className="text-xs font-bold text-foreground">{selectedMachine.name}</div>
                   </div>
                   <span className="text-[9px] font-mono bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded border border-border">
@@ -689,7 +688,7 @@ ${
                   {/* Temperatura */}
                   <div className="space-y-1">
                     <div className="flex justify-between text-xs font-semibold">
-                      <span className="text-muted-foreground">Temperatura (°C)</span>
+                      <span className="text-muted-foreground">{t("temp_label")}</span>
                       <span className={`font-mono font-bold ${sim.temp > 80 ? "text-rose-500 font-extrabold" : "text-foreground"}`}>{sim.temp} °C</span>
                     </div>
                     <input
@@ -712,7 +711,7 @@ ${
                   {/* Vibração */}
                   <div className="space-y-1">
                     <div className="flex justify-between text-xs font-semibold">
-                      <span className="text-muted-foreground">Vibração (mm/s)</span>
+                      <span className="text-muted-foreground">{t("vibration_label")}</span>
                       <span className={`font-mono font-bold ${sim.vibration > 4.5 ? "text-rose-500 font-extrabold" : "text-foreground"}`}>{sim.vibration.toFixed(1)} mm/s</span>
                     </div>
                     <input
@@ -735,7 +734,7 @@ ${
                   {/* OEE */}
                   <div className="space-y-1">
                     <div className="flex justify-between text-xs font-semibold">
-                      <span className="text-muted-foreground">Eficiência OEE (%)</span>
+                      <span className="text-muted-foreground">{t("oee_label")}</span>
                       <span className={`font-mono font-bold ${sim.oee < 80 ? "text-amber-500" : "text-foreground"}`}>{sim.oee}%</span>
                     </div>
                     <input
@@ -761,7 +760,7 @@ ${
                   {/* Estado Real Atual */}
                   <div className="p-3 bg-muted/40 border border-border rounded-xl space-y-2">
                     <div className="font-bold text-[10px] text-muted-foreground uppercase tracking-wider">
-                      Estado Real
+                      {t("real_state")}
                     </div>
                     <div className="space-y-1 font-mono text-[11px]">
                       <div>Temp: <span className="font-bold">{selectedMachine.temp} °C</span></div>
@@ -789,7 +788,7 @@ ${
                       : "bg-amber-500/5 border-amber-500/25"
                   }`}>
                     <div className="font-bold text-[10px] text-muted-foreground uppercase tracking-wider flex items-center justify-between">
-                      <span>Cenário Simulado</span>
+                      <span>{t("simulated_scenario")}</span>
                       {isSimulatedCritical && (
                         <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-ping" />
                       )}
@@ -820,7 +819,7 @@ ${
                 <div className="mt-2 text-center">
                   {diffPct === 0 ? (
                     <span className="text-[10px] text-muted-foreground font-semibold">
-                      Sem alteração na vida útil estimada.
+                      {t("no_change_rul")}
                     </span>
                   ) : (
                     <span className={`text-[10px] font-bold px-2.5 py-1 rounded border inline-block ${
@@ -828,7 +827,7 @@ ${
                         ? "bg-rose-500/15 text-rose-500 border-rose-500/20" 
                         : "bg-emerald-500/15 text-emerald-550 dark:text-emerald-400 border-emerald-500/20"
                     }`}>
-                      {diffPct < 0 ? "" : "+"}{diffPct.toFixed(1)}% de vida útil no cenário simulado
+                      {diffPct < 0 ? "" : "+"}{diffPct.toFixed(1)}% {t("rul_change_scenario")}
                     </span>
                   )}
                 </div>
@@ -844,12 +843,12 @@ ${
                     {reportCopied ? (
                       <>
                         <Check className="h-3.5 w-3.5 text-emerald-500" />
-                        Copiado!
+                        {t("copied")}
                       </>
                     ) : (
                       <>
                         <ClipboardCopy className="h-3.5 w-3.5" />
-                        Copiar Resumo
+                        {t("copy_summary")}
                       </>
                     )}
                   </Button>
@@ -860,7 +859,7 @@ ${
                     className="flex-1 text-[10px] h-8 font-bold gap-1 text-muted-foreground hover:text-foreground border-border"
                   >
                     <Download className="h-3.5 w-3.5" />
-                    Baixar TXT
+                    {t("download_txt")}
                   </Button>
                 </div>
               </CardContent>
@@ -876,7 +875,7 @@ ${
             <Card className="bg-card border-border transition-colors duration-300">
               <CardHeader className="pb-2">
                 <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
-                  Algoritmo Ativo e Métricas
+                  {t("active_algorithm_metrics")}
                 </CardDescription>
                 <CardTitle className="text-xl font-black text-foreground truncate" title={activeModel ? activeModel.algorithm : "Random Forest"}>
                   {activeModel ? activeModel.algorithm : "Random Forest"}
@@ -897,15 +896,15 @@ ${
               <Card className="bg-card border-border transition-colors duration-300">
                 <CardHeader className="pb-2">
                   <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
-                    Status de Treinamento
+                    {t("training_status")}
                   </CardDescription>
                   <CardTitle className="text-sm font-bold text-foreground">
-                    Modelo Ativo e Calibrado
+                    {t("model_active_calibrated")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-[10px] text-muted-foreground">
-                    Calibrado em: {new Date(activeModel.timestamp).toLocaleString("pt-BR")}
+                    {t("calibrated_at")} {new Date(activeModel.timestamp).toLocaleString(language === "pt" ? "pt-BR" : language === "es" ? "es-ES" : "en-US")}
                   </div>
                 </CardContent>
               </Card>
@@ -922,7 +921,7 @@ ${
                 <AccordionTrigger isOpen={isAccordionOpen} onClick={() => setIsAccordionOpen(!isAccordionOpen)}>
                   <span className="text-xs font-bold text-foreground flex items-center gap-1.5 font-sans">
                     <BarChart3 className="h-4.5 w-4.5 text-amber-500" />
-                    Diagnóstico Visual do Modelo: Gráfico de Resíduos (RF13)
+                    {t("residuals_diagnostic")}
                   </span>
                 </AccordionTrigger>
                 <AccordionContent isOpen={isAccordionOpen}>

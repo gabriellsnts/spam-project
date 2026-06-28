@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { BarChart2, Filter, ArrowDownAZ, ArrowDown10, Info } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useDomain } from "@/lib/context/domain-context";
 
 export interface FeatureData {
   name: string;
@@ -21,12 +22,16 @@ interface FeatureImportanceChartProps {
 
 export function FeatureImportanceChart({
   data,
-  title = "Importância das Variáveis (Feature Importance)",
-  description = "Análise de impacto relativo das variáveis preditoras no modelo ativo.",
+  title,
+  description,
 }: FeatureImportanceChartProps) {
+  const { t } = useDomain();
   const [filterTop10, setFilterTop10] = useState(true);
   const [sortByWeight, setSortByWeight] = useState(true);
   const [selectedFeature, setSelectedFeature] = useState<FeatureData | null>(null);
+
+  const resolvedTitle = title || t("feature_importance_title");
+  const resolvedDescription = description || t("feature_importance_desc");
 
   const processedData = useMemo(() => {
     let result = [...data];
@@ -53,10 +58,10 @@ export function FeatureImportanceChart({
         <div className="space-y-1">
           <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
             <BarChart2 className="h-4 w-4 text-muted-foreground/60" />
-            {title}
+            {resolvedTitle}
           </CardTitle>
           <CardDescription className="text-[11px] text-muted-foreground">
-            {description}
+            {resolvedDescription}
           </CardDescription>
         </div>
         <div className="flex items-center gap-2">
@@ -67,7 +72,7 @@ export function FeatureImportanceChart({
             className="h-8 text-[10px] font-medium px-2 gap-1.5"
           >
             <Filter className="h-3 w-3" />
-            {filterTop10 ? "Mostrar Todas" : "Mostrar Top 10"}
+            {filterTop10 ? t("show_all") : t("show_top_10")}
           </Button>
           <Button
             variant="outline"
@@ -76,7 +81,7 @@ export function FeatureImportanceChart({
             className="h-8 text-[10px] font-medium px-2 gap-1.5"
           >
             {sortByWeight ? <ArrowDownAZ className="h-3 w-3" /> : <ArrowDown10 className="h-3 w-3" />}
-            {sortByWeight ? "Ordenar A-Z" : "Ordenar por Peso"}
+            {sortByWeight ? t("sort_a_z") : t("sort_by_weight")}
           </Button>
         </div>
       </CardHeader>
@@ -105,8 +110,8 @@ export function FeatureImportanceChart({
                     return (
                       <div className="bg-popover border border-border shadow-lg rounded-lg p-3 text-sm max-w-[200px]">
                         <p className="font-bold text-foreground mb-1">{data.name}</p>
-                        <p className="text-muted-foreground text-xs mb-2">Peso: {(data.weight * 100).toFixed(1)}%</p>
-                        <p className="text-[10px] text-muted-foreground italic line-clamp-3">Clique na barra para detalhes.</p>
+                        <p className="text-muted-foreground text-xs mb-2">{t("weight_percentage")} {(data.weight * 100).toFixed(1)}%</p>
+                        <p className="text-[10px] text-muted-foreground italic line-clamp-3">{t("click_bar_details")}</p>
                       </div>
                     );
                   }
@@ -133,10 +138,10 @@ export function FeatureImportanceChart({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Info className="h-5 w-5 text-primary" />
-              Detalhes da Variável
+              {t("feature_details")}
             </DialogTitle>
             <DialogDescription>
-              Compreenda a contribuição deste fator no modelo preditivo.
+              {t("feature_contribution_desc")}
             </DialogDescription>
           </DialogHeader>
           {selectedFeature && (
@@ -144,7 +149,7 @@ export function FeatureImportanceChart({
               <div className="space-y-1">
                 <h4 className="text-sm font-bold text-foreground">{selectedFeature.name}</h4>
                 <div className="text-xs text-muted-foreground">
-                  Peso Relativo: <strong className="text-foreground">{(selectedFeature.weight * 100).toFixed(2)}%</strong>
+                  {t("relative_weight")} <strong className="text-foreground">{(selectedFeature.weight * 100).toFixed(2)}%</strong>
                 </div>
               </div>
               <div className="bg-muted/40 p-4 rounded-lg border border-border text-sm text-foreground/90 leading-relaxed">

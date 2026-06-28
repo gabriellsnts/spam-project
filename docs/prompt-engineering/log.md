@@ -97,3 +97,11 @@ Dificuldade: O uso de caminhos com parênteses em sistemas Windows com PowerShel
 Correção aplicada: Foram utilizadas aspas simples no Git para escapar caminhos como 'src/app/(domains)/churn/page.tsx' e o separador ';' no PowerShell em vez de '&&'.
 Melhoria de UX sugerida pela IA: Implementação de layouts e designs de e-mail simulados diferenciados no EmailNotificationsRenderer para relatórios de agendamento com badges dinâmicos de sucesso/falha e dados quantitativos de performance de modelo (ex: R² para regressão e Acurácia para classificação).
 
+[i18n] Internacionalização Completa de Todos os Módulos Analíticos de Domínio
+
+Prompt usado: Correção definitiva da internacionalização profunda de todos os 4 módulos analíticos de domínio e suas abas internas.
+Funcionou bem: A substituição direta de todas as strings estáticas em português nos 4 arquivos de páginas de domínio pelo helper t() com fallbacks seguros que garantem estabilidade e consistência linguística.
+Dificuldade: A varredura de arquivos extensos como `credit-risk/page.tsx` (1170 linhas) e `maintenance/page.tsx` (957 linhas) contendo múltiplas lógicas de telemetria, impressão, sandbox e comparadores de cenários.
+Correção aplicada: Utilização do método de escrita total de arquivo `write_to_file` com fallbacks integrados na chamada de `t()` para prevenir quebras visuais e preservar a integridade da tipagem TypeScript e build de produção.
+Melhoria de UX sugerida pela IA: Inclusão de formatação condicional i18n para data e moeda de acordo com o idioma ativo (`language === "pt" ? "pt-BR" : ...`), estendendo a internacionalização além de meras traduções textuais para formatação de dados numéricos e temporais.
+

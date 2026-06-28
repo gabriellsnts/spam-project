@@ -113,13 +113,13 @@ export function SchedulingCard({ domain }: SchedulingCardProps) {
   // Translate Day of Week
   const getDayOfWeekName = (day: number) => {
     const days: Record<number, string> = {
-      1: "Segunda-feira",
-      2: "Terça-feira",
-      3: "Quarta-feira",
-      4: "Quinta-feira",
-      5: "Sexta-feira",
-      6: "Sábado",
-      7: "Domingo"
+      1: t("monday"),
+      2: t("tuesday"),
+      3: t("wednesday"),
+      4: t("thursday"),
+      5: t("friday"),
+      6: t("saturday"),
+      7: t("sunday")
     };
     return days[day] || "";
   };
@@ -130,7 +130,7 @@ export function SchedulingCard({ domain }: SchedulingCardProps) {
       ? t("daily") 
       : cfg.frequency === "weekly" 
       ? `${t("weekly")} (${getDayOfWeekName(cfg.specificDay || 1)})`
-      : `${t("monthly")} (Dia ${cfg.specificDay || 1})`;
+      : `${t("monthly")} (${t("day_short")} ${cfg.specificDay || 1})`;
     
     return `${freqLabel} às ${cfg.startTime}`;
   };
@@ -259,13 +259,13 @@ export function SchedulingCard({ domain }: SchedulingCardProps) {
                     onChange={(e) => setSpecificDay(Number(e.target.value))}
                     className="w-full bg-zinc-900/90 dark:bg-zinc-950/80 border border-border/80 rounded-lg p-2 text-xs font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-primary/40 focus:border-primary/60 transition-all"
                   >
-                    <option value={1}>Segunda-feira</option>
-                    <option value={2}>Terça-feira</option>
-                    <option value={3}>Quarta-feira</option>
-                    <option value={4}>Quinta-feira</option>
-                    <option value={5}>Sexta-feira</option>
-                    <option value={6}>Sábado</option>
-                    <option value={7}>Domingo</option>
+                    <option value={1}>{t("monday")}</option>
+                    <option value={2}>{t("tuesday")}</option>
+                    <option value={3}>{t("wednesday")}</option>
+                    <option value={4}>{t("thursday")}</option>
+                    <option value={5}>{t("friday")}</option>
+                    <option value={6}>{t("saturday")}</option>
+                    <option value={7}>{t("sunday")}</option>
                   </select>
                 ) : (
                   <select
@@ -275,7 +275,7 @@ export function SchedulingCard({ domain }: SchedulingCardProps) {
                   >
                     {Array.from({ length: 31 }).map((_, idx) => (
                       <option key={idx} value={idx + 1}>
-                        Dia {idx + 1}
+                        {t("day_short")} {idx + 1}
                       </option>
                     ))}
                   </select>

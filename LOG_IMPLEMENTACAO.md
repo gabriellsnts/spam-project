@@ -287,3 +287,17 @@
 
 ### 3. Impacto e Resultados Técnicos (A Conclusão)
 - Correção absoluta do fluxo de tradução do ecossistema, unificando a tela inicial, gavetas unificadas e telas internas sob o controle dinâmico de idiomas sem strings hardcoded remanescentes ou falhas de build.
+
+---
+
+## 📅 2026-06-28 — i18n Completo dos Módulos Analíticos de Domínio
+### 1. Contexto e Problemática (O Problema)
+- Havia strings estáticas remanescentes em português nas telas e subcomponentes/visões dos 4 domínios analíticos ('maintenance', 'demand', 'churn', 'credit-risk'), o que impedia que a interface mudasse de forma uniforme e síncrona ao alternar o idioma do cabeçalho da aplicação.
+
+### 2. Solução Proposta e Fundamentação (O Desenvolvimento)
+- Varredura e extração de todas as strings estáticas em português presentes nas telas internas dos 4 módulos preditivos, incluindo títulos de gráficos, labels de cards, insights automáticos, tabelas, modais, formulários e botões de ação.
+- Substituição dessas strings estáticas pelo helper dinâmico `t("chave_correspondente")` com fallback seguro em português para máxima resiliência técnica.
+- Unificação das referências de termos dinâmicos como nível de risco, status operacionais e fatores de explicabilidade analítica local.
+
+### 3. Impacto e Resultados Técnicos (A Conclusão)
+- Uniformidade visual e suporte total e profundo a internacionalização (pt/en/es) em 100% da interface do usuário de todos os módulos analíticos, consolidando um sistema globalmente acessível e robusto sem impactos no build ou na tipagem do TypeScript.
