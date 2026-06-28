@@ -331,3 +331,21 @@
 
 ### 3. Impacto e Resultados Técnicos (A Conclusão)
 - Unificação e isolamento completo da internacionalização com dupla persistência universal, higienização em tempo de execução de chaves faltantes, acessibilidade linguística nativa e eliminação de termos estáticos na área de monitoramento de máquinas do ecossistema. 100% de estabilidade de tipos e build Next.js validado com sucesso.
+
+---
+
+## 📅 2026-06-28 — Substituição de Abas Horizontais por Sidebar de Tópicos Vertical no Perfil
+### 1. Contexto e Problemática (O Problema)
+- A tela de perfil (`/profile`) utilizava um seletor de abas horizontais para navegar entre "Preferências", "Gestão Administrativa" e "Customização de Tema", o que limitava a flexibilidade visual e UX. Havia vazamento de estado de sidebars de domínios analíticos anteriores ao acessar as configurações de perfil, poluindo a barra de navegação esquerda e violando o isolamento de escopo.
+
+### 2. Solução Proposta e Fundamentação (O Desenvolvimento)
+- Refatorado o componente global `Sidebar` para detectar dinamicamente a rota `/profile` por meio do hook `usePathname()` do Next.js.
+- Quando o usuário acessa as configurações de perfil, a Sidebar limpa e ignora qualquer estado residual de domínios analíticos anteriores e renderiza estritamente os tópicos e subtópicos verticais de configurações do perfil:
+  * Preferências (Subtópicos: Aparência do Painel, Idioma da Interface)
+  * Gestão Administrativa (visível condicionalmente para Administradores)
+  * Customização de Tema (visível condicionalmente para Administradores)
+- Substituída a navegação por abas horizontais na página `/profile` por um fluxo de query parameters (`section` e `sub`), comunicando a Sidebar de forma reativa com o estado local limpo `activeSection` na página de perfil.
+- Implementada a renderização condicional refinada do conteúdo da direita na página de perfil, permitindo isolar e focar estritamente nos cards de Aparência do Painel ou Idioma da Interface conforme a seleção do usuário.
+
+### 3. Impacto e Resultados Técnicos (A Conclusão)
+- Isolamento absoluto da barra de navegação esquerda na página de perfil, eliminação da infoxicação visual e melhoria substancial de UX e ergonomia na gestão do perfil. 100% das regras de negócio do seletor de tema, idioma nativo e gerenciamento de usuários preservados. Build compilado com zero erros e warnings.

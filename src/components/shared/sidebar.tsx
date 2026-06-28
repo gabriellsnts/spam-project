@@ -13,8 +13,16 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+
 export function Sidebar() {
-  const { activeDomain, logs, currentView, setCurrentView, t } = useDomain();
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const section = searchParams?.get("section") || "preferences";
+  const sub = searchParams?.get("sub") || "";
+  
+  const { activeDomain, logs, currentView, setCurrentView, t, currentUser } = useDomain();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const getActiveDotColorClass = (type: DomainType) => {
@@ -159,6 +167,164 @@ export function Sidebar() {
       icon: Sparkles
     }
   ];
+
+  if (pathname === "/profile") {
+    const isAdmin = currentUser?.profileName === "Administrador";
+    return (
+      <div
+        className={cn(
+          "sticky top-16 h-[calc(100vh-4rem)] border-r border-border bg-card/30 backdrop-blur-md flex flex-col justify-between transition-all duration-300 select-none z-20 shrink-0",
+          isCollapsed ? "w-16" : "w-64"
+        )}
+      >
+        {/* Collapse Toggle Button */}
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="absolute -right-3 top-6 z-30 h-6 w-6 rounded-full border border-border bg-background flex items-center justify-center cursor-pointer shadow-md hover:bg-muted text-muted-foreground hover:text-foreground transition-all duration-200"
+          title={isCollapsed ? t("expand_menu") : t("collapse_menu")}
+        >
+          {isCollapsed ? (
+            <ChevronRight className="h-3.5 w-3.5" />
+          ) : (
+            <ChevronLeft className="h-3.5 w-3.5" />
+          )}
+        </button>
+
+        {/* Nav Content */}
+        <div className="p-3 space-y-6 flex-1 flex flex-col overflow-y-auto">
+          {!isCollapsed && (
+            <div className="px-3 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest animate-in fade-in duration-300">
+              {t("profile_settings") || "Configurações"}
+            </div>
+          )}
+
+          <nav className="space-y-2">
+            {/* Preferências */}
+            <div className="space-y-1">
+              <button
+                onClick={() => router.push("/profile?section=preferences")}
+                className={cn(
+                  "w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 text-left relative overflow-hidden group",
+                  section === "preferences"
+                    ? "text-emerald-500 bg-emerald-500/10 border-emerald-500/30"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border-transparent",
+                  isCollapsed && "justify-center"
+                )}
+                title={t("preferences")}
+              >
+                {section === "preferences" && (
+                  <div className="absolute left-0 top-3 bottom-3 w-1 bg-emerald-500 rounded-r-md" />
+                )}
+                <Settings className="h-5 w-5 shrink-0" />
+                {!isCollapsed && (
+                  <div className="space-y-0.5">
+                    <div className="text-xs font-bold leading-none">{t("preferences")}</div>
+                    <div className="text-[9px] text-muted-foreground font-normal leading-none mt-1 group-hover:text-foreground/70 transition-colors">
+                      {t("profile_settings_desc")}
+                    </div>
+                  </div>
+                )}
+              </button>
+
+              {/* Subtópicos de Preferências */}
+              {!isCollapsed && section === "preferences" && (
+                <div className="pl-9 space-y-1 animate-in slide-in-from-top-2 duration-200">
+                  <button
+                    onClick={() => router.push("/profile?section=preferences&sub=appearance")}
+                    className={cn(
+                      "w-full text-left text-[11px] py-1.5 px-2.5 rounded-lg transition-colors block font-medium",
+                      sub === "appearance"
+                        ? "text-emerald-500 bg-emerald-500/5 font-bold"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/20"
+                    )}
+                  >
+                    {t("dashboard_appearance")}
+                  </button>
+                  <button
+                    onClick={() => router.push("/profile?section=preferences&sub=language")}
+                    className={cn(
+                      "w-full text-left text-[11px] py-1.5 px-2.5 rounded-lg transition-colors block font-medium",
+                      sub === "language"
+                        ? "text-emerald-500 bg-emerald-500/5 font-bold"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/20"
+                    )}
+                  >
+                    {t("language_selection")}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Gestão Administrativa */}
+            {isAdmin && (
+              <button
+                onClick={() => router.push("/profile?section=admin")}
+                className={cn(
+                  "w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 text-left relative overflow-hidden group",
+                  section === "admin"
+                    ? "text-emerald-500 bg-emerald-500/10 border-emerald-500/30"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border-transparent",
+                  isCollapsed && "justify-center"
+                )}
+                title={t("admin_management")}
+              >
+                {section === "admin" && (
+                  <div className="absolute left-0 top-3 bottom-3 w-1 bg-emerald-500 rounded-r-md" />
+                )}
+                <ShieldCheck className="h-5 w-5 shrink-0" />
+                {!isCollapsed && (
+                  <div className="space-y-0.5">
+                    <div className="text-xs font-bold leading-none">{t("admin_management")}</div>
+                    <div className="text-[9px] text-muted-foreground font-normal leading-none mt-1 group-hover:text-foreground/70 transition-colors">
+                      {t("admin_management_desc") || "Gerenciamento de usuários"}
+                    </div>
+                  </div>
+                )}
+              </button>
+            )}
+
+            {/* Customização de Tema */}
+            {isAdmin && (
+              <button
+                onClick={() => router.push("/profile?section=theme")}
+                className={cn(
+                  "w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 text-left relative overflow-hidden group",
+                  section === "theme"
+                    ? "text-emerald-500 bg-emerald-500/10 border-emerald-500/30"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border-transparent",
+                  isCollapsed && "justify-center"
+                )}
+                title={t("theme_customization")}
+              >
+                {section === "theme" && (
+                  <div className="absolute left-0 top-3 bottom-3 w-1 bg-emerald-500 rounded-r-md" />
+                )}
+                <Sparkles className="h-5 w-5 shrink-0" />
+                {!isCollapsed && (
+                  <div className="space-y-0.5">
+                    <div className="text-xs font-bold leading-none">{t("theme_customization")}</div>
+                    <div className="text-[9px] text-muted-foreground font-normal leading-none mt-1 group-hover:text-foreground/70 transition-colors">
+                      {t("theme_customization_desc") || "Cores e branding corporativo"}
+                    </div>
+                  </div>
+                )}
+              </button>
+            )}
+          </nav>
+        </div>
+
+        {/* Mini signature / audit count */}
+        <div className={cn("p-4 border-t border-border/80 flex items-center text-muted-foreground/50 text-[10px] font-mono", isCollapsed ? "flex-col gap-1 justify-center" : "justify-between")}>
+          <ShieldCheck className="h-4 w-4 shrink-0" />
+          {!isCollapsed && (
+            <span className="animate-in fade-in duration-300">
+              {t("log_events")} {logs.length}
+            </span>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
