@@ -216,6 +216,15 @@ export interface EmailNotificationsConfig {
   enabledDomains: Record<DomainType, boolean>;
 }
 
+export interface SchedulingConfig {
+  domain: DomainType;
+  frequency: "daily" | "weekly" | "monthly";
+  startTime: string; // "HH:MM"
+  specificDay?: number; // 1-7 para semanal, 1-31 para mensal
+  isActive: boolean;
+  lastRun?: number;
+}
+
 export interface SimulatedEmail {
   id: string;
   recipient: string;
@@ -227,6 +236,17 @@ export interface SimulatedEmail {
     threshold: number;
     timestamp: number;
   }[];
+  // RF42 agendamento:
+  isScheduledReport?: boolean;
+  scheduleStatus?: "success" | "failure";
+  completionTime?: string;
+  metricsSummary?: {
+    accuracy?: number;
+    r2?: number;
+    f1Score?: number;
+    rmse?: number;
+  };
+  errorDescription?: string;
 }
 
 export type GlossaryCategory = "Geral" | "Machine Learning" | "Métricas" | "Logística" | "Previsão";
@@ -349,6 +369,11 @@ interface DomainContextProps {
   deleteTrashItemsPermanently: (ids: string[]) => void;
   emptyTrash: () => void;
 
+  // Agendamento (RF42)
+  schedules: Record<DomainType, SchedulingConfig | null>;
+  saveSchedule: (domain: DomainType, config: Omit<SchedulingConfig, "domain">) => void;
+  deleteSchedule: (domain: DomainType) => void;
+  runScheduledTrigger: (domain: DomainType) => void;
 }
 
 const DomainContext = createContext<DomainContextProps | undefined>(undefined);
@@ -647,6 +672,14 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     }
   });
   const [sentEmails, setSentEmails] = useState<SimulatedEmail[]>([]);
+
+  // Scheduling States (RF42)
+  const [schedules, setSchedules] = useState<Record<DomainType, SchedulingConfig | null>>({
+    maintenance: null,
+    demand: null,
+    churn: null,
+    "credit-risk": null
+  });
   const emailBufferRef = useRef<Record<string, {
     alerts: {
       item: string;
@@ -1219,6 +1252,26 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem("spam-alerts", JSON.stringify(loadedAlerts));
       localStorage.setItem("spam-audit-logs", JSON.stringify(loadedLogsList));
     }
+
+    // Carregar agendamentos (RF42)
+    const loadedSchedules: Record<DomainType, SchedulingConfig | null> = {
+      maintenance: null,
+      demand: null,
+      churn: null,
+      "credit-risk": null
+    };
+    const scheduleDomains: DomainType[] = ["maintenance", "demand", "churn", "credit-risk"];
+    scheduleDomains.forEach(d => {
+      const saved = localStorage.getItem(`spam-schedule-${d}`);
+      if (saved) {
+        try {
+          loadedSchedules[d] = JSON.parse(saved);
+        } catch (e) {
+          console.error(`Erro ao carregar agendamento do domínio ${d}:`, e);
+        }
+      }
+    });
+    setSchedules(loadedSchedules);
 
     setAlerts(loadedAlerts);
     setLogs(loadedLogsList);
@@ -2072,6 +2125,268 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     }
   }, [t]);
 
+  // --- LOGICA DE AGENDAMENTO DE PREVISOES PERIODICAS (RF42) ---
+
+  const runScheduledTrigger = useCallback((domain: DomainType) => {
+    const startTime = Date.now();
+    const isClassification = domain === "credit-risk" || domain === "churn";
+    const typeStr = isClassification ? "Classification" : "Regression";
+    const algStr = selectedAlgorithms[domain] || "Random Forest";
+
+    addLogWithProfile("Sistema", `[Scheduled Execution] Iniciando processamento automático agendado para o domínio '${DOMAINS[domain].name}'.`);
+
+    if (simulatedFail) {
+      const endTime = Date.now();
+      const errorMsg = "Ausência de dados mínimos para processamento periódico ou falha crítica simulada (OOM).";
+      
+      const newLog: AuditLog = {
+        id: `LOG-SCH-ERR-${Math.random().toString(36).substring(2, 9).toUpperCase()}-${Date.now()}`,
+        profile: "Sistema",
+        username: "Mecanismo de Agendamento",
+        accessProfile: "Mecanismo de Agendamento",
+        timestamp: Date.now(),
+        action: `[Scheduled Execution Failure] Domínio: ${DOMAINS[domain].name}. Início: ${new Date(startTime).toLocaleString("pt-BR")}, Fim: ${new Date(endTime).toLocaleString("pt-BR")}. Resultado: Falha. Erro: ${errorMsg}`
+      };
+      
+      setLogs(prev => {
+        const next = [newLog, ...prev];
+        localStorage.setItem("spam-audit-logs", JSON.stringify(next));
+        return next;
+      });
+
+      const emailId = `EML-SCH-ERR-${Math.random().toString(36).substring(2, 9).toUpperCase()}-${Date.now()}`;
+      const newEmail: SimulatedEmail = {
+        id: emailId,
+        recipient: emailConfig.email || "gestor@empresa.com",
+        domain,
+        timestamp: Date.now(),
+        alerts: [],
+        isScheduledReport: true,
+        scheduleStatus: "failure",
+        completionTime: new Date(endTime).toLocaleTimeString("pt-BR"),
+        errorDescription: errorMsg
+      };
+      setSentEmails(prev => [newEmail, ...prev]);
+
+      addLogWithProfile("Sistema", `[Email Sent] Relatório de falha de agendamento enviado para ${emailConfig.email || "gestor@empresa.com"}.`);
+      showPremiumToast(`Falha no agendamento de ${DOMAINS[domain].name} (Mecanismo fallback ativo)`, "error");
+    } else {
+      const modelId = `SPAM-MODEL-SCH-${isClassification ? "CLS" : "REG"}-${Math.random().toString(36).substring(2, 9).toUpperCase()}-${Date.now()}`;
+      const trainSize = 120 + Math.floor(Math.random() * 80);
+      const testSize = 30 + Math.floor(Math.random() * 20);
+
+      let modelMetrics: TrainedModel["metrics"] = {};
+      if (isClassification) {
+        modelMetrics = {
+          accuracy: 0.94 + Math.random() * 0.04,
+          precision: 0.93 + Math.random() * 0.04,
+          recall: 0.92 + Math.random() * 0.04,
+          f1Score: 0.93 + Math.random() * 0.03,
+          aucRoc: 0.95 + Math.random() * 0.03,
+        };
+      } else {
+        modelMetrics = {
+          r2: 0.89 + Math.random() * 0.08,
+          rmse: 1.4 + Math.random() * 0.6,
+          mae: 1.0 + Math.random() * 0.4,
+        };
+      }
+
+      const newModel: TrainedModel = {
+        modelId,
+        domain,
+        algorithm: algStr,
+        type: typeStr,
+        metrics: modelMetrics,
+        hyperparameters: isClassification 
+          ? { n_estimators: 100, max_depth: 8, random_state: 42 } 
+          : { n_estimators: 100, max_depth: 10, random_state: 42 },
+        trainSize,
+        testSize,
+        timestamp: Date.now()
+      };
+
+      setPreviousTrainedModels(prev => ({
+        ...prev,
+        [domain]: trainedModels[domain]
+      }));
+
+      setTrainedModels(prev => ({
+        ...prev,
+        [domain]: newModel
+      }));
+
+      setTrainedModelsByAlgorithm(prev => {
+        const updated = {
+          ...prev,
+          [domain]: {
+            ...(prev[domain] || {}),
+            [algStr]: newModel
+          }
+        };
+        localStorage.setItem("spam-trained-models-by-algorithm", JSON.stringify(updated));
+        return updated;
+      });
+
+      const newCycle: RetrainingCycle = {
+        modelId,
+        timestamp: newModel.timestamp,
+        algorithm: newModel.algorithm,
+        hyperparameters: newModel.hyperparameters,
+        metrics: newModel.metrics,
+        trainSize: newModel.trainSize,
+        testSize: newModel.testSize
+      };
+      
+      setHyperparameterHistory(prev => {
+        const currentList = prev[domain] || [];
+        const updatedList = [newCycle, ...currentList];
+        const nextHistory = {
+          ...prev,
+          [domain]: updatedList
+        };
+        localStorage.setItem("spam-hyperparameter-history", JSON.stringify(nextHistory));
+        return nextHistory;
+      });
+
+      setDashboardStatus(prev => ({
+        ...prev,
+        [domain]: {
+          ...prev[domain],
+          isModelTrained: true,
+          lastPredictionDate: new Date().toISOString(),
+          recentActivities: [
+            { id: Math.random().toString(), description: "Treinamento agendado concluído", timestamp: new Date().toISOString(), type: "training" },
+            ...prev[domain].recentActivities
+          ]
+        }
+      }));
+
+      const predRecord: Omit<PredictionHistoryRecord, "id" | "timestamp"> = {
+        domain,
+        item: isClassification 
+          ? (domain === "churn" ? "Clientes VIP (Agendamento)" : "Propostas de Crédito (Agendamento)") 
+          : (domain === "maintenance" ? "Telemetria Sensores (Agendamento)" : "Séries Temporais Demanda (Agendamento)"),
+        predictionResult: isClassification
+          ? (domain === "churn" ? "Risco de Churn Atualizado" : "Crédito Avaliado Automaticamente")
+          : (domain === "maintenance" ? "RUL Estimado Automaticamente" : "Previsão de Estoque Concluída"),
+        details: isClassification 
+          ? { Acurácia: modelMetrics.accuracy?.toFixed(4) || "0" } 
+          : { R2: modelMetrics.r2?.toFixed(4) || "0" }
+      };
+
+      const newRecord: PredictionHistoryRecord = {
+        ...predRecord,
+        id: `PRED-SCH-${domain.substring(0, 3).toUpperCase()}-${Math.random().toString(36).substring(2, 9).toUpperCase()}-${Date.now()}`,
+        timestamp: Date.now(),
+      };
+      setPredictionHistory(prev => [newRecord, ...prev]);
+
+      const endTime = Date.now();
+      const newLog = {
+        id: `LOG-SCH-OK-${Math.random().toString(36).substring(2, 9).toUpperCase()}-${Date.now()}`,
+        profile: "Sistema",
+        username: "Mecanismo de Agendamento",
+        accessProfile: "Mecanismo de Agendamento",
+        timestamp: Date.now(),
+        action: `[Scheduled Execution Success] Domínio: ${DOMAINS[domain].name}. Início: ${new Date(startTime).toLocaleString("pt-BR")}, Fim: ${new Date(endTime).toLocaleString("pt-BR")}. Modelo ID: ${modelId}, Algoritmo: ${algStr}. Resultado: Sucesso.`
+      };
+      
+      setLogs(prev => {
+        const next = [newLog, ...prev];
+        localStorage.setItem("spam-audit-logs", JSON.stringify(next));
+        return next;
+      });
+
+      const emailId = `EML-SCH-OK-${Math.random().toString(36).substring(2, 9).toUpperCase()}-${Date.now()}`;
+      const newEmail: SimulatedEmail = {
+        id: emailId,
+        recipient: emailConfig.email || "gestor@empresa.com",
+        domain,
+        timestamp: Date.now(),
+        alerts: [],
+        isScheduledReport: true,
+        scheduleStatus: "success",
+        completionTime: new Date(endTime).toLocaleTimeString("pt-BR"),
+        metricsSummary: {
+          accuracy: modelMetrics.accuracy,
+          r2: modelMetrics.r2,
+          f1Score: modelMetrics.f1Score,
+          rmse: modelMetrics.rmse
+        }
+      };
+      setSentEmails(prev => [newEmail, ...prev]);
+
+      addLogWithProfile("Sistema", `[Email Sent] Relatório de sucesso de agendamento enviado para ${emailConfig.email || "gestor@empresa.com"}.`);
+      showPremiumToast(`Agendamento de ${DOMAINS[domain].name} executado com sucesso!`, "success");
+    }
+  }, [selectedAlgorithms, simulatedFail, emailConfig.email, trainedModels, addLogWithProfile]);
+
+  const saveSchedule = useCallback((domain: DomainType, config: Omit<SchedulingConfig, "domain">) => {
+    const fullConfig: SchedulingConfig = {
+      ...config,
+      domain
+    };
+    setSchedules(prev => {
+      const next = { ...prev, [domain]: fullConfig };
+      localStorage.setItem(`spam-schedule-${domain}`, JSON.stringify(fullConfig));
+      return next;
+    });
+    showPremiumToast(`Agendamento salvo com sucesso!`, "success");
+    addLog(`[Schedule Config] Agendamento configurado para o domínio '${DOMAINS[domain].name}' (Frequência: ${config.frequency}, Horário: ${config.startTime}).`);
+  }, [addLog]);
+
+  const deleteSchedule = useCallback((domain: DomainType) => {
+    setSchedules(prev => {
+      const next = { ...prev, [domain]: null };
+      localStorage.removeItem(`spam-schedule-${domain}`);
+      return next;
+    });
+    showPremiumToast(`Agendamento removido.`, "success");
+    addLog(`[Schedule Config] Agendamento removido para o domínio '${DOMAINS[domain].name}'.`);
+  }, [addLog]);
+
+  // Background Scheduling Validator Loop (RF42)
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      const now = new Date();
+      const currentHours = now.getHours();
+      const currentMinutes = now.getMinutes();
+      const currentDayOfWeek = now.getDay() === 0 ? 7 : now.getDay(); // 1 = Monday, 7 = Sunday
+      const currentDayOfMonth = now.getDate();
+
+      (Object.keys(schedules) as DomainType[]).forEach(domain => {
+        const config = schedules[domain];
+        if (!config || !config.isActive) return;
+
+        // Parse start time (HH:MM)
+        const [schHours, schMinutes] = config.startTime.split(":").map(Number);
+        if (schHours !== currentHours || schMinutes !== currentMinutes) return;
+
+        // Check frequency specific criteria
+        if (config.frequency === "weekly" && config.specificDay !== currentDayOfWeek) return;
+        if (config.frequency === "monthly" && config.specificDay !== currentDayOfMonth) return;
+
+        // Avoid double runs within the same minute (60 seconds)
+        if (config.lastRun && Date.now() - config.lastRun < 60000) return;
+
+        // Trigger execution
+        // Update config lastRun time
+        const updatedConfig = { ...config, lastRun: Date.now() };
+        setSchedules(prev => {
+          const next = { ...prev, [domain]: updatedConfig };
+          localStorage.setItem(`spam-schedule-${domain}`, JSON.stringify(updatedConfig));
+          return next;
+        });
+
+        // Run scheduled task
+        runScheduledTrigger(domain);
+      });
+    }, 5000); // Check every 5 seconds
+
+    return () => clearInterval(intervalId);
+  }, [schedules, runScheduledTrigger]);
+
   const setLanguage = useCallback((lang: LanguageType) => {
     setLanguageState(lang);
     currentModuleLanguage = lang;
@@ -2543,6 +2858,10 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         deleteTrashItemsPermanently,
         emptyTrash,
 
+        schedules,
+        saveSchedule,
+        deleteSchedule,
+        runScheduledTrigger,
       }}
     >
       {children}

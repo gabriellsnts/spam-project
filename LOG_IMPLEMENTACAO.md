@@ -239,8 +239,22 @@
 - Inclusão do Modo Demo nas configurações de perfil para facilitar a alternância de tradução e testes de visualização instantâneos.
 - Registro automático das ações de mudança de idioma no Log de Auditoria Técnica para plena conformidade e rastreabilidade de preferências.
 
-### 3. Impacto e Resultados Técnicos (A Conclusão)
 - Interface de usuário multilíngue ágil e responsiva, com cabeçalho traduzível e detecção dinâmica de módulos do domínio, reduzindo de forma drástica a fricção cognitiva e simplificando o fluxo de predição e auditoria para usuários globais sem dependência de extensões ou tradutores de terceiros.
 
+---
 
+## 📅 2026-06-27 — RF42 — Agendamento de Previsões Automáticas Periódicas (Buffer e Fallback de Falha)
+### 1. Contexto e Problemática (O Problema)
+- A realização de predições e treinamentos analíticos exigia intervenção manual constante de operadores por meio do upload manual de planilhas. Havia necessidade de automatizar esse fluxo de forma programada e recorrente no client-side, mantendo a consistência dos dados exibidos em tela caso ocorressem interrupções técnicas ou falhas de dados, além de emitir auditoria e notificações estruturadas de finalização.
 
+### 2. Solução Proposta e Fundamentação (O Desenvolvimento)
+- Desenvolvimento do componente reutilizável `SchedulingCard` injetado na aba de "Calibração" de todas as 4 visões analíticas (`churn`, `credit-risk`, `demand`, e `maintenance`), permitindo configurar a frequência (Diário, Semanal ou Mensal), o horário de início (HH:MM) e os dias específicos do cronograma com suporte a internacionalização de termos técnicos (RF54).
+- No `DomainContext`, implementação de um validador de background simulado via polling (`setInterval` de 5 segundos) que monitora o relógio contra as regras do agendamento configuradas e salva imediatamente no `localStorage` sob a chave `spam-schedule-[domain]`.
+- Criação de ciclo completo de inferência técnica e simulação de calibração que atualiza o modelo ativo, arquiva o ciclo de hiperparâmetros, gera novas previsões e registros no histórico global de predições, e atualiza o estado de saúde do dashboard.
+- Mecanismo de Fallback de falha: caso a falha de treinamento simulada esteja ativada (`simulatedFail === true`), a falha de agendamento é disparada e registrada na auditoria, porém o modelo e as previsões anteriores são retidos perfeitamente no front-end, evitando a exibição de dados corrompidos ou zerados.
+- Integração de log técnico detalhado registrando timestamps de início/fim e metadados no Log de Auditoria Técnica global sob o usuário técnico "Mecanismo de Agendamento".
+- Implementação de relatório de envio de e-mails simulados customizados no `EmailNotificationsRenderer` apresentando detalhes técnicos em formato premium (verde para sucesso com detalhes das métricas como R² ou Acurácia, e rosa para falhas com os logs e detalhes de OOM ou ausência de dados).
+- Botão "Avançar Tempo (Modo Demo)" integrado para acelerar a simulação do cronômetro local e forçar o ciclo imediatamente.
+
+### 3. Impacto e Resultados Técnicos (A Conclusão)
+- Automação operacional segura do pipeline preditivo e treinamento de ponta a ponta client-side com resiliência contra exceções e falhas catastróficas, garantindo plena transparência e rastreabilidade técnica dos eventos executados na esteira analítica.
