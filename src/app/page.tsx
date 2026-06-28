@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Wrench, TrendingUp, Users, ShieldAlert, ArrowRight, AlertTriangle, Clock, Activity, RefreshCcw } from "lucide-react";
 
 export default function Home() {
-  const { activeDomain, initiateDomainSwitch, dashboardStatus, simulateDashboardEvent } = useDomain();
+  const { activeDomain, initiateDomainSwitch, dashboardStatus, simulateDashboardEvent, t } = useDomain();
 
   const getIcon = (type: DomainType) => {
     const size = "h-6 w-6";
@@ -62,10 +62,10 @@ export default function Home() {
         <div className="w-full flex flex-col md:flex-row items-start md:items-center justify-between gap-6 animate-in fade-in slide-in-from-top-4 duration-500">
           <div>
             <h1 className="text-3xl md:text-4xl font-black tracking-tight leading-tight text-transparent bg-clip-text bg-gradient-to-b from-foreground to-foreground/75">
-              Dashboard Consolidado
+              {t("consolidated_dashboard")}
             </h1>
             <p className="text-muted-foreground text-sm max-w-xl mt-2 leading-relaxed">
-              Visão geral de todos os módulos preditivos. Acompanhe alertas, histórico e status de modelos centralizados.
+              {t("dashboard_consolidated_desc")}
             </p>
           </div>
         </div>
@@ -100,7 +100,7 @@ export default function Home() {
                     </div>
                     <div>
                       <CardTitle className="text-lg font-bold tracking-tight text-foreground transition">
-                        {domain.name}
+                        {t(domain.id === "credit-risk" ? "credit_risk_name" : `${domain.id}_name`)}
                       </CardTitle>
                     </div>
                   </div>
@@ -122,27 +122,27 @@ export default function Home() {
                     {/* Modelo */}
                     <div className="flex flex-col gap-1 p-2.5 rounded-lg bg-background/50 border border-border/40">
                       <span className="text-[10px] uppercase text-muted-foreground font-semibold flex items-center gap-1">
-                        <Activity className="h-3 w-3" /> Modelo
+                        <Activity className="h-3 w-3" /> {t("model")}
                       </span>
                       <span className={`text-xs font-bold ${status.isModelTrained ? "text-emerald-500" : "text-zinc-400"}`}>
-                        {status.isModelTrained ? "Treinado" : "Ausente"}
+                        {status.isModelTrained ? t("trained") : t("absent")}
                       </span>
                     </div>
 
                     {/* Alertas */}
                     <div className="flex flex-col gap-1 p-2.5 rounded-lg bg-background/50 border border-border/40">
                       <span className="text-[10px] uppercase text-muted-foreground font-semibold flex items-center gap-1">
-                        <AlertTriangle className="h-3 w-3" /> Alertas
+                        <AlertTriangle className="h-3 w-3" /> {t("alerts_label")}
                       </span>
                       <span className={`text-xs font-bold ${status.activeAlertsCount > 0 ? "text-amber-500" : "text-foreground"}`}>
-                        {status.activeAlertsCount > 0 ? `${status.activeAlertsCount} Ativos` : "Nenhum"}
+                        {status.activeAlertsCount > 0 ? `${status.activeAlertsCount} ${t("active_plural")}` : t("none")}
                       </span>
                     </div>
 
                     {/* Previsão */}
                     <div className="flex flex-col gap-1 p-2.5 rounded-lg bg-background/50 border border-border/40 overflow-hidden">
                       <span className="text-[10px] uppercase text-muted-foreground font-semibold flex items-center gap-1">
-                        <Clock className="h-3 w-3" /> Previsão
+                        <Clock className="h-3 w-3" /> {t("forecast")}
                       </span>
                       <span className="text-xs font-bold text-foreground truncate">
                         {status.lastPredictionDate ? new Date(status.lastPredictionDate).toLocaleDateString() : "--/--/----"}
@@ -153,7 +153,7 @@ export default function Home() {
                   {/* Histórico Resumido (CA05) */}
                   <div className="pt-4 border-t border-border/25">
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-3 block">
-                      Últimas Atividades
+                      {t("recent_activities_label")}
                     </span>
                     <div className="space-y-3">
                       {status.recentActivities.length > 0 ? (
@@ -170,7 +170,7 @@ export default function Home() {
                         ))
                       ) : (
                         <div className="text-xs text-muted-foreground italic">
-                          Nenhuma atividade recente.
+                          {t("no_recent_activities")}
                         </div>
                       )}
                     </div>
@@ -189,7 +189,7 @@ export default function Home() {
                         ? "text-violet-500"
                         : "text-emerald-500"
                     }>
-                      {isActive ? "Módulo Ativo" : "Acessar Painel Visual"}
+                      {isActive ? t("active_module_label") : t("access_visual_panel")}
                     </span>
                     <ArrowRight className={`h-4 w-4 ${
                       domain.id === "maintenance"
@@ -219,12 +219,12 @@ export default function Home() {
             className="text-xs gap-2 border-primary/20 text-primary hover:bg-primary/10 shadow-sm"
           >
             <RefreshCcw className="h-3.5 w-3.5" />
-            Simular Evento Preditivo em Tempo Real (CA02)
+            {t("simulate_realtime_event")}
           </Button>
 
           <div className="text-muted-foreground/40 text-[10px] text-center font-mono border-t border-border/80 pt-6 w-full max-w-md">
-            SISTEMA PREDITIVO DE ANÁLISE MULTI-DOMÍNIO — SPAM<br />
-            INTERFACE ADAPTATIVA COM DADOS MOCKADOS E AUDITORIA
+            {t("system_full_title")}<br />
+            {t("footer_desc")}
           </div>
         </div>
       </main>

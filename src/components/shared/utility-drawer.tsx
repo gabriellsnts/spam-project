@@ -411,12 +411,12 @@ export function UtilityDrawer() {
               ) : isPredictions ? (
                 <>
                   <History className="h-5 w-5 text-muted-foreground shrink-0" />
-                  <h2 className="text-md font-semibold text-foreground truncate">{t("predictions_history")}</h2>
+                  <h2 className="text-md font-semibold text-foreground truncate">{t("prediction_history")}</h2>
                 </>
               ) : (
                 <>
                   <ShieldCheck className="h-5 w-5 text-emerald-500 shrink-0" />
-                  <h2 className="text-md font-semibold text-foreground truncate">{t("audit_logs")}</h2>
+                  <h2 className="text-md font-semibold text-foreground truncate">{t("audit_log")}</h2>
                 </>
               )}
             </div>
@@ -494,7 +494,7 @@ export function UtilityDrawer() {
                     <div className="p-1.5 rounded-md bg-muted group-hover:bg-muted/80 transition-colors">
                       <ShieldCheck className="h-4 w-4" />
                     </div>
-                    <span className="text-sm font-medium">{t("audit_logs")}</span>
+                    <span className="text-sm font-medium">{t("audit_log")}</span>
                   </div>
                   <ChevronRight className="h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity" />
                 </button>
@@ -506,7 +506,7 @@ export function UtilityDrawer() {
                     <div className="p-1.5 rounded-md bg-muted group-hover:bg-muted/80 transition-colors">
                       <History className="h-4 w-4" />
                     </div>
-                    <span className="text-sm font-medium">{t("predictions_history")}</span>
+                    <span className="text-sm font-medium">{t("prediction_history")}</span>
                   </div>
                   <ChevronRight className="h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity" />
                 </button>

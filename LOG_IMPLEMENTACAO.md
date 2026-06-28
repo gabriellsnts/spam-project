@@ -272,3 +272,18 @@
 
 ### 3. Impacto e Resultados Técnicos (A Conclusão)
 - Unificação total da tela de perfil com o sistema de tradução dinâmico do projeto, garantindo consistência i18n em tempo real sem erros de compilação ou build em produção.
+
+---
+
+## 📅 2026-06-28 — i18n Global Dashboard, Menu and Profile Unified Correction
+### 1. Contexto e Problemática (O Problema)
+- A tela inicial do Dashboard Consolidado (`src/app/page.tsx`) possuía textos estáticos hardcoded e ignorava totalmente a troca dinâmica de idiomas. Além disso, as chaves `predictions_history` e `audit_logs` usadas na gaveta unificada (`src/components/shared/utility-drawer.tsx`) causavam exibição de chaves brutas sem tradução por incompatibilidade com o dicionário de chaves em `translations.ts` (cadastradas no singular como `prediction_history` e `audit_log`).
+
+### 2. Solução Proposta e Fundamentação (O Desenvolvimento)
+- Ajustados os termos do menu lateral unificado no `UtilityDrawer` para apontar corretamente para as chaves singulares `t("prediction_history")` e `t("audit_log")`.
+- Refatorado o arquivo da Home Page (`src/app/page.tsx`) para consumir dinamicamente a propriedade `t()` do hook `useDomain()`.
+- Criação e mapeamento de chaves completas em português, inglês e espanhol para todos os títulos, descrições, rótulos de botões e status do dashboard.
+- Mapeamento dinâmico dos nomes dos domínios analíticos nos cards da home utilizando as chaves traduzidas dos domínios (`t(domain.id + "_name")`).
+
+### 3. Impacto e Resultados Técnicos (A Conclusão)
+- Correção absoluta do fluxo de tradução do ecossistema, unificando a tela inicial, gavetas unificadas e telas internas sob o controle dinâmico de idiomas sem strings hardcoded remanescentes ou falhas de build.
