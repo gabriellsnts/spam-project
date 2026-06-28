@@ -44,7 +44,14 @@ export default function ProfilePage() {
   const handleSaveEmailConfig = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (localEmail && !emailRegex.test(localEmail)) {
-      showPremiumToast("Por favor, insira um e-mail válido.", "error");
+      showPremiumToast(
+        language === "pt"
+          ? "Por favor, insira um e-mail válido."
+          : language === "es"
+          ? "Por favor, introduzca un correo electrónico válido."
+          : "Please enter a valid email.",
+        "error"
+      );
       return;
     }
     
@@ -76,7 +83,7 @@ export default function ProfilePage() {
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
           </svg>
-          <span className="text-sm text-zinc-400 font-semibold animate-pulse">Carregando dados do usuário...</span>
+          <span className="text-sm text-zinc-400 font-semibold animate-pulse">{t("loading_user_data")}</span>
         </div>
       </div>
     );
@@ -89,10 +96,10 @@ export default function ProfilePage() {
       {/* Cabeçalho */}
       <div>
         <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-zinc-100 uppercase">
-          Perfil e Configurações
+          {t("profile_and_settings")}
         </h1>
         <p className="text-slate-700 dark:text-zinc-400 text-xs mt-1">
-          Gerencie suas preferências visuais e acesse configurações administrativas da conta.
+          {t("profile_settings_desc")}
         </p>
       </div>
 
@@ -150,7 +157,7 @@ export default function ProfilePage() {
                   <span className={cn(
                     "text-[10px] font-bold px-3 py-1 rounded-full border flex items-center gap-1.5 shadow-sm",
                     isAdmin
-                      ? "bg-emerald-550/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25"
+                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25"
                       : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/25"
                   )}>
                     <Tag className="h-3 w-3" />
@@ -162,24 +169,27 @@ export default function ProfilePage() {
                 <div className="flex items-center justify-between text-slate-700 dark:text-zinc-400">
                   <span className="flex items-center gap-2">
                     <Building className="h-4 w-4 text-zinc-500" />
-                    {t("department") || "Departamento"}
+                    {t("department")}
                   </span>
                   <span className="font-semibold text-zinc-900 dark:text-zinc-200">{currentUser.department}</span>
                 </div>
                 <div className="flex items-center justify-between text-slate-700 dark:text-zinc-400">
                   <span className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-zinc-500" />
-                    {t("last_access") || "Último Acesso"}
+                    {t("last_access")}
                   </span>
                   <span className="font-semibold text-zinc-900 dark:text-zinc-200">
                     {currentUser.lastLogin 
-                      ? new Date(currentUser.lastLogin).toLocaleDateString("pt-BR", {
-                          day: "numeric",
-                          month: "short",
-                          hour: "2-digit",
-                          minute: "2-digit"
-                        })
-                      : (t("just_logged_in") || "Recém-logado")}
+                      ? new Date(currentUser.lastLogin).toLocaleDateString(
+                          language === "pt" ? "pt-BR" : language === "es" ? "es-ES" : "en-US", 
+                          {
+                            day: "numeric",
+                            month: "short",
+                            hour: "2-digit",
+                            minute: "2-digit"
+                          }
+                        )
+                      : t("just_logged_in")}
                   </span>
                 </div>
               </CardContent>
@@ -190,10 +200,10 @@ export default function ProfilePage() {
               <CardHeader>
                 <CardTitle className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
                   <Laptop className="h-4.5 w-4.5 text-emerald-500" />
-                  {t("dashboard_appearance") || "Aparência do Painel"}
+                  {t("dashboard_appearance")}
                 </CardTitle>
                 <CardDescription className="text-xs text-slate-700 dark:text-zinc-500">
-                  {t("dashboard_appearance_desc") || "Ajuste a paleta visual do ecossistema. O tema automático detecta e aplica a preferência do seu dispositivo."}
+                  {t("dashboard_appearance_desc")}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6 pb-8">
@@ -212,14 +222,14 @@ export default function ProfilePage() {
                     <div className={cn(
                       "p-2.5 rounded-lg border transition-all duration-300",
                       theme === "light"
-                        ? "bg-emerald-550/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+                        ? "bg-emerald-555/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
                         : "bg-zinc-200 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 text-slate-500 dark:text-zinc-500 group-hover:text-slate-700 dark:group-hover:text-zinc-350"
                     )}>
                       <Sun className="h-5 w-5" />
                     </div>
                     <div className="text-center">
-                      <div className="text-xs font-bold text-slate-900 dark:text-zinc-200">{t("light_mode") || "Modo Claro"}</div>
-                      <div className="text-[10px] text-slate-650 dark:text-zinc-500 mt-0.5">{t("light_mode_desc") || "Interface clara e suave"}</div>
+                      <div className="text-xs font-bold text-slate-900 dark:text-zinc-200">{t("light_mode")}</div>
+                      <div className="text-[10px] text-slate-600 dark:text-zinc-500 mt-0.5">{t("light_mode_desc")}</div>
                     </div>
                   </button>
 
@@ -236,14 +246,14 @@ export default function ProfilePage() {
                     <div className={cn(
                       "p-2.5 rounded-lg border transition-all duration-300",
                       theme === "dark"
-                        ? "bg-emerald-550/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+                        ? "bg-emerald-555/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
                         : "bg-zinc-200 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 text-slate-500 dark:text-zinc-500 group-hover:text-slate-700 dark:group-hover:text-zinc-350"
                     )}>
                       <Moon className="h-5 w-5" />
                     </div>
                     <div className="text-center">
-                      <div className="text-xs font-bold text-slate-900 dark:text-zinc-200">{t("dark_mode") || "Modo Escuro"}</div>
-                      <div className="text-[10px] text-slate-650 dark:text-zinc-500 mt-0.5">{t("dark_mode_desc") || "Foco visual com economia de energia"}</div>
+                      <div className="text-xs font-bold text-slate-900 dark:text-zinc-200">{t("dark_mode")}</div>
+                      <div className="text-[10px] text-slate-650 dark:text-zinc-500 mt-0.5">{t("dark_mode_desc")}</div>
                     </div>
                   </button>
 
@@ -253,14 +263,14 @@ export default function ProfilePage() {
                     className={cn(
                       "flex flex-col items-center justify-center p-5 rounded-xl border transition-all duration-300 gap-3 group relative overflow-hidden cursor-pointer",
                       theme === "auto"
-                        ? "bg-white dark:bg-zinc-950/80 border-emerald-550/10 border-emerald-500/40 text-slate-900 dark:text-foreground shadow-md ring-1 ring-emerald-500/20"
+                        ? "bg-white dark:bg-zinc-950/80 border-emerald-500/40 text-slate-900 dark:text-foreground shadow-md ring-1 ring-emerald-500/20"
                         : "bg-zinc-100 dark:bg-zinc-950/30 border-zinc-300 dark:border-zinc-800 text-slate-700 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 hover:border-zinc-400 dark:hover:border-zinc-700/80 hover:bg-zinc-200/50 dark:hover:bg-zinc-950/50 shadow-sm dark:shadow-none"
                     )}
                   >
                     <div className={cn(
                       "p-2.5 rounded-lg border transition-all duration-300",
                       theme === "auto"
-                        ? "bg-emerald-550/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+                        ? "bg-emerald-555/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
                         : "bg-zinc-200 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 text-slate-500 dark:text-zinc-500 group-hover:text-slate-700 dark:group-hover:text-zinc-350"
                     )}>
                       <svg
@@ -279,8 +289,8 @@ export default function ProfilePage() {
                       </svg>
                     </div>
                     <div className="text-center">
-                      <div className="text-xs font-bold text-slate-900 dark:text-zinc-200">{t("system_mode") || "Sistema"}</div>
-                      <div className="text-[10px] text-slate-650 dark:text-zinc-500 mt-0.5">{t("system_mode_desc") || "Sincroniza com as cores do seu SO"}</div>
+                      <div className="text-xs font-bold text-slate-900 dark:text-zinc-200">{t("system_mode")}</div>
+                      <div className="text-[10px] text-slate-650 dark:text-zinc-550 mt-0.5">{t("system_mode_desc")}</div>
                     </div>
                   </button>
                 </div>
@@ -292,10 +302,10 @@ export default function ProfilePage() {
               <CardHeader>
                 <CardTitle className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
                   <Globe className="h-4.5 w-4.5 text-emerald-500" />
-                  {language === "en" ? "Interface Language" : language === "es" ? "Idioma de la Interfaz" : "Idioma da Interface"}
+                  {t("language_selection")}
                 </CardTitle>
                 <CardDescription className="text-xs text-slate-700 dark:text-zinc-500">
-                  {language === "en" ? "Choose your preferred language for navigating the application." : language === "es" ? "Elija su idioma preferido para navegar en la aplicación." : "Escolha o idioma de sua preferência para navegar na aplicação."}
+                  {t("language_desc")}
                 </CardDescription>
               </CardHeader>
               <CardContent className="pb-8">
@@ -350,10 +360,10 @@ export default function ProfilePage() {
               <CardHeader className="border-b border-zinc-200/50 dark:border-zinc-800/50 pb-4">
                 <CardTitle className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
                   <Mail className="h-4.5 w-4.5 text-emerald-500" />
-                  Configuração de Notificações por E-mail
+                  {t("email_notifications")}
                 </CardTitle>
                 <CardDescription className="text-xs text-slate-700 dark:text-zinc-500">
-                  Configure seu e-mail para receber alertas preditivos críticos em tempo real e ative individualmente para cada domínio.
+                  {t("email_desc")}
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-6 pb-8 space-y-6">
@@ -362,7 +372,7 @@ export default function ProfilePage() {
                   <div className="md:col-span-1 space-y-4 flex flex-col justify-between">
                     <div className="space-y-2">
                       <label htmlFor="email-input" className="text-xs font-bold text-slate-750 dark:text-zinc-300 block">
-                        E-mail do Gestor
+                        {t("manager_email")}
                       </label>
                       <input
                         id="email-input"
@@ -376,16 +386,16 @@ export default function ProfilePage() {
                     
                     <button
                       onClick={handleSaveEmailConfig}
-                      className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-555 text-white font-bold text-xs transition-colors shadow-lg shadow-emerald-600/10 cursor-pointer flex items-center justify-center gap-1.5"
+                      className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-550 text-white font-bold text-xs transition-colors shadow-lg shadow-emerald-600/10 cursor-pointer flex items-center justify-center gap-1.5"
                     >
-                      Salvar Configurações
+                      {t("save_settings")}
                     </button>
                   </div>
 
                   {/* Switches de Domínios */}
                   <div className="md:col-span-2 space-y-4">
                     <div className="text-xs font-black text-slate-750 dark:text-zinc-300 uppercase tracking-wider block">
-                      Ativação por Domínio de Origem
+                      {t("domain_activation")}
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {/* Manutenção */}
@@ -393,9 +403,9 @@ export default function ProfilePage() {
                         <div>
                           <div className="text-xs font-bold text-slate-900 dark:text-zinc-200 flex items-center gap-1.5">
                             <span className="h-2 w-2 rounded-full bg-amber-500 shrink-0" />
-                            Manutenção
+                            {t("maintenance_name")}
                           </div>
-                          <span className="text-[10px] text-slate-650 dark:text-zinc-550 block mt-0.5">Falhas físicas e sensores</span>
+                          <span className="text-[10px] text-slate-650 dark:text-zinc-550 block mt-0.5">{t("maintenance_desc_short")}</span>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
                           <input
@@ -413,9 +423,9 @@ export default function ProfilePage() {
                         <div>
                           <div className="text-xs font-bold text-slate-900 dark:text-zinc-200 flex items-center gap-1.5">
                             <span className="h-2 w-2 rounded-full bg-blue-500 shrink-0" />
-                            Demanda
+                            {t("demand_name")}
                           </div>
-                          <span className="text-[10px] text-slate-650 dark:text-zinc-550 block mt-0.5">Ruptura de estoque</span>
+                          <span className="text-[10px] text-slate-650 dark:text-zinc-550 block mt-0.5">{t("demand_desc_short")}</span>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
                           <input
@@ -433,9 +443,9 @@ export default function ProfilePage() {
                         <div>
                           <div className="text-xs font-bold text-slate-900 dark:text-zinc-200 flex items-center gap-1.5">
                             <span className="h-2 w-2 rounded-full bg-rose-500 shrink-0" />
-                            Churn de Clientes
+                            {t("churn_name")}
                           </div>
-                          <span className="text-[10px] text-slate-650 dark:text-zinc-550 block mt-0.5">Risco de cancelamento</span>
+                          <span className="text-[10px] text-slate-650 dark:text-zinc-550 block mt-0.5">{t("churn_desc_short")}</span>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
                           <input
@@ -453,9 +463,9 @@ export default function ProfilePage() {
                         <div>
                           <div className="text-xs font-bold text-slate-900 dark:text-zinc-200 flex items-center gap-1.5">
                             <span className="h-2 w-2 rounded-full bg-purple-500 shrink-0" />
-                            Risco de Crédito
+                            {t("credit_risk_name")}
                           </div>
-                          <span className="text-[10px] text-slate-650 dark:text-zinc-550 block mt-0.5">Score de crédito e inadimplência</span>
+                          <span className="text-[10px] text-slate-650 dark:text-zinc-550 block mt-0.5">{t("credit_risk_desc_short")}</span>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
                           <input
@@ -476,10 +486,10 @@ export default function ProfilePage() {
                   <div className="space-y-0.5">
                     <div className="text-xs font-bold text-slate-900 dark:text-zinc-200 flex items-center gap-2">
                       <Settings className="h-3.5 w-3.5 text-zinc-500" />
-                      Ferramentas de Simulação (Modo Demo)
+                      {t("demo_simulation_tools")}
                     </div>
                     <p className="text-[10px] text-slate-650 dark:text-zinc-550">
-                      Gere múltiplos alertas críticos simulados para ver a regra de agrupamento consolidando o e-mail em tempo real.
+                      {t("demo_simulation_desc")}
                     </p>
                   </div>
                   <button
@@ -487,7 +497,7 @@ export default function ProfilePage() {
                     className="px-4 py-2.5 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-700 bg-zinc-100/50 dark:bg-zinc-950/20 text-slate-700 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-250 font-bold text-xs transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer"
                   >
                     <Play className="h-3.5 w-3.5" />
-                    Simular Disparo Crítico em Lote
+                    {t("simulate_batch_btn")}
                   </button>
                 </div>
               </CardContent>
