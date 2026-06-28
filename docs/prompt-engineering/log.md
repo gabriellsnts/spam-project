@@ -105,3 +105,11 @@ Dificuldade: A varredura de arquivos extensos como `credit-risk/page.tsx` (1170 
 Correção aplicada: Utilização do método de escrita total de arquivo `write_to_file` com fallbacks integrados na chamada de `t()` para prevenir quebras visuais e preservar a integridade da tipagem TypeScript e build de produção.
 Melhoria de UX sugerida pela IA: Inclusão de formatação condicional i18n para data e moeda de acordo com o idioma ativo (`language === "pt" ? "pt-BR" : ...`), estendendo a internacionalização além de meras traduções textuais para formatação de dados numéricos e temporais.
 
+
+[RF52] Substituição de Abas Horizontais do Perfil por Sidebar Vertical de Tópicos
+
+Prompt usado: Refatoração da rota /profile e do layout da Sidebar Esquerda para navegação de configurações vertical por tópicos ("Preferências", "Gestão Administrativa", "Customização de Tema") e exibição isolada de conteúdos correspondentes.
+Funcionou bem: A migração e organização do controle visual usando estados no DomainContext, permitindo a comunicação síncrona instantânea e sem recarregamentos entre a Sidebar global e a área de configurações de perfil.
+Dificuldade: A interceptação de rota do Next.js App Router resolve caminhos que podem conter trailing slashes (ex: `/profile/`), o que impedia a renderização correta da Sidebar quando comparado estritamente com `/profile`.
+Correção aplicada: Ajustado o mapeamento da rota na Sidebar para validar ambas as variações de URL (`pathname === "/profile" || pathname === "/profile/"`), e migrado o fluxo de sincronização de query parameters (`useSearchParams()`) para a Context API (`DomainContext`), garantindo integridade e eliminando warnings de Suspense.
+Melhoria de UX sugerida pela IA: Inclusão de efeitos de animação fade-in e slide-in suaves na mudança de tópicos da direita, dando mais leveza e fluidez às transições de configurações.

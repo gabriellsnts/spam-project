@@ -344,8 +344,8 @@
   * Preferências (Subtópicos: Aparência do Painel, Idioma da Interface)
   * Gestão Administrativa (visível condicionalmente para Administradores)
   * Customização de Tema (visível condicionalmente para Administradores)
-- Substituída a navegação por abas horizontais na página `/profile` por um fluxo de query parameters (`section` e `sub`), comunicando a Sidebar de forma reativa com o estado local limpo `activeSection` na página de perfil.
-- Implementada a renderização condicional refinada do conteúdo da direita na página de perfil, permitindo isolar e focar estritamente nos cards de Aparência do Painel ou Idioma da Interface conforme a seleção do usuário.
+- Substituída a dependência de query parameters da URL (`searchParams`) por estados nativos e globais (`activeProfileSection` e `activeProfileSubSection`) expostos através do `DomainContext` para sincronização reativa, livre de recarregamentos e robusta contra problemas de Suspense em pré-renderização do Next.js.
+- Implementada a renderização condicional refinada do conteúdo da direita na página de perfil, exibindo estritamente a seção ativa de preferências, controle administrativo ou customização de tema selecionados na lateral esquerda, sem misturas visuais ou vazamento de estado.
 
 ### 3. Impacto e Resultados Técnicos (A Conclusão)
-- Isolamento absoluto da barra de navegação esquerda na página de perfil, eliminação da infoxicação visual e melhoria substancial de UX e ergonomia na gestão do perfil. 100% das regras de negócio do seletor de tema, idioma nativo e gerenciamento de usuários preservados. Build compilado com zero erros e warnings.
+- Isolamento absoluto da barra de navegação esquerda na rota `/profile` e sincronização perfeita e limpa via Context API. Transições de seções ativas na direita respondem instantaneamente aos cliques nos itens da Sidebar, sem causar recarregamento de página. Build final Next.js em produção bem-sucedido com zero erros de compilação ou ESLint.

@@ -13,16 +13,22 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 export function Sidebar() {
   const pathname = usePathname();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const section = searchParams?.get("section") || "preferences";
-  const sub = searchParams?.get("sub") || "";
-  
-  const { activeDomain, logs, currentView, setCurrentView, t, currentUser } = useDomain();
+  const { 
+    activeDomain, 
+    logs, 
+    currentView, 
+    setCurrentView, 
+    t, 
+    currentUser,
+    activeProfileSection,
+    setActiveProfileSection,
+    activeProfileSubSection,
+    setActiveProfileSubSection
+  } = useDomain();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const getActiveDotColorClass = (type: DomainType) => {
@@ -168,7 +174,7 @@ export function Sidebar() {
     }
   ];
 
-  if (pathname === "/profile") {
+  if (pathname === "/profile" || pathname === "/profile/") {
     const isAdmin = currentUser?.profileName === "Administrador";
     return (
       <div
@@ -202,17 +208,20 @@ export function Sidebar() {
             {/* Preferências */}
             <div className="space-y-1">
               <button
-                onClick={() => router.push("/profile?section=preferences")}
+                onClick={() => {
+                  setActiveProfileSection("preferences");
+                  setActiveProfileSubSection("");
+                }}
                 className={cn(
                   "w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 text-left relative overflow-hidden group",
-                  section === "preferences"
+                  activeProfileSection === "preferences"
                     ? "text-emerald-500 bg-emerald-500/10 border-emerald-500/30"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border-transparent",
                   isCollapsed && "justify-center"
                 )}
                 title={t("preferences")}
               >
-                {section === "preferences" && (
+                {activeProfileSection === "preferences" && (
                   <div className="absolute left-0 top-3 bottom-3 w-1 bg-emerald-500 rounded-r-md" />
                 )}
                 <Settings className="h-5 w-5 shrink-0" />
@@ -227,13 +236,13 @@ export function Sidebar() {
               </button>
 
               {/* Subtópicos de Preferências */}
-              {!isCollapsed && section === "preferences" && (
+              {!isCollapsed && activeProfileSection === "preferences" && (
                 <div className="pl-9 space-y-1 animate-in slide-in-from-top-2 duration-200">
                   <button
-                    onClick={() => router.push("/profile?section=preferences&sub=appearance")}
+                    onClick={() => setActiveProfileSubSection("appearance")}
                     className={cn(
                       "w-full text-left text-[11px] py-1.5 px-2.5 rounded-lg transition-colors block font-medium",
-                      sub === "appearance"
+                      activeProfileSubSection === "appearance"
                         ? "text-emerald-500 bg-emerald-500/5 font-bold"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/20"
                     )}
@@ -241,10 +250,10 @@ export function Sidebar() {
                     {t("dashboard_appearance")}
                   </button>
                   <button
-                    onClick={() => router.push("/profile?section=preferences&sub=language")}
+                    onClick={() => setActiveProfileSubSection("language")}
                     className={cn(
                       "w-full text-left text-[11px] py-1.5 px-2.5 rounded-lg transition-colors block font-medium",
-                      sub === "language"
+                      activeProfileSubSection === "language"
                         ? "text-emerald-500 bg-emerald-500/5 font-bold"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/20"
                     )}
@@ -258,17 +267,20 @@ export function Sidebar() {
             {/* Gestão Administrativa */}
             {isAdmin && (
               <button
-                onClick={() => router.push("/profile?section=admin")}
+                onClick={() => {
+                  setActiveProfileSection("admin");
+                  setActiveProfileSubSection("");
+                }}
                 className={cn(
                   "w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 text-left relative overflow-hidden group",
-                  section === "admin"
+                  activeProfileSection === "admin"
                     ? "text-emerald-500 bg-emerald-500/10 border-emerald-500/30"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border-transparent",
                   isCollapsed && "justify-center"
                 )}
                 title={t("admin_management")}
               >
-                {section === "admin" && (
+                {activeProfileSection === "admin" && (
                   <div className="absolute left-0 top-3 bottom-3 w-1 bg-emerald-500 rounded-r-md" />
                 )}
                 <ShieldCheck className="h-5 w-5 shrink-0" />
@@ -286,17 +298,20 @@ export function Sidebar() {
             {/* Customização de Tema */}
             {isAdmin && (
               <button
-                onClick={() => router.push("/profile?section=theme")}
+                onClick={() => {
+                  setActiveProfileSection("theme");
+                  setActiveProfileSubSection("");
+                }}
                 className={cn(
                   "w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 text-left relative overflow-hidden group",
-                  section === "theme"
+                  activeProfileSection === "theme"
                     ? "text-emerald-500 bg-emerald-500/10 border-emerald-500/30"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border-transparent",
                   isCollapsed && "justify-center"
                 )}
                 title={t("theme_customization")}
               >
-                {section === "theme" && (
+                {activeProfileSection === "theme" && (
                   <div className="absolute left-0 top-3 bottom-3 w-1 bg-emerald-500 rounded-r-md" />
                 )}
                 <Sparkles className="h-5 w-5 shrink-0" />

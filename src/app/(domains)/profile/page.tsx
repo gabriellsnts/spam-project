@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useDomain, DomainType } from "@/lib/context/domain-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserManagement } from "@/components/shared/user-management";
@@ -21,21 +21,11 @@ export default function ProfilePage() {
     simulateCriticalAlertsBatch,
     language,
     setLanguage,
+    activeProfileSection,
+    activeProfileSubSection,
     t
   } = useDomain();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  
-  const section = searchParams?.get("section") || "preferences";
-  const sub = searchParams?.get("sub") || "";
-
-  const [activeSection, setActiveSection] = useState(section);
-
-  useEffect(() => {
-    if (section) {
-      setActiveSection(section);
-    }
-  }, [section]);
 
   const [localEmail, setLocalEmail] = useState("");
   const [localEnabledDomains, setLocalEnabledDomains] = useState<Record<DomainType, boolean>>({
@@ -115,7 +105,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Conteúdo: Preferências */}
-      {activeSection === "preferences" && (
+      {activeProfileSection === "preferences" && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in duration-300">
           {/* Card de Informações Básicas (Visual Premium) */}
           <Card className="md:col-span-1 border-zinc-200 dark:border-border/80 bg-white/70 dark:bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-xl flex flex-col justify-between h-fit animate-in fade-in duration-300">
@@ -176,7 +166,7 @@ export default function ProfilePage() {
 
           <div className="md:col-span-2 space-y-6">
             {/* Configurações de Aparência / Tema (RF52) */}
-            {(sub === "appearance" || !sub) && (
+            {(activeProfileSubSection === "appearance" || !activeProfileSubSection) && (
               <Card className="border-zinc-200 dark:border-border/80 bg-white/70 dark:bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-xl animate-in fade-in duration-300">
                 <CardHeader>
                   <CardTitle className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
@@ -209,7 +199,7 @@ export default function ProfilePage() {
                       </div>
                       <div className="text-center">
                         <div className="text-xs font-bold text-slate-900 dark:text-zinc-200">{t("light_mode")}</div>
-                        <div className="text-[10px] text-slate-660 dark:text-zinc-500 mt-0.5">{t("light_mode_desc")}</div>
+                        <div className="text-[10px] text-slate-660 mt-0.5">{t("light_mode_desc")}</div>
                       </div>
                     </button>
 
@@ -233,7 +223,7 @@ export default function ProfilePage() {
                       </div>
                       <div className="text-center">
                         <div className="text-xs font-bold text-slate-900 dark:text-zinc-200">{t("dark_mode")}</div>
-                        <div className="text-[10px] text-slate-655 dark:text-zinc-550 mt-0.5">{t("dark_mode_desc")}</div>
+                        <div className="text-[10px] text-slate-655 mt-0.5">{t("dark_mode_desc")}</div>
                       </div>
                     </button>
 
@@ -279,7 +269,7 @@ export default function ProfilePage() {
             )}
 
             {/* Seletor de Idioma (RF54) */}
-            {(sub === "language" || !sub) && (
+            {(activeProfileSubSection === "language" || !activeProfileSubSection) && (
               <Card className="border-zinc-200 dark:border-border/80 bg-white/70 dark:bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-xl animate-in fade-in duration-300">
                 <CardHeader>
                   <CardTitle className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
@@ -342,7 +332,7 @@ export default function ProfilePage() {
       )}
 
       {/* Configuração de Notificações por E-mail (RF41) */}
-      {activeSection === "preferences" && !sub && (
+      {activeProfileSection === "preferences" && !activeProfileSubSection && (
         <Card className="w-full border-zinc-200 dark:border-border/80 bg-white/70 dark:bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-xl overflow-hidden animate-in fade-in duration-300">
           <CardHeader className="border-b border-zinc-200/50 dark:border-zinc-800/50 pb-4">
             <CardTitle className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
@@ -492,14 +482,14 @@ export default function ProfilePage() {
       )}
 
       {/* Conteúdo: Gestão Administrativa */}
-      {activeSection === "admin" && isAdmin && (
+      {activeProfileSection === "admin" && isAdmin && (
         <div className="animate-in fade-in duration-300">
           <UserManagement />
         </div>
       )}
 
       {/* Conteúdo: Customização de Tema (RF53) */}
-      {activeSection === "theme" && isAdmin && (
+      {activeProfileSection === "theme" && isAdmin && (
         <div className="animate-in fade-in duration-300">
           <ThemeCustomizer />
         </div>
