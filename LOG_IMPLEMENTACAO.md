@@ -301,3 +301,17 @@
 
 ### 3. Impacto e Resultados Técnicos (A Conclusão)
 - Uniformidade visual e suporte total e profundo a internacionalização (pt/en/es) em 100% da interface do usuário de todos os módulos analíticos, consolidando um sistema globalmente acessível e robusto sem impactos no build ou na tipagem do TypeScript.
+
+---
+
+## 📅 2026-06-28 — Hotfix de Internacionalização (i18n) e Limpeza de Arquivos
+### 1. Contexto e Problemática (O Problema)
+- Erros de compilação no componente `ComparisonView` relacionados a uma divergência de assinatura de parâmetros na chamada do método `getLabels(domain)`. Além disso, a presença de arquivos órfãos temporários (`resolve_context.js`, `sidebar_mine.tsx`, `sidebar_theirs.tsx`) poluía o diretório raiz do projeto.
+
+### 2. Solução Proposta e Fundamentação (O Desenvolvimento)
+- Ajustada a chamada da função auxiliar `getLabels(domain)` no componente `ComparisonView` removendo o argumento redundante `t` e adaptando sua assinatura de parâmetros. Internamente, a função agora utiliza `useDomain()` de forma controlada com diretrizes ESLint para manter o ganho de tradução do contexto global.
+- Varredura e exclusão dos arquivos temporários de merge e rascunho órfãos da raiz do workspace.
+- Validação e execução de builds locais de integridade (`npx tsc --noEmit` e `npm run build`) alcançando estabilidade técnica com zero erros.
+
+### 3. Impacto e Resultados Técnicos (A Conclusão)
+- Garantia de build em produção estável de 100% da aplicação Next.js e conformidade com o ecossistema limpo de versionamento e repositório.

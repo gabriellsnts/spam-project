@@ -90,7 +90,7 @@ const DOMAIN_STYLES: Record<DomainType, {
 };
 
 export function ComparisonView({ domain }: ComparisonViewProps) {
-  const { addLog, trainedModels } = useDomain();
+  const { addLog, trainedModels, t } = useDomain();
   const activeModel = trainedModels[domain];
   
   const [data, setData] = useState<ComparisonItem[]>([]);
@@ -666,9 +666,9 @@ export function ComparisonView({ domain }: ComparisonViewProps) {
           <CardContent className="p-4 flex items-start gap-3">
             <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
             <div className="space-y-1">
-              <h4 className="text-xs font-bold text-amber-500">Modelo Nao Treinado</h4>
+              <h4 className="text-xs font-bold text-amber-500">{t("model_not_trained")}</h4>
               <p className="text-[11px] text-muted-foreground leading-relaxed">
-                Nenhum modelo preditivo esta ativo para este dominio. O sistema utilizara um baseline analitico para predições demo. Para usar previsões reais do seu dataset, treine o modelo primeiro na aba de <strong>Calibracao do Modelo</strong>.
+                {t("model_not_trained_desc")}
               </p>
             </div>
           </CardContent>
@@ -683,10 +683,10 @@ export function ComparisonView({ domain }: ComparisonViewProps) {
                 <div className="space-y-1">
                   <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
                     <Sparkles className={cn("h-4 w-4", style.accent)} />
-                    Curva de Dispersao: Real vs Previsto (RF32)
+                    {t("scatter_curve_title")}
                   </CardTitle>
                   <CardDescription className="text-[11px] text-muted-foreground">
-                    Sobreposicao das previsões do modelo frente aos resultados reais auditados.
+                    {t("chart_overlap_desc")}
                   </CardDescription>
                 </div>
                 <div className="flex items-center gap-2">
@@ -702,7 +702,7 @@ export function ComparisonView({ domain }: ComparisonViewProps) {
                     className="h-8 text-[10px] font-bold border-border hover:bg-muted text-foreground"
                   >
                     <Download className="h-3.5 w-3.5 mr-1" />
-                    Exportar Relatorio HTML
+                    {t("export_html_report")}
                   </Button>
                   <Button
                     variant="ghost"
@@ -710,7 +710,7 @@ export function ComparisonView({ domain }: ComparisonViewProps) {
                     onClick={handleReset}
                     className="h-8 text-[10px] text-muted-foreground hover:text-foreground font-medium"
                   >
-                    Limpar
+                    {t("clear_btn")}
                   </Button>
                 </div>
               </CardHeader>
@@ -736,16 +736,16 @@ export function ComparisonView({ domain }: ComparisonViewProps) {
                           if (value === undefined) return ["-", String(name || "")];
                           const valNum = typeof value === "number" ? value : parseFloat(String(value));
                           const nameStr = String(name || "");
-                          if (nameStr === "Valor Real") {
-                            if (domain === "churn") return [valNum === 100 ? "Evasao (100%)" : "Retencao (0%)", nameStr];
-                            if (domain === "credit-risk") return [valNum === 100 ? "Retorno (100%)" : "Inadimplencia (0%)", nameStr];
+                          if (nameStr === t("real_value")) {
+                            if (domain === "churn") return [valNum === 100 ? `${t("evasion_real")} (100%)` : `${t("risk_predicted")} (0%)`, nameStr];
+                            if (domain === "credit-risk") return [valNum === 100 ? `${t("return_real")} (100%)` : `${t("probability_predicted")} (0%)`, nameStr];
                           }
                           return [`${valNum.toFixed(1)}${labels.unit}`, nameStr];
                         }}
                       />
                       <Legend verticalAlign="top" height={36} iconType="circle" iconSize={6} wrapperStyle={{ fontSize: "10px", color: "#a1a1aa" }} />
-                      <Line type="monotone" dataKey="real" name="Valor Real" stroke={style.chartColorReal} strokeWidth={2.5} dot={false} activeDot={{ r: 5 }} />
-                      <Line type="monotone" dataKey="previsto" name="Valor Previsto" stroke={style.chartColorPrev} strokeWidth={2} dot={renderCustomDot} activeDot={{ r: 5 }} />
+                      <Line type="monotone" dataKey="real" name={t("real_value")} stroke={style.chartColorReal} strokeWidth={2.5} dot={false} activeDot={{ r: 5 }} />
+                      <Line type="monotone" dataKey="previsto" name={t("predicted_value")} stroke={style.chartColorPrev} strokeWidth={2} dot={renderCustomDot} activeDot={{ r: 5 }} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -754,16 +754,16 @@ export function ComparisonView({ domain }: ComparisonViewProps) {
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-500 opacity-75" />
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500" />
                   </span>
-                  <span>Pontos com indicador circular vermelho e efeito ping representam <strong>desvios superiores a 20%</strong> entre o valor previsto e real.</span>
+                  <span>{t("ping_outlier_description")}</span>
                 </div>
               </CardContent>
             </Card>
 
             <Card className="bg-card border-border shadow-md">
               <CardHeader className="pb-2">
-                <CardTitle className="text-xs font-bold text-foreground">Detalhamento dos Dados de Validacao</CardTitle>
+                <CardTitle className="text-xs font-bold text-foreground">{t("validation_data_detail")}</CardTitle>
                 <CardDescription className="text-[10px] text-muted-foreground">
-                  Alinhamento registro a registro com o percentual de desvio calculado.
+                  {t("row_by_row_deviation")}
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-0">
@@ -772,7 +772,7 @@ export function ComparisonView({ domain }: ComparisonViewProps) {
                     <thead>
                       <tr className="border-b border-border/80 bg-muted/30">
                         <th onClick={() => handleSort("id")} className="p-3 font-semibold text-muted-foreground cursor-pointer hover:text-foreground transition-colors select-none">
-                          ID Registro <ArrowUpDown className="h-3 w-3 inline ml-1 opacity-70" />
+                          {t("id_record")} <ArrowUpDown className="h-3 w-3 inline ml-1 opacity-70" />
                         </th>
                         <th onClick={() => handleSort("real")} className="p-3 font-semibold text-muted-foreground text-right cursor-pointer hover:text-foreground transition-colors select-none">
                           {labels.real} <ArrowUpDown className="h-3 w-3 inline ml-1 opacity-70" />
@@ -781,7 +781,7 @@ export function ComparisonView({ domain }: ComparisonViewProps) {
                           {labels.previsto} <ArrowUpDown className="h-3 w-3 inline ml-1 opacity-70" />
                         </th>
                         <th onClick={() => handleSort("deviation")} className="p-3 font-semibold text-muted-foreground text-right cursor-pointer hover:text-foreground transition-colors select-none">
-                          Desvio Calculado <ArrowUpDown className="h-3 w-3 inline ml-1 opacity-70" />
+                          {t("calculated_deviation")} <ArrowUpDown className="h-3 w-3 inline ml-1 opacity-70" />
                         </th>
                         <th className="p-3 font-semibold text-muted-foreground text-center">Status</th>
                       </tr>
@@ -792,9 +792,9 @@ export function ComparisonView({ domain }: ComparisonViewProps) {
                         
                         let realCellText = `${item.real}${labels.unit}`;
                         if (domain === "churn") {
-                          realCellText = item.real === 100 ? "Evasao (100%)" : "Retencao (0%)";
+                          realCellText = item.real === 100 ? `${t("evasion_real")} (100%)` : `${t("risk_predicted")} (0%)`;
                         } else if (domain === "credit-risk") {
-                          realCellText = item.real === 100 ? "Retorno (100%)" : "Inadimplencia (0%)";
+                          realCellText = item.real === 100 ? `${t("return_real")} (100%)` : `${t("probability_predicted")} (0%)`;
                         }
 
                         let prevCellText = `${item.previsto.toFixed(1)}${labels.unit}`;
@@ -810,7 +810,7 @@ export function ComparisonView({ domain }: ComparisonViewProps) {
                             <td className={cn("p-3 text-right font-bold", dev.isOutlier ? "text-rose-500" : "text-foreground")}>{dev.formatted}</td>
                             <td className="p-3 text-center">
                               <span className={cn("inline-block px-2 py-0.5 rounded-full text-[9px] font-bold border", dev.isOutlier ? "bg-rose-500/10 text-rose-400 border-rose-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20")}>
-                                {dev.isOutlier ? "Alerta Desvio" : "Adequado"}
+                                {dev.isOutlier ? t("alert_deviation") : t("adequate_status")}
                               </span>
                             </td>
                           </tr>
@@ -823,7 +823,7 @@ export function ComparisonView({ domain }: ComparisonViewProps) {
                 {totalPages > 1 && (
                   <div className="flex items-center justify-between pt-4 select-none">
                     <span className="text-[10px] text-muted-foreground">
-                      Pagina {currentPage} de {totalPages} ({data.length} itens)
+                      {t("page_label")} {currentPage} {t("out_of")} {totalPages} ({data.length} {t("items_suffix")})
                     </span>
                     <div className="flex gap-2">
                       <Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => setCurrentPage(currentPage - 1)} className="h-8 w-8 p-0">
@@ -842,17 +842,17 @@ export function ComparisonView({ domain }: ComparisonViewProps) {
           <div className="space-y-6">
             <Card className="bg-card border-border shadow-md">
               <CardHeader className="pb-2">
-                <CardTitle className="text-xs font-bold text-foreground">Sumario de Performance</CardTitle>
-                <CardDescription className="text-[10px] text-muted-foreground">Métricas calculadas do cruzamento de dados.</CardDescription>
+                <CardTitle className="text-xs font-bold text-foreground">{t("performance_summary")}</CardTitle>
+                <CardDescription className="text-[10px] text-muted-foreground">{t("metrics_calculated_desc")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-3 bg-zinc-950/40 rounded-xl border border-border/50">
-                    <div className="text-[9px] text-muted-foreground uppercase font-bold">Registros</div>
+                    <div className="text-[9px] text-muted-foreground uppercase font-bold">{t("records_count")}</div>
                     <div className="text-xl font-bold mt-1">{data.length}</div>
                   </div>
                   <div className={cn("p-3 rounded-xl border", outliersCount > 0 ? "bg-rose-500/[0.04] border-rose-500/20" : "bg-zinc-950/40 border-border/50")}>
-                    <div className="text-[9px] text-muted-foreground uppercase font-bold">Desvios Criticos</div>
+                    <div className="text-[9px] text-muted-foreground uppercase font-bold">{t("critical_deviations")}</div>
                     <div className={cn("text-xl font-bold mt-1", outliersCount > 0 ? "text-rose-500" : "text-foreground")}>{outliersCount}</div>
                   </div>
                 </div>
@@ -863,7 +863,7 @@ export function ComparisonView({ domain }: ComparisonViewProps) {
                   <div className="space-y-3.5">
                     <div className="space-y-1">
                       <div className="flex justify-between text-[10px] text-muted-foreground">
-                        <span>MAE (Erro Medio Absoluto)</span>
+                        <span>{t("mae_label")}</span>
                         <span className="font-bold text-foreground">{metrics.mae?.toFixed(4)}</span>
                       </div>
                       <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden">
@@ -872,7 +872,7 @@ export function ComparisonView({ domain }: ComparisonViewProps) {
                     </div>
                     <div className="space-y-1">
                       <div className="flex justify-between text-[10px] text-muted-foreground">
-                        <span>RMSE (Raiz do Erro Quad. Medio)</span>
+                        <span>{t("rmse_label")}</span>
                         <span className="font-bold text-foreground">{metrics.rmse?.toFixed(4)}</span>
                       </div>
                       <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden">
@@ -886,7 +886,7 @@ export function ComparisonView({ domain }: ComparisonViewProps) {
                   <div className="space-y-3.5">
                     <div className="space-y-1">
                       <div className="flex justify-between text-[10px] text-muted-foreground">
-                        <span>Acuracia</span>
+                        <span>{t("accuracy")}</span>
                         <span className="font-bold text-foreground">{metrics.accuracy?.toFixed(2)}%</span>
                       </div>
                       <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden">
@@ -912,9 +912,9 @@ export function ComparisonView({ domain }: ComparisonViewProps) {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs font-bold text-foreground flex items-center gap-1">
                     <History className="h-3.5 w-3.5 text-muted-foreground/60" />
-                    Historico de Auditoria Local
+                    {t("local_audit_history")}
                   </CardTitle>
-                  <CardDescription className="text-[10px] text-muted-foreground font-normal">Execuções anteriores salvas no cache local.</CardDescription>
+                  <CardDescription className="text-[10px] text-muted-foreground font-normal">{t("previous_runs_cache_desc")}</CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0 space-y-2">
                   <div className="max-h-[220px] overflow-y-auto space-y-2 pr-1 scrollbar-thin">
@@ -936,7 +936,7 @@ export function ComparisonView({ domain }: ComparisonViewProps) {
                           </div>
                           <div className="text-right font-mono">
                             <span className="font-bold text-foreground text-[11px]">{record.recordCount}</span>
-                            <div className="text-[8px] text-muted-foreground">itens</div>
+                            <div className="text-[8px] text-muted-foreground">{t("items_suffix")}</div>
                           </div>
                         </div>
                       );
@@ -952,10 +952,10 @@ export function ComparisonView({ domain }: ComparisonViewProps) {
           <CardHeader className="text-center pb-2">
             <CardTitle className="text-sm font-bold text-foreground flex items-center justify-center gap-1.5">
               <Sparkles className={cn("h-4 w-4", style.accent)} />
-              Validacao Real vs Previsto
+              {t("real_vs_predicted_validation")}
             </CardTitle>
             <CardDescription className="text-[11px] text-muted-foreground">
-              Modulo de auditoria para confrontar dados reais com previsões do modelo.
+              {t("audit_module_confront_desc")}
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-6 pb-8 space-y-6">
@@ -972,12 +972,12 @@ export function ComparisonView({ domain }: ComparisonViewProps) {
                 <UploadCloud className="h-8 w-8" />
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-bold text-foreground">Arraste seu arquivo CSV ou clique para navegar</p>
-                <p className="text-[10px] text-muted-foreground">CSV contendo colunas de ID e Valor Real.</p>
+                <p className="text-xs font-bold text-foreground">{t("drag_csv_or_click")}</p>
+                <p className="text-[10px] text-muted-foreground">{t("csv_id_real_desc")}</p>
               </div>
               <input type="file" accept=".csv" onChange={handleFileChange} className="hidden" id="rf32-csv-file-input" />
               <Button variant="outline" size="sm" className="h-8 text-xs px-4" onClick={() => document.getElementById("rf32-csv-file-input")?.click()}>
-                Selecionar Arquivo
+                {t("select_file_btn")}
               </Button>
             </div>
 
@@ -985,10 +985,10 @@ export function ComparisonView({ domain }: ComparisonViewProps) {
               <div className="text-center space-y-1">
                 <div className="text-xs font-bold text-foreground flex items-center justify-center gap-1">
                   <TrendingUp className="h-3.5 w-3.5 text-muted-foreground/60" />
-                  Homologacao Rapida
+                  {t("fast_homologation")}
                 </div>
                 <p className="text-[10px] text-muted-foreground max-w-md">
-                  Utilize a injecao instantanea de dados simulados realistas casados com este dominio.
+                  {t("instant_injection_demo_desc")}
                 </p>
               </div>
               <Button
@@ -997,7 +997,7 @@ export function ComparisonView({ domain }: ComparisonViewProps) {
                 onClick={injectDemoData}
                 className="h-8 text-xs font-bold border-dashed border-border hover:border-foreground/40 hover:bg-muted text-foreground transition-all"
               >
-                Injetar Dados de Teste (Modo Demo)
+                {t("inject_demo_data_btn")}
               </Button>
             </div>
           </CardContent>
@@ -1008,16 +1008,18 @@ export function ComparisonView({ domain }: ComparisonViewProps) {
 }
 
 function getLabels(domain: string) {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { t } = useDomain();
   switch (domain) {
     case "maintenance":
-      return { real: "RUL Real (h)", previsto: "RUL Previsto (h)", unit: "h" };
+      return { real: t("rul_real_h"), previsto: t("rul_predicted_h"), unit: "h" };
     case "demand":
-      return { real: "Demanda Real (un)", previsto: "Demanda Prevista (un)", unit: " un" };
+      return { real: t("demand_real_un"), previsto: t("demand_predicted_un"), unit: " un" };
     case "churn":
-      return { real: "Evasao Real", previsto: "Risco Previsto", unit: "%" };
+      return { real: t("evasion_real"), previsto: t("risk_predicted"), unit: "%" };
     case "credit-risk":
-      return { real: "Retorno Real", previsto: "Probabilidade Prevista", unit: "%" };
+      return { real: t("return_real"), previsto: t("probability_predicted"), unit: "%" };
     default:
-      return { real: "Valor Real", previsto: "Valor Previsto", unit: "" };
+      return { real: t("real_value"), previsto: t("predicted_value"), unit: "" };
   }
 }

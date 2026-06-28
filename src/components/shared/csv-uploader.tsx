@@ -1068,6 +1068,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
     clearHyperparameterHistory,
     currentUser,
     userProfile,
+    t,
   } = useDomain();
 
   const canEdit = !currentUser || currentUser.accessProfile === "Super Admin";
@@ -1765,7 +1766,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
         ) : (
           <div className="p-4 rounded-xl border border-dashed border-border bg-zinc-950/20 mb-6 flex flex-col items-center justify-center text-center py-6 animate-in fade-in duration-300 font-sans">
             <AlertCircle className="h-8 w-8 text-amber-500/80 mb-2" />
-            <h5 className="text-xs font-bold text-foreground mb-1">Nenhum Modelo Ativo Detectado</h5>
+            <h5 className="text-xs font-bold text-foreground mb-1">{t("no_model_detected")}</h5>
             <p className="text-[10px] text-muted-foreground max-w-md leading-relaxed">
               Você ainda não realizou o treinamento do modelo para o domínio de <strong>{domainInfo.name}</strong> nesta sessão. Faça o upload do arquivo CSV correspondente na área abaixo e inicie o treinamento para habilitar as previsões.
             </p>
@@ -1804,16 +1805,16 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
 
               <div className="text-center space-y-1">
                 <p className="text-xs font-semibold text-foreground">
-                  Arrastar e soltar arquivo histórico
+                  {t("drag_drop_csv")}
                 </p>
                 <p className="text-[10px] text-muted-foreground">
-                  ou clique para navegar no computador (máx. 5MB)
+                  {t("click_browse_file")}
                 </p>
               </div>
 
               {/* Tag informativa de formato aceito */}
               <div className="px-2 py-0.5 rounded bg-background border border-border text-[9px] font-bold text-muted-foreground uppercase font-mono tracking-wider">
-                Exclusivo CSV (.csv)
+                {t("exclusive_csv")}
               </div>
             </div>
 
@@ -1829,7 +1830,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                 className="text-[10px] font-bold h-7 border-dashed border-emerald-500/40 text-emerald-600 hover:bg-emerald-500/10"
               >
                 <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
-                Auto-Preencher com Dados de Teste (Modo Demo)
+                {t("auto_fill_demo")}
               </Button>
             </div>
 
@@ -1837,7 +1838,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
             <div className="p-3.5 rounded-xl bg-muted/30 border border-border/80 text-[11px] space-y-2">
               <div className="font-bold text-foreground/80 flex items-center gap-1.5">
                 <span className={cn("h-1.5 w-1.5 rounded-full bg-current", theme.accent)} />
-                Estrutura de Colunas Esperada:
+                {t("expected_cols_structure")}
               </div>
               <p className="text-muted-foreground text-[10px] leading-relaxed">
                 Para o correto alinhamento do motor analítico neste módulo, certifique-se de que o CSV contemple os cabeçalhos abaixo (delimitados por <code className="font-mono text-foreground font-semibold px-0.5 bg-muted">,</code> ou <code className="font-mono text-foreground font-semibold px-0.5 bg-muted">;</code>):
@@ -1859,7 +1860,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
             <Loader2 className={cn("h-8 w-8 animate-spin", theme.accent)} />
             
             <div className="text-center space-y-2 w-full max-w-xs">
-              <h4 className="text-xs font-bold text-foreground">Sincronizando dados históricos...</h4>
+              <h4 className="text-xs font-bold text-foreground">{t("syncing_historical_data")}</h4>
               <p className="text-[10px] text-muted-foreground leading-relaxed h-8 flex items-center justify-center text-center">
                 {loadingStep}
               </p>
@@ -1885,23 +1886,23 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
             <div className="space-y-1">
               <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
                 <span className={cn("h-2 w-2 rounded-full bg-current animate-pulse", theme.accent)} />
-                Pré-visualização dos Dados Importados
+                {t("imported_data_preview")}
               </h4>
               <p className="text-[10px] text-muted-foreground">
-                Confira a amostragem das primeiras 5 linhas de dados para atestar o correto mapeamento das colunas e a ausência de problemas de codificação.
+                {t("preview_data_desc")}
               </p>
             </div>
 
             {/* Cabeçalho de Contexto do Arquivo (CA06) */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-3 bg-muted/40 border border-border/60 rounded-xl text-[10px] font-mono gap-2">
               <div className="space-y-0.5">
-                <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Arquivo</span>
+                <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">{t("file_label")}</span>
                 <span className="text-foreground font-bold truncate max-w-[250px] block" title={fileDetails.name}>
                   {fileDetails.name}
                 </span>
               </div>
               <div className="space-y-0.5 sm:text-right">
-                <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Tamanho Total</span>
+                <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">{t("size_label")}</span>
                 <span className="text-foreground font-semibold">{fileDetails.size}</span>
               </div>
             </div>
@@ -1911,7 +1912,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
               <div className="p-4 bg-rose-500/10 border border-rose-500/25 rounded-xl text-[11px] text-rose-500 space-y-2.5 animate-in fade-in duration-300">
                 <div className="font-bold flex items-center gap-1.5 text-xs">
                   <AlertCircle className="h-4.5 w-4.5 shrink-0" />
-                  Inconsistências Detectadas na Validação de Esquema
+                  {t("validation_inconsistencies")}
                 </div>
                 <p className="text-[10px] leading-relaxed text-rose-500/90 font-medium">
                   O validador automático encontrou inconsistências na estrutura do arquivo. O início do treinamento está bloqueado até que as seguintes pendências sejam resolvidas:
@@ -1935,7 +1936,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                     className="text-[9px] font-bold h-7 px-2.5 border-rose-500/20 bg-rose-500/5 hover:bg-rose-500/10 text-rose-500"
                   >
                     <Info className="h-3.5 w-3.5 mr-1 shrink-0" />
-                    Ver Relatório de Conformidade
+                    {t("view_compliance_report")}
                   </Button>
                   <Button
                     onClick={handleDownloadTemplate}
@@ -1943,7 +1944,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                     className="text-[9px] font-bold h-7 px-2.5 border-rose-500/20 bg-rose-500/5 hover:bg-rose-500/10 text-rose-500"
                   >
                     <Download className="h-3.5 w-3.5 mr-1 shrink-0" />
-                    Baixar Modelo de Exemplo
+                    {t("download_example_template")}
                   </Button>
                 </div>
               </div>
@@ -1971,7 +1972,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                         colSpan={fileDetails.headers.length}
                         className="p-4 text-[10px] text-center text-muted-foreground italic border-b border-border/60"
                       >
-                        Nenhum registro de dados disponível para visualização.
+                        {t("no_records_available")}
                       </td>
                     </tr>
                   ) : (
@@ -2018,7 +2019,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                   className="text-[10px] font-bold h-8 px-3.5 border-border hover:bg-muted flex-1 sm:flex-initial"
                 >
                   <Trash2 className="h-3.5 w-3.5 mr-1" />
-                  Descartar Importação
+                   {t("discard_import")}
                 </Button>
                 <Button
                   onClick={handleConfirm}
@@ -2031,7 +2032,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                   )}
                 >
                   <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
-                  Confirmar e Avançar
+                   {t("confirm_advance")}
                 </Button>
               </div>
             </div>
@@ -2047,7 +2048,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
 
             <div className="space-y-4 flex-1 w-full">
               <div className="space-y-1">
-                <h4 className="text-xs font-bold text-foreground">Importação concluída com sucesso!</h4>
+                <h4 className="text-xs font-bold text-foreground">{t("import_success_title")}</h4>
                 <p className="text-[10px] text-muted-foreground">
                   A base histórica foi validada, decodificada e já está pronta para processamento pelo motor analítico.
                 </p>
@@ -2116,7 +2117,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                     className={cn("text-[10px] font-bold h-8 px-3.5", theme.button, !canEdit && "opacity-50 cursor-not-allowed")}
                     title={canEdit ? "" : "Somente Administradores podem iniciar o treinamento."}
                   >
-                    Iniciar Treinamento do Modelo
+                    {t("start_model_training")}
                   </Button>
                 </div>
               </div>
@@ -2150,7 +2151,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                   onClick={handleReset}
                   className={cn("text-[10px] font-bold h-8 px-3.5", theme.button)}
                 >
-                  Tentar Novamente
+                   {t("try_again_btn")}
                 </Button>
               </div>
             </div>
@@ -2188,11 +2189,11 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
               <div className="space-y-1 flex-1">
                 <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
                   {trainingError ? (
-                    <span className="text-rose-500">Treinamento Interrompido por Falha Crítica</span>
+                    <span className="text-rose-500">{t("training_in_progress")}</span>
                   ) : trainingProgress === 100 ? (
-                    <span className="text-emerald-500">Treinamento Concluído com Sucesso Absoluto!</span>
+                    <span className="text-emerald-500">{t("training_success_title")}</span>
                   ) : (
-                    <span>Treinamento do Modelo em Andamento...</span>
+                    <span>{t("training_in_progress")}</span>
                   )}
                 </h4>
                 <p className="text-[11px] text-muted-foreground leading-relaxed">
