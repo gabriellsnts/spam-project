@@ -88,3 +88,12 @@ Dificuldade: Adaptar funcionalidades inerentemente "backend" como a expiração 
 Correção aplicada: Para RF83, em vez de depender de bibliotecas externas de conversão de HTML para PDF que podem quebrar o Next.js, utilizei injeção de `@media print` no Tailwind e acionei `window.print()` nativamente, isolando a impressão ao modal.
 Melhoria de UX sugerida pela IA: Inclusão de "Toasts" (feedbacks em balãozinho verde/vermelho flutuantes) em quase todos os modais (Share, Lixeira, API Key) usando puramente estados locais para preencher os CAs sem precisar instalar lib de Toasts externa (como sonner ou react-hot-toast) preservando a estabilidade do repositório no meio do lote.
 
+
+[RF42] Agendar Previsões Automáticas Periódicas
+
+Prompt usado: Implementação do RF42 (Agendar Previsões Automáticas Periódicas) de forma integrada aos contextos de domínio e persistência local, com divisão em 3 commits atômicos obrigatórios.
+Funcionou bem: A divisão lógica em 3 commits atômicos separados facilitou o versionamento estruturado. A criação do componente SchedulingCard genérico e com suporte a traduções foi bem-sucedida, assim como a estruturação do motor de simulação por meio do useEffect com polling de 5s no DomainProvider.
+Dificuldade: O uso de caminhos com parênteses em sistemas Windows com PowerShell exigiu aspas simples nos comandos do Git para não causar erros de sintaxe (como a pasta (domains)).
+Correção aplicada: Foram utilizadas aspas simples no Git para escapar caminhos como 'src/app/(domains)/churn/page.tsx' e o separador ';' no PowerShell em vez de '&&'.
+Melhoria de UX sugerida pela IA: Implementação de layouts e designs de e-mail simulados diferenciados no EmailNotificationsRenderer para relatórios de agendamento com badges dinâmicos de sucesso/falha e dados quantitativos de performance de modelo (ex: R² para regressão e Acurácia para classificação).
+
