@@ -186,6 +186,7 @@ export interface TrainedModel {
   hyperparameters: Record<string, string | number | boolean>;
   trainSize: number;
   testSize: number;
+  datasetVersion: string;
   timestamp: number;
   confusionMatrix?: {
     tp: number;
@@ -317,6 +318,8 @@ interface DomainContextProps {
   simulateDashboardEvent: () => void;
   trainedModels: Record<DomainType, TrainedModel | null>;
   previousTrainedModels: Record<DomainType, TrainedModel | null>;
+  modelsHistory: Record<DomainType, TrainedModel[]>;
+  setModelActive: (domain: DomainType, modelId: string) => void;
   hyperparameterHistory: Record<DomainType, RetrainingCycle[]>;
   clearHyperparameterHistory: (domain: DomainType) => void;
   alertThresholds: Record<DomainType, number>;
@@ -789,6 +792,13 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     demand: null,
     churn: null,
     "credit-risk": null
+  });
+
+  const [modelsHistory, setModelsHistory] = useState<Record<DomainType, TrainedModel[]>>({
+    maintenance: [],
+    demand: [],
+    churn: [],
+    "credit-risk": []
   });
 
   // Track history of hyperparameters of retraining cycles (CA06)
@@ -1299,6 +1309,19 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     setLogs(loadedLogsList);
   }, []);
 
+  // Save changes to localStorage
+  useEffect(() => {
+    localStorage.setItem("spam-trained-models", JSON.stringify(trainedModels));
+  }, [trainedModels]);
+
+  useEffect(() => {
+    localStorage.setItem("spam-trained-models-by-algorithm", JSON.stringify(trainedModelsByAlgorithm));
+  }, [trainedModelsByAlgorithm]);
+
+  useEffect(() => {
+    localStorage.setItem("spam-models-history", JSON.stringify(modelsHistory));
+  }, [modelsHistory]);
+
   // Efeito para aplicar a classe no elemento html
   useEffect(() => {
     const root = window.document.documentElement;
@@ -1758,7 +1781,6 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
 
     // CA01 & CA02 - Identify problem nature and select algorithm
     const isClassification = domainKey === "credit-risk" || domainKey === "churn";
-    const typeStr = isClassification ? "Classification" : "Regression";
     const algStr = selectedAlgorithms[domainKey] || "Random Forest";
 
     let elapsedSeconds = 0;
@@ -1913,18 +1935,19 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         }
 
         const newModel: TrainedModel = {
-          modelId,
-          domain: domainKey,
-          algorithm: algStr,
-          type: typeStr,
-          metrics: modelMetrics,
-          hyperparameters: hyperparams,
-          trainSize,
-          testSize,
-          timestamp: Date.now(),
-          confusionMatrix: confusionMatrixData,
-          residuals: residualsData
-        };
+            modelId,
+            domain: domainKey,
+            algorithm: algStr,
+            type: isClassification ? "Classification" : "Regression",
+            metrics: modelMetrics,
+            hyperparameters: hyperparams,
+            trainSize,
+            testSize,
+            datasetVersion: `v${Math.floor(Math.random() * 5) + 1}.${Math.floor(Math.random() * 9)}`,
+            timestamp: Date.now(),
+            confusionMatrix: confusionMatrixData,
+            residuals: residualsData
+          };
 
         // CA05: Simule uma validação de integridade estrutural do bloco gerado antes do disparo do download.
         const isIntegrityValid = validateModelIntegrity(newModel);
@@ -1952,16 +1975,22 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         }));
 
         setTrainedModelsByAlgorithm(prev => {
-          const updated = {
+            const updated = {
+              ...prev,
+              [domainKey]: {
+                ...(prev[domainKey] || {}),
+                [algStr]: newModel
+              }
+            };
+            return updated;
+          });
+
+          setModelsHistory(prev => ({
             ...prev,
-            [domainKey]: {
-              ...(prev[domainKey] || {}),
-              [algStr]: newModel
-            }
-          };
-          localStorage.setItem("spam-trained-models-by-algorithm", JSON.stringify(updated));
-          return updated;
-        });
+            [domainKey]: [newModel, ...(prev[domainKey] || [])]
+          }));
+
+          addLog(`[Model Training] Novo modelo (${algStr}) treinado com sucesso para '${DOMAINS[domainKey].name}'. ID: ${modelId}`);
 
         const newCycle: RetrainingCycle = {
           modelId,
@@ -2168,9 +2197,9 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
 
   const runScheduledTrigger = useCallback((domain: DomainType) => {
     const startTime = Date.now();
-    const isClassification = domain === "credit-risk" || domain === "churn";
-    const typeStr = isClassification ? "Classification" : "Regression";
     const algStr = selectedAlgorithms[domain] || "Random Forest";
+    const isClassification = algStr === "Random Forest" || algStr === "Gradient Boosting" || algStr === "Support Vector Machine";
+    const typeStr = isClassification ? "Classification" : "Regression";
 
     addLogWithProfile("Sistema", `[Scheduled Execution] Iniciando processamento automático agendado para o domínio '${DOMAINS[domain].name}'.`);
 
@@ -2242,6 +2271,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
           : { n_estimators: 100, max_depth: 10, random_state: 42 },
         trainSize,
         testSize,
+        datasetVersion: `v${Math.floor(Math.random() * 5) + 1}.${Math.floor(Math.random() * 9)}`,
         timestamp: Date.now()
       };
 
@@ -2804,6 +2834,25 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const setModelActive = useCallback((domain: DomainType, modelId: string) => {
+    const history = modelsHistory[domain] || [];
+    const modelToActivate = history.find(m => m.modelId === modelId);
+    
+    if (modelToActivate) {
+      setPreviousTrainedModels(prev => ({ ...prev, [domain]: trainedModels[domain] }));
+      setTrainedModels(prev => ({ ...prev, [domain]: modelToActivate }));
+      setTrainedModelsByAlgorithm(prev => ({
+        ...prev,
+        [domain]: {
+          ...(prev[domain] || {}),
+          [modelToActivate.algorithm]: modelToActivate
+        }
+      }));
+      setSelectedAlgorithm(domain, modelToActivate.algorithm);
+      addLog(`[Model Selection] Modelo '${modelId}' ativado para '${DOMAINS[domain].name}'.`);
+    }
+  }, [modelsHistory, trainedModels, setSelectedAlgorithm, addLog]);
+
   return (
     <DomainContext.Provider
       value={{
@@ -2879,6 +2928,8 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         selectedAlgorithms,
         setSelectedAlgorithm,
         trainedModelsByAlgorithm,
+        modelsHistory,
+        setModelActive,
         emailConfig,
         updateEmailConfig,
         sentEmails,

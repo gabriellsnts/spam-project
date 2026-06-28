@@ -9,7 +9,8 @@ import {
   BarChart3,
   Sliders,
   Settings,
-  Sparkles
+  Sparkles,
+  History as HistoryIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -171,6 +172,12 @@ export function Sidebar() {
       name: t("comparison"),
       desc: t("comparison_desc"),
       icon: Sparkles
+    },
+    {
+      id: "model-history",
+      name: t("model_history") || "Histórico de Modelos",
+      desc: t("model_history_desc") || "Compare e gerencie versões de modelos",
+      icon: HistoryIcon
     }
   ];
 

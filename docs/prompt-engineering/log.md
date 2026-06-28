@@ -231,3 +231,11 @@ Funcionou bem: O cálculo síncrono e instantâneo das estatísticas de completu
 Dificuldade: Ajustes de tipagem no TypeScript com o compilador em modo strict, e escapes exigidos pelo ESLint nas aspas simples e duplas renderizadas dentro de tags no React.
 Correção aplicada: Criada a interface estrita QualityReportData, removido o any-casting no forEach e no map, e envelopados os caracteres de aspas de listagem de inconsistências com template strings JS `{...}` para evitar erros de escape HTML no build.
 Melhoria de UX sugerida pela IA: Organização do painel de Preview em 3 abas internas (Resumo de Qualidade, Distribuição de Variáveis com mini-gráficos dinâmicos de frequência por faixas de valores, e Amostragem/Amostra da Tabela), mantendo o layout extremamente compacto, organizado e profissional.
+
+[RF45] Histórico e Comparação Visual de Modelos
+
+Prompt usado: Criar e injetar nas 4 telas analíticas um sistema de Histórico de Modelos. Adicionar 'datasetVersion' aos modelos, persistir todo o histórico e implementar uma UI (model-comparison.tsx) que permita selecionar versões para comparação (tabela destacando o melhor, e Recharts), com botão para reativar um modelo antigo e exportar para CSV.
+Funcionou bem: O desenvolvimento do componente `model-comparison.tsx` e a arquitetura visual para comparar estatísticas lado a lado, calculando e destacando valores em verde baseados em MAX para métricas boas (precisão) e MIN para erros (RMSE/MAE).
+Dificuldade: Resolver erros de formatação de tooltips no Recharts (a tipagem do formatter para lidar com ReactNode/any versus string/number) sem recorrer a escape hatches agressivos e remover dependências inexistentes (Select, Checkbox de shadcn quando não instalados).
+Correção aplicada: Criação da função de formatação tooltipFormatter fora do bloco de renderização do JSX para aplicação correta de `eslint-disable-next-line` (ignorando TS2322) mantendo o linting do build seguro. E substituição dos componentes do Shadcn faltantes por inputs nativos customizados via Tailwind, assegurando UX premium idêntica.
+Melhoria de UX sugerida pela IA: Criação de badge verde de 'ATIVO' em tempo real dentro da listagem de modelos selecionáveis, orientando visualmente o usuário sobre qual versão está atualmente controlando as métricas do painel, mesmo dentro da visão de histórico.

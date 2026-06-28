@@ -11,6 +11,7 @@ import { FeatureImportanceChart } from "@/components/shared/feature-importance-c
 import { Input } from "@/components/ui/input";
 import { AlertThresholdSettings } from "@/components/shared/alert-threshold-settings";
 import { ComparisonView } from "@/components/shared/comparison-view";
+import ModelComparison from "@/components/shared/model-comparison";
 import { SchedulingCard } from "@/components/shared/scheduling-card";
 import { ExportDropdown } from "@/components/shared/export-dropdown";
 import { ShareAnalysisDialog } from "@/components/shared/share-analysis-dialog";
@@ -1010,6 +1011,10 @@ export default function CreditRiskPage() {
 
         {currentView === "comparison" && (
           <ComparisonView domain="credit-risk" />
+        )}
+
+        {currentView === "model-history" && (
+          <ModelComparison domain="credit-risk" />
         )}
 
         {predictionResult && (

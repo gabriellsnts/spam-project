@@ -9,6 +9,7 @@ import { CSVUploader, ConfusionMatrixView } from "@/components/shared/csv-upload
 import { FeatureImportanceChart } from "@/components/shared/feature-importance-chart";
 import { AlertThresholdSettings } from "@/components/shared/alert-threshold-settings";
 import { ComparisonView } from "@/components/shared/comparison-view";
+import ModelComparison from "@/components/shared/model-comparison";
 import { SchedulingCard } from "@/components/shared/scheduling-card";
 
 type RiskLevel = "all" | "high" | "medium" | "low";
@@ -544,6 +545,10 @@ export default function ChurnPage() {
 
         {currentView === "comparison" && (
           <ComparisonView domain="churn" />
+        )}
+
+        {currentView === "model-history" && (
+          <ModelComparison domain="churn" />
         )}
       </div>
   );

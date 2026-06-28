@@ -21,6 +21,7 @@ import { calculateMachineRUL, BASE_RULS } from "@/lib/predictive-engine";
 import { AlertThresholdSettings } from "@/components/shared/alert-threshold-settings";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { ComparisonView } from "@/components/shared/comparison-view";
+import ModelComparison from "@/components/shared/model-comparison";
 import { SchedulingCard } from "@/components/shared/scheduling-card";
 import WhatIfSimulator from "@/components/shared/what-if-simulator";
 
@@ -563,6 +564,10 @@ export default function MaintenancePage() {
 
       {currentView === "comparison" && (
         <ComparisonView domain="maintenance" />
+      )}
+
+      {currentView === "model-history" && (
+        <ModelComparison domain="maintenance" />
       )}
     </div>
   );

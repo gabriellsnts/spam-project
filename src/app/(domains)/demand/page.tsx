@@ -10,6 +10,7 @@ import { FeatureImportanceChart } from "@/components/shared/feature-importance-c
 import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts";
 import { AlertThresholdSettings } from "@/components/shared/alert-threshold-settings";
 import { ComparisonView } from "@/components/shared/comparison-view";
+import ModelComparison from "@/components/shared/model-comparison";
 import { SchedulingCard } from "@/components/shared/scheduling-card";
 
 export default function DemandPage() {
@@ -528,6 +529,10 @@ export default function DemandPage() {
 
       {currentView === "comparison" && (
         <ComparisonView domain="demand" />
+      )}
+
+      {currentView === "model-history" && (
+        <ModelComparison domain="demand" />
       )}
     </div>
   );

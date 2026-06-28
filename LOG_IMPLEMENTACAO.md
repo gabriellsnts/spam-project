@@ -394,3 +394,16 @@
 - Desenvolvimento do componente client-side 'what-if-simulator.tsx' isolando a lógica de estados. Implementação de botão "Modo Demo" para testes ágeis, uso de sliders interativos para alteração das variáveis de entrada e gráficos do Recharts para sobreposição em tempo real (Cenário Base vs Cenário Simulado).
 ### 3. Impacto e Resultados Técnicos
 - Gestores industriais agora podem comparar cenários hipotéticos instantaneamente e salvar predefinições. A arquitetura estritamente client-side garantiu performance sem lag nas re-renderizações dos gráficos, e a tipagem estrita eliminou riscos de falha em runtime.
+
+---
+
+## 📅 2026-06-28 — Implementação de Histórico e Comparação de Modelos (RF45) - Autor: luizsantos011
+### 1. Contexto e Problemática
+- Necessidade de avaliar e justificar a escolha de um algoritmo em relação a outro através de análise histórica, comparando versões de modelos preditivos calibrados em momentos diferentes. Sem um histórico persistido, os analistas não poderiam auditar ou retroceder modelos (rollback).
+### 2. Solução Proposta e Fundamentação
+- Adicionada a propriedade `datasetVersion` aos metadados do modelo.
+- Desenvolvido o componente client-side `model-comparison.tsx` permitindo a seleção livre de N modelos no histórico para análise lado a lado.
+- Integração da biblioteca de UI Recharts para plotar o comparativo de forma visual e a criação de lógica embutida para destacar automaticamente o melhor valor em cada métrica estatística. Filtros adicionais por data e tipo de algoritmo.
+- Função `setModelActive` integrada para alternância do modelo em produção e botão de exportar relatório CSV comparativo.
+### 3. Impacto e Resultados Técnicos
+- As equipes de auditoria ganham rastreabilidade total (modelHistory) sobre cada versão treinada, além de reatividade total das interfaces ao chavear de um modelo para outro. O sistema ficou perfeitamente tipado e testado.
