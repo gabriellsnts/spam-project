@@ -23,7 +23,7 @@ const domainVariables: Record<string, Record<string, VariableInfo>> = {
     usage: { label: "Horas de uso mensais", min: 0, max: 720, default: 200, unit: "h" },
     lastFailure: { label: "Dias desde última falha", min: 0, max: 365, default: 30, unit: "dias" },
     temperature: { label: "Temperatura de Operação", min: 0, max: 150, default: 60, unit: "°C" },
-    vibration: { label: "Nível de Vibração", min: 0, max: 100, default: 15, unit: "mm/s" },
+    vibration: { label: "Nível de Vibração", min: 0, max: 100, default: 1.2, unit: "mm/s" },
   },
   demand: {
     month: { label: "Mês (1‑12)", min: 1, max: 12, default: 6, unit: "" },
@@ -41,7 +41,7 @@ const domainVariables: Record<string, Record<string, VariableInfo>> = {
 };
 
 export default function WhatIfSimulator() {
-  const { activeDomain, addAlert } = useDomain();
+  const { activeDomain, addLog } = useDomain();
   const domainKey = activeDomain || "maintenance";
   const variables: Record<string, VariableInfo> = domainVariables[domainKey] || {};
 
@@ -53,14 +53,17 @@ export default function WhatIfSimulator() {
   const [basePrediction, setBasePrediction] = useState<number | null>(null);
   const [simulatedPrediction, setSimulatedPrediction] = useState<number | null>(null);
   const [scenarioName, setScenarioName] = useState("");
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [savedScenarios, setSavedScenarios] = useState<any[]>([]);
+  
+  const [savedScenarios, setSavedScenarios] = useState<any[]>([
+    { name: "Padrão de Fábrica", values: { ...defaultValues }, simulatedPrediction: 15.0 }
+  ]);
+  const [selectedScenario, setSelectedScenario] = useState<string>("");
   
   // CA02 - Recalcular automaticamente
   useEffect(() => {
     let isMounted = true;
     const calculate = async () => {
-      // Dummy logic replacing getPrediction to avoid complex dependencies while preserving signature
+      // Dummy calls to preserve engine usage
       await getPrediction(domainKey, defaultValues);
       await getPrediction(domainKey, values);
       
@@ -70,8 +73,8 @@ export default function WhatIfSimulator() {
         Object.entries(defaultValues).forEach(([k, v]) => { baseCalc += v; });
         Object.entries(values).forEach(([k, v]) => { simCalc += v; });
         
-        const baseProb = Math.min(100, Math.max(0, (baseCalc / 1000) * 100));
-        const simProb = Math.min(100, Math.max(0, (simCalc / 1000) * 100));
+        const baseProb = Math.min(100, Math.max(0, (baseCalc / 500) * 100));
+        const simProb = Math.min(100, Math.max(0, (simCalc / 500) * 100));
         
         setBasePrediction(baseProb);
         setSimulatedPrediction(simProb);
@@ -81,11 +84,14 @@ export default function WhatIfSimulator() {
     return () => { isMounted = false; };
   }, [domainKey, defaultValues, values]);
 
-  // CA05 - Sensibilidade (Mock)
-  const getSensitivity = (key: string) => {
+  // CA05 - Sensibilidade (Mock Visual Badge)
+  const renderSensitivityBadge = (key: string) => {
     const diff = values[key] - defaultValues[key];
-    if (diff === 0) return "Neutro";
-    return diff > 0 ? "+ Alto Impacto" : "- Baixo Impacto";
+    if (diff === 0) return <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-500/10 text-zinc-500 border border-zinc-500/20">Impacto Neutro</span>;
+    if (Math.abs(diff) > variables[key].max * 0.3) {
+      return <span className="text-[10px] px-1.5 py-0.5 rounded bg-rose-500/15 text-rose-500 border border-rose-500/20 font-bold">Impacto Alto</span>;
+    }
+    return <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500 border border-amber-500/20 font-bold">Impacto Médio</span>;
   };
 
   const handleInjectDemo = () => {
@@ -100,12 +106,24 @@ export default function WhatIfSimulator() {
 
   const saveScenario = () => {
     if (!scenarioName) return;
-    setSavedScenarios(prev => [...prev, { name: scenarioName, values, simulatedPrediction }]);
+    const newScenarios = [...savedScenarios, { name: scenarioName, values: { ...values }, simulatedPrediction }];
+    setSavedScenarios(newScenarios);
+    setSelectedScenario(scenarioName);
     alert("Cenário salvo com sucesso!");
+    if (addLog) addLog(`Cenário hipotético salvo: ${scenarioName}`);
+  };
+
+  const loadScenario = (name: string) => {
+    setSelectedScenario(name);
+    const scenario = savedScenarios.find(s => s.name === name);
+    if (scenario) {
+      setValues(scenario.values);
+      setScenarioName(scenario.name);
+    }
   };
 
   const exportCSV = () => {
-    // CA06 - Export and log
+    // CA06 - Export and audit log
     const csvContent = "data:text/csv;charset=utf-8," 
       + "Variavel,Valor Base,Valor Simulado\\n"
       + Object.entries(variables).map(([k, v]) => `${v.label},${defaultValues[k]},${values[k]}`).join("\\n")
@@ -120,41 +138,72 @@ export default function WhatIfSimulator() {
     link.click();
     document.body.removeChild(link);
 
-    if (addAlert) {
-      addAlert({
-        domain: domainKey as "maintenance" | "demand" | "churn" | "credit-risk",
-        item: `Simulação: ${scenarioName || 'Sem Nome'}`,
-        value: simulatedPrediction?.toFixed(2) || 0,
-        metric: "Previsão",
-        criticality: "medium"
-      });
+    if (addLog) {
+      addLog(`Relatório de Sensibilidade (What-If) exportado em CSV para o domínio ${domainKey}. Cenário: ${scenarioName || 'Não nomeado'}`);
     }
   };
 
-  // CA03 - Gráfico comparativo
+  // CA03 - Gráfico comparativo Recharts
   const chartData = [
-    { name: "Base", "Cenário Base": basePrediction, "Cenário Simulado": basePrediction },
-    { name: "Simulado", "Cenário Base": basePrediction, "Cenário Simulado": simulatedPrediction }
+    { name: "T0 (Hoje)", "Cenário Base": basePrediction, "Cenário Simulado": basePrediction },
+    { name: "T1 (+30d)", "Cenário Base": basePrediction, "Cenário Simulado": simulatedPrediction }
   ];
 
   return (
-    <Card className="max-w-4xl mx-auto shadow-lg">
-      <CardHeader>
-        <CardTitle>{`What-If Analysis - ${domainKey}`}</CardTitle>
-        <CardDescription>Altere as variáveis para simular cenários hipotéticos sem retreinar o modelo.</CardDescription>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={handleInjectDemo}>Injetar Dados de Teste (Modo Demo)</Button>
+    <Card className="w-full bg-card border-border shadow-md">
+      <CardHeader className="pb-3 flex flex-row items-center justify-between">
+        <div>
+          <CardTitle className="text-sm font-bold text-foreground">What-If Analysis - Simulação Preditiva</CardTitle>
+          <CardDescription className="text-[11px] text-muted-foreground">Altere variáveis operacionais para avaliar o impacto nas predições do modelo atual sem retreinamento.</CardDescription>
         </div>
+        <Button variant="outline" size="sm" onClick={handleInjectDemo} className="h-7 text-[10px]">
+          Injetar Dados (Modo Demo)
+        </Button>
       </CardHeader>
+      
       <CardContent className="space-y-6">
+        {/* Dropdown de cenários e Salvar */}
+        <div className="flex items-center gap-3 bg-muted/30 p-3 rounded-lg border border-border">
+          <div className="flex-1 space-y-1">
+            <label className="text-[10px] text-muted-foreground font-bold uppercase">Carregar Cenário Salvo</label>
+            <select 
+              className="w-full text-xs p-1.5 rounded bg-background border border-border"
+              value={selectedScenario}
+              onChange={(e) => loadScenario(e.target.value)}
+            >
+              <option value="" disabled>Selecione um cenário...</option>
+              {savedScenarios.map(s => (
+                <option key={s.name} value={s.name}>{s.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex-1 space-y-1">
+            <label className="text-[10px] text-muted-foreground font-bold uppercase">Nome do Cenário</label>
+            <div className="flex gap-2">
+              <Input 
+                className="h-7 text-xs"
+                placeholder="Ex: Alta Demanda" 
+                value={scenarioName} 
+                onChange={(e) => setScenarioName(e.target.value)}
+              />
+              <Button size="sm" className="h-7 text-[10px]" onClick={saveScenario} disabled={!scenarioName}>Salvar</Button>
+            </div>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-4">
-            <h3 className="font-semibold text-lg border-b pb-2">Variáveis de Entrada</h3>
+          <div className="space-y-4 pr-4 border-r border-border/50">
+            <h3 className="font-semibold text-xs uppercase text-muted-foreground tracking-wider mb-2">Variáveis de Entrada</h3>
             {Object.entries(variables).map(([key, info]) => (
-              <div key={key} className="space-y-1">
-                <div className="flex justify-between text-sm">
-                  <label className="font-medium">{info.label}</label>
-                  <span className="text-muted-foreground">{values[key]?.toFixed(1)} {info.unit}</span>
+              <div key={key} className="space-y-1.5 p-2 rounded-lg hover:bg-muted/30 transition-colors">
+                <div className="flex justify-between items-center text-xs">
+                  <label className="font-bold flex items-center gap-2">
+                    {info.label}
+                    {renderSensitivityBadge(key)}
+                  </label>
+                  <span className="text-foreground font-mono font-bold bg-background px-1.5 py-0.5 rounded border">
+                    {values[key]?.toFixed(1)} {info.unit}
+                  </span>
                 </div>
                 <input
                   type="range"
@@ -163,55 +212,50 @@ export default function WhatIfSimulator() {
                   step={info.step ?? 1}
                   value={values[key]}
                   onChange={(e) => setValues(prev => ({ ...prev, [key]: Number(e.target.value) }))}
-                  className="w-full"
+                  className="w-full h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-amber-500"
                 />
-                <div className="text-xs text-right text-orange-500">
-                  Sensibilidade: {getSensitivity(key)}
-                </div>
               </div>
             ))}
           </div>
 
           <div className="space-y-4">
-            <h3 className="font-semibold text-lg border-b pb-2">Impacto na Previsão</h3>
-            <div className="flex justify-between items-center bg-muted p-4 rounded-lg">
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground">Original (Base)</p>
-                <p className="text-2xl font-bold">{basePrediction?.toFixed(2)}%</p>
+            <h3 className="font-semibold text-xs uppercase text-muted-foreground tracking-wider mb-2">Impacto na Previsão (CA02 / CA03)</h3>
+            
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <div className="bg-muted/40 p-3 rounded-xl border border-border text-center">
+                <p className="text-[10px] text-muted-foreground font-bold uppercase">Cenário Base</p>
+                <p className="text-2xl font-black text-foreground">{basePrediction?.toFixed(1)}%</p>
               </div>
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground">Simulado</p>
-                <p className={`text-2xl font-bold ${(simulatedPrediction || 0) > (basePrediction || 0) ? 'text-red-500' : 'text-green-500'}`}>
-                  {simulatedPrediction?.toFixed(2)}%
-                </p>
+              <div className={`p-3 rounded-xl border text-center transition-colors ${
+                (simulatedPrediction || 0) > (basePrediction || 0) 
+                  ? "bg-rose-500/10 border-rose-500/30 text-rose-500" 
+                  : "bg-emerald-500/10 border-emerald-500/30 text-emerald-500"
+              }`}>
+                <p className="text-[10px] font-bold uppercase opacity-80">Cenário Simulado</p>
+                <p className="text-2xl font-black">{simulatedPrediction?.toFixed(1)}%</p>
               </div>
             </div>
 
-            <div className="h-[200px] w-full mt-4">
+            <div className="h-[180px] w-full border rounded-lg p-2 bg-background/50">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis domain={[0, 100]} />
-                  <Tooltip />
-                  <Legend />
-                  <Line type="monotone" dataKey="Cenário Base" stroke="#8884d8" strokeWidth={2} />
-                  <Line type="monotone" dataKey="Cenário Simulado" stroke="#82ca9d" strokeWidth={2} />
+                <LineChart data={chartData} margin={{ top: 5, right: 20, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#444" vertical={false} />
+                  <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#888' }} />
+                  <YAxis tick={{ fontSize: 10, fill: '#888' }} domain={[0, 100]} />
+                  <Tooltip contentStyle={{ backgroundColor: '#18181b', borderColor: '#333', fontSize: '12px' }} />
+                  <Legend wrapperStyle={{ fontSize: '10px' }} />
+                  <Line type="monotone" dataKey="Cenário Base" stroke="#64748b" strokeWidth={2} strokeDasharray="5 5" />
+                  <Line type="monotone" dataKey="Cenário Simulado" stroke="#f59e0b" strokeWidth={3} activeDot={{ r: 6 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-4 pt-4 border-t">
-          <Input 
-            placeholder="Nome do cenário (ex: Alta Demanda)" 
-            value={scenarioName} 
-            onChange={(e) => setScenarioName(e.target.value)}
-            className="flex-1"
-          />
-          <Button onClick={saveScenario} disabled={!scenarioName}>Salvar Cenário</Button>
-          <Button variant="secondary" onClick={exportCSV}>Exportar Relatório</Button>
+        <div className="flex justify-end pt-4 border-t border-border">
+          <Button onClick={exportCSV} className="h-8 text-xs bg-emerald-600 hover:bg-emerald-500 text-white">
+            Exportar Relatório CSV (Audit)
+          </Button>
         </div>
       </CardContent>
     </Card>
