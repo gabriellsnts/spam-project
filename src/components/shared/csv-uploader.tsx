@@ -1041,6 +1041,19 @@ interface CSVUploaderProps {
   onReset?: () => void;
 }
 
+export interface QualityReportData {
+  completeness: Record<string, number>;
+  duplicateCount: number;
+  duplicateRowsIndices: number[];
+  inconsistentCount: number;
+  inconsistentRows: { rowIndex: number; column: string; value: string; reason: string }[];
+  readinessScore: number;
+  readinessLabel: "Pronto" | "Requer Atenção" | "Não Recomendado";
+  readinessColor: string;
+  readinessBg: string;
+  readinessBorder: string;
+}
+
 export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
   const { 
     activeDomain, 
@@ -1175,11 +1188,298 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
 
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [confirmRetrainOpen, setConfirmRetrainOpen] = useState(false);
+  
+  // RF43 - Data Profiling
+  const [qualityReport, setQualityReport] = useState<QualityReportData | null>(null);
+  const [isQualityReportConfirmed, setIsQualityReportConfirmed] = useState(false);
+  const [activeReportTab, setActiveReportTab] = useState<"summary" | "distribution" | "preview">("summary");
 
   if (!activeDomain) return null;
 
   const expectedCols = EXPECTED_COLUMNS[activeDomain] || [];
   const domainInfo = DOMAINS[activeDomain];
+
+  // RF43 - Data Profiling Helpers
+  const calculateDataQuality = (headers: string[], rows: string[][], domain: string): QualityReportData | null => {
+    const totalRows = rows.length;
+    if (totalRows === 0) return null;
+
+    // 1. Completude por coluna
+    const completeness: Record<string, number> = {};
+    headers.forEach((header, colIndex) => {
+      let emptyCount = 0;
+      rows.forEach(row => {
+        const val = row[colIndex];
+        if (val === undefined || val === null || val.trim() === "" || val.toLowerCase() === "null" || val.toLowerCase() === "undefined" || val.toLowerCase() === "nan") {
+          emptyCount++;
+        }
+      });
+      completeness[header] = Math.round(((totalRows - emptyCount) / totalRows) * 100);
+    });
+
+    // 2. Duplicados
+    const seen = new Set<string>();
+    const duplicateRowsIndices: number[] = [];
+    rows.forEach((row, rowIndex) => {
+      const rowKey = row.join("|||");
+      if (seen.has(rowKey)) {
+        duplicateRowsIndices.push(rowIndex);
+      } else {
+        seen.add(rowKey);
+      }
+    });
+    const duplicateCount = duplicateRowsIndices.length;
+
+    // 3. Inconsistentes / Anormais
+    const inconsistentRows: { rowIndex: number; column: string; value: string; reason: string }[] = [];
+    rows.forEach((row, rowIndex) => {
+      headers.forEach((header, colIndex) => {
+        const val = row[colIndex];
+        if (val === undefined || val === null || val.trim() === "") return;
+        const normalized = val.trim().replace(",", ".");
+        const numVal = Number(normalized);
+
+        if (domain === "maintenance") {
+          if (header === "temperatura" && !isNaN(numVal) && (numVal < 0 || numVal > 150)) {
+            inconsistentRows.push({ rowIndex, column: header, value: val, reason: "Temperatura fora da faixa normal [0, 150]" });
+          }
+          if (header === "vibracao" && !isNaN(numVal) && (numVal < 0.0 || numVal > 15.0)) {
+            inconsistentRows.push({ rowIndex, column: header, value: val, reason: "Vibração fora da faixa normal [0, 15.0]" });
+          }
+          if (header === "oee" && !isNaN(numVal) && (numVal < 0 || numVal > 100)) {
+            inconsistentRows.push({ rowIndex, column: header, value: val, reason: "OEE fora da faixa percentual [0, 100]" });
+          }
+        } else if (domain === "demand") {
+          if (header === "estoque_atual" && !isNaN(numVal) && numVal < 0) {
+            inconsistentRows.push({ rowIndex, column: header, value: val, reason: "Estoque atual não pode ser negativo" });
+          }
+          if (header === "demanda_mensal" && !isNaN(numVal) && numVal < 0) {
+            inconsistentRows.push({ rowIndex, column: header, value: val, reason: "Demanda mensal não pode ser negativa" });
+          }
+          if (header === "lead_time" && !isNaN(numVal) && (numVal < 0 || numVal > 365)) {
+            inconsistentRows.push({ rowIndex, column: header, value: val, reason: "Lead time fora da faixa anual [0, 365]" });
+          }
+        } else if (domain === "churn") {
+          if (header === "score_risco" && !isNaN(numVal) && (numVal < 0 || numVal > 100)) {
+            inconsistentRows.push({ rowIndex, column: header, value: val, reason: "Score de risco fora da faixa percentual [0, 100]" });
+          }
+          if (header === "ltv" && !isNaN(numVal) && numVal < 0) {
+            inconsistentRows.push({ rowIndex, column: header, value: val, reason: "LTV não pode ser negativo" });
+          }
+        } else if (domain === "credit-risk") {
+          if (header === "valor" && !isNaN(numVal) && numVal <= 0) {
+            inconsistentRows.push({ rowIndex, column: header, value: val, reason: "Valor da proposta deve ser positivo" });
+          }
+          if (header === "score" && !isNaN(numVal) && (numVal < 0 || numVal > 1000)) {
+            inconsistentRows.push({ rowIndex, column: header, value: val, reason: "Score de crédito fora da faixa score [0, 1000]" });
+          }
+          if (header === "probabilidade_retorno" && !isNaN(numVal) && (numVal < 0 || numVal > 1)) {
+            inconsistentRows.push({ rowIndex, column: header, value: val, reason: "Probabilidade fora da faixa [0, 1]" });
+          }
+        }
+      });
+    });
+    const inconsistentCount = inconsistentRows.length;
+
+    // 4. Calcular Score de Prontidão (Readiness Score)
+    const values = Object.values(completeness);
+    const avgCompleteness = values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : 100;
+    const dupRatio = totalRows > 0 ? duplicateCount / totalRows : 0;
+    const dupPenalty = Math.min(15, dupRatio * 100);
+    const incRatio = totalRows > 0 ? inconsistentCount / totalRows : 0;
+    const incPenalty = Math.min(25, incRatio * 100);
+
+    const readinessScore = Math.max(0, Math.round(avgCompleteness - dupPenalty - incPenalty));
+
+    let readinessLabel: "Pronto" | "Requer Atenção" | "Não Recomendado" = "Pronto";
+    let readinessColor: "text-emerald-500" | "text-amber-500" | "text-rose-500" = "text-emerald-500";
+    let readinessBg: "bg-emerald-500/10" | "bg-amber-500/10" | "bg-rose-500/10" = "bg-emerald-500/10";
+    let readinessBorder: "border-emerald-500/20" | "border-amber-500/20" | "border-rose-500/20" = "border-emerald-500/20";
+
+    if (readinessScore < 50) {
+      readinessLabel = "Não Recomendado";
+      readinessColor = "text-rose-500";
+      readinessBg = "bg-rose-500/10";
+      readinessBorder = "border-rose-500/20";
+    } else if (readinessScore < 85) {
+      readinessLabel = "Requer Atenção";
+      readinessColor = "text-amber-500";
+      readinessBg = "bg-amber-500/10";
+      readinessBorder = "border-amber-500/20";
+    }
+
+    return {
+      completeness,
+      duplicateCount,
+      duplicateRowsIndices,
+      inconsistentCount,
+      inconsistentRows,
+      readinessScore,
+      readinessLabel,
+      readinessColor,
+      readinessBg,
+      readinessBorder
+    };
+  };
+
+  const generateMockCSVRows = (domain: string): string[][] => {
+    const rows: string[][] = [];
+    const now = Date.now();
+    
+    for (let i = 0; i < 140; i++) {
+      if (domain === "maintenance") {
+        rows.push([
+          new Date(now - i * 3600000).toISOString(),
+          `SENS-${100 + (i % 4)}`,
+          (50 + Math.random() * 40).toFixed(1),
+          (0.5 + Math.random() * 3.0).toFixed(2),
+          (75 + Math.random() * 20).toFixed(0)
+        ]);
+      } else if (domain === "demand") {
+        rows.push([
+          new Date(now - i * 86400000).toLocaleDateString("pt-BR"),
+          `PROD-${1000 + (i % 5)}`,
+          (10 + Math.round(Math.random() * 100)).toString(),
+          (50 + Math.round(Math.random() * 150)).toString(),
+          (2 + Math.round(Math.random() * 10)).toString()
+        ]);
+      } else if (domain === "churn") {
+        rows.push([
+          `CLI-${10000 + i}`,
+          `Cliente ${i + 1}`,
+          (30 + Math.random() * 45).toFixed(1),
+          (500 + Math.random() * 20000).toFixed(2),
+          i % 3 === 0 ? "Falta de Contato" : "Sem Reclamações",
+          i % 3 === 0 ? "Enviar Email" : "Manter Relacionamento"
+        ]);
+      } else {
+        rows.push([
+          `PROP-${20000 + i}`,
+          `Cliente ${i + 1}`,
+          (10000 + Math.round(Math.random() * 900000)).toString(),
+          (300 + Math.round(Math.random() * 600)).toString(),
+          (Math.random()).toFixed(3),
+          i % 4 === 0 ? "Negar" : "Aprovar"
+        ]);
+      }
+    }
+
+    for (let i = 0; i < 5; i++) {
+      rows.push([...rows[i]]);
+    }
+
+    for (let i = 0; i < 5; i++) {
+      const copy = [...rows[10 + i]];
+      copy[2] = "";
+      rows.push(copy);
+    }
+
+    if (domain === "maintenance") {
+      rows.push([new Date().toISOString(), "SENS-999", "250.0", "1.2", "88"]);
+      rows.push([new Date().toISOString(), "SENS-999", "60.0", "28.5", "88"]);
+      rows.push([new Date().toISOString(), "SENS-999", "60.0", "1.2", "-50"]);
+    } else if (domain === "demand") {
+      rows.push([new Date().toLocaleDateString("pt-BR"), "PROD-9999", "-50", "120", "5"]);
+      rows.push([new Date().toLocaleDateString("pt-BR"), "PROD-9999", "10", "-30", "5"]);
+      rows.push([new Date().toLocaleDateString("pt-BR"), "PROD-9999", "10", "120", "500"]);
+    } else if (domain === "churn") {
+      rows.push(["CLI-99999", "Cliente Inconsistente", "150.0", "5000", "Sem Reclamações", "Manter"]);
+      rows.push(["CLI-99999", "Cliente Inconsistente", "45.0", "-500", "Sem Reclamações", "Manter"]);
+    } else {
+      rows.push(["PROP-99999", "Inconsistente 1", "-1000", "650", "0.2", "Aprovar"]);
+      rows.push(["PROP-99999", "Inconsistente 2", "50000", "1200", "0.2", "Aprovar"]);
+      rows.push(["PROP-99999", "Inconsistente 3", "50000", "650", "2.5", "Aprovar"]);
+    }
+
+    return rows;
+  };
+
+  const handleExportQualityReportCSV = () => {
+    if (!fileDetails || !qualityReport) return;
+    
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += `Relatório de Qualidade de Dados - Domínio: ${activeDomain}\n`;
+    csvContent += `Arquivo analisado: ${fileDetails.name}\n`;
+    csvContent += `Tamanho: ${fileDetails.size}\n`;
+    csvContent += `Total de Linhas: ${fileDetails.rows}\n`;
+    csvContent += `Pontuação Geral de Prontidão: ${qualityReport.readinessScore}/100 (${qualityReport.readinessLabel})\n\n`;
+    
+    csvContent += "Coluna,Completude (%)\n";
+    Object.entries(qualityReport.completeness).forEach(([col, comp]) => {
+      csvContent += `"${col}",${comp}%\n`;
+    });
+    
+    csvContent += `\nRegistros Duplicados Encontrados: ${qualityReport.duplicateCount}\n`;
+    csvContent += `Valores Inconsistentes Encontrados: ${qualityReport.inconsistentCount}\n\n`;
+    
+    if (qualityReport.inconsistentCount > 0) {
+      csvContent += "Linha,Coluna,Valor,Motivo da Inconsistência\n";
+      qualityReport.inconsistentRows.forEach((r) => {
+        csvContent += `${r.rowIndex + 1},"${r.column}","${r.value}","${r.reason}"\n`;
+      });
+    }
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `relatorio-qualidade-${activeDomain}-${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    addLogWithProfile(userProfile, `Relatório de qualidade de dados exportado no domínio ${DOMAINS[activeDomain].name} para o arquivo ${fileDetails.name}`);
+  };
+
+  // RF43 - CA04: Ações Corretivas Rápidas na Interface
+  const handleRemoveDuplicates = () => {
+    if (!qualityReport || !fileDetails) return;
+    
+    const seen = new Set<string>();
+    const cleanedRows: string[][] = [];
+    allRows.forEach(row => {
+      const key = row.join("|||");
+      if (!seen.has(key)) {
+        seen.add(key);
+        cleanedRows.push(row);
+      }
+    });
+
+    setAllRows(cleanedRows);
+    setPreviewRows(cleanedRows.slice(0, 5));
+    setFileDetails({
+      ...fileDetails,
+      rows: cleanedRows.length
+    });
+
+    const newReport = calculateDataQuality(fileDetails.headers, cleanedRows, activeDomain);
+    setQualityReport(newReport);
+    addLog(`[Data Profiling] Removidos ${qualityReport.duplicateCount} registros duplicados na interface.`);
+  };
+
+  const handleRemoveIncomplete = () => {
+    if (!qualityReport || !fileDetails) return;
+
+    const cleanedRows = allRows.filter(row => {
+      return !row.some((cell) => {
+        if (cell === undefined || cell === null) return true;
+        const val = cell.trim().toLowerCase();
+        return val === "" || val === "null" || val === "undefined" || val === "nan";
+      });
+    });
+
+    const removedCount = allRows.length - cleanedRows.length;
+
+    setAllRows(cleanedRows);
+    setPreviewRows(cleanedRows.slice(0, 5));
+    setFileDetails({
+      ...fileDetails,
+      rows: cleanedRows.length
+    });
+
+    const newReport = calculateDataQuality(fileDetails.headers, cleanedRows, activeDomain);
+    setQualityReport(newReport);
+    addLog(`[Data Profiling] Removidos ${removedCount} registros com dados ausentes na interface.`);
+  };
 
   // Helper para obter tokens estéticos específicos do domínio
   const getDomainTheme = (domain: string) => {
@@ -1463,6 +1763,12 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
               });
               setAllRows(allParsedRows);
               setPreviewRows(parsedRows);
+              
+              // RF43 - Data Profiling
+              const report = calculateDataQuality(headers, allParsedRows, activeDomain);
+              setQualityReport(report);
+              setIsQualityReportConfirmed(false);
+              
               setValidationReport({
                 isValid,
                 missingColumns,
@@ -1950,89 +2256,372 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
               </div>
             )}
 
-            {/* Tabela de Visualização com Scroll Horizontal (CA04) */}
-            <div className="overflow-x-auto w-full max-w-full border border-border/80 rounded-xl bg-card shadow-inner scrollbar-thin scrollbar-thumb-muted-foreground/20">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-muted/50 border-b border-border">
-                    {fileDetails.headers.map((header) => (
-                      <th
-                        key={header}
-                        className="p-2.5 text-[9px] font-bold text-muted-foreground uppercase font-sans border-r border-border/40 min-w-[120px]"
-                      >
-                        {header}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {previewRows.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={fileDetails.headers.length}
-                        className="p-4 text-[10px] text-center text-muted-foreground italic border-b border-border/60"
-                      >
-                        {t("no_records_available")}
-                      </td>
-                    </tr>
-                  ) : (
-                    previewRows.map((row, rIdx) => (
-                      <tr key={rIdx} className="hover:bg-muted/20 transition-colors duration-150">
-                        {row.map((cell, cIdx) => {
-                          const isError = isCellEmptyOrError(cell);
-                          return (
-                            <td
-                              key={cIdx}
-                              className={cn(
-                                "p-2.5 border-r border-b border-border/60 text-[10px] min-w-[120px] max-w-[200px] truncate font-mono",
-                                isError ? "bg-rose-500/10 text-rose-500 font-semibold italic border-rose-500/20" : "text-foreground/80"
-                              )}
-                              title={cell}
-                            >
-                              {isError ? (
-                                <span className="flex items-center gap-1">
-                                  <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-ping shrink-0" />
-                                  [vazio/erro]
-                                </span>
-                              ) : (
-                                cell
-                              )}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    ))
+            {/* Abas internas para alternar visualizações do relatório de qualidade (RF43) */}
+            {qualityReport && (
+              <div className="flex gap-1 border-b border-border/60 pb-1 shrink-0">
+                <Button
+                  onClick={() => setActiveReportTab("summary")}
+                  variant="ghost"
+                  className={cn(
+                    "text-[10px] font-bold h-7 px-3 rounded-lg transition-all duration-200",
+                    activeReportTab === "summary" ? "bg-muted text-foreground border border-border/80" : "text-muted-foreground hover:bg-muted/40"
                   )}
-                </tbody>
-              </table>
-            </div>
+                >
+                  <Shield className="h-3.5 w-3.5 mr-1 shrink-0" />
+                  {t("data_quality_report")}
+                </Button>
+                <Button
+                  onClick={() => setActiveReportTab("distribution")}
+                  variant="ghost"
+                  className={cn(
+                    "text-[10px] font-bold h-7 px-3 rounded-lg transition-all duration-200",
+                    activeReportTab === "distribution" ? "bg-muted text-foreground border border-border/80" : "text-muted-foreground hover:bg-muted/40"
+                  )}
+                >
+                  <Info className="h-3.5 w-3.5 mr-1 shrink-0" />
+                  Distribuição das Variáveis
+                </Button>
+                <Button
+                  onClick={() => setActiveReportTab("preview")}
+                  variant="ghost"
+                  className={cn(
+                    "text-[10px] font-bold h-7 px-3 rounded-lg transition-all duration-200",
+                    activeReportTab === "preview" ? "bg-muted text-foreground border border-border/80" : "text-muted-foreground hover:bg-muted/40"
+                  )}
+                >
+                  <FileSpreadsheet className="h-3.5 w-3.5 mr-1 shrink-0" />
+                  Amostragem dos Dados
+                </Button>
+              </div>
+            )}
 
-            {/* Controles de Confirmação/Descarte com Bloqueio de Treino (CA03) */}
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-2">
-              <span className="text-[9px] text-muted-foreground italic font-medium">
-                Exibindo as primeiras {previewRows.length} de {fileDetails.rows} linhas detectadas.
-              </span>
+            {/* ABA 1: Resumo de Qualidade de Dados (RF43 - CA02, CA03, CA04, CA05) */}
+            {qualityReport && activeReportTab === "summary" && (
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 animate-in fade-in duration-200">
+                {/* Score Geral de Prontidão */}
+                <div className={cn("md:col-span-4 p-4 rounded-xl border flex flex-col items-center justify-center text-center gap-2", qualityReport.readinessBorder, qualityReport.readinessBg)}>
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">{t("readiness_score")}</span>
+                  <div className="relative flex items-center justify-center h-20 w-20">
+                    <svg className="w-full h-full transform -rotate-90">
+                      <circle cx="40" cy="40" r="34" stroke="currentColor" strokeWidth="5" className="text-muted/10" fill="transparent" />
+                      <circle cx="40" cy="40" r="34" stroke="currentColor" strokeWidth="5" className={qualityReport.readinessColor} fill="transparent"
+                        strokeDasharray={2 * Math.PI * 34}
+                        strokeDashoffset={2 * Math.PI * 34 * (1 - qualityReport.readinessScore / 100)}
+                      />
+                    </svg>
+                    <span className={cn("absolute text-xl font-black font-mono", qualityReport.readinessColor)}>{qualityReport.readinessScore}</span>
+                  </div>
+                  <span className={cn("px-2 py-0.5 rounded bg-background border text-[9px] font-bold uppercase", qualityReport.readinessColor, qualityReport.readinessBorder)}>
+                    {qualityReport.readinessLabel === "Pronto" ? t("ready_to_train") : qualityReport.readinessLabel === "Requer Atenção" ? t("requires_attention") : t("not_recommended")}
+                  </span>
+                </div>
+
+                {/* Completude das colunas */}
+                <div className="md:col-span-4 p-4 border border-border/80 rounded-xl space-y-3 bg-muted/10">
+                  <h5 className="text-[11px] font-bold text-foreground/80 flex items-center gap-1.5 border-b border-border/60 pb-1.5">
+                    <span className={cn("h-1.5 w-1.5 rounded-full bg-current", theme.accent)} />
+                    {t("completeness")} por Coluna
+                  </h5>
+                  <div className="space-y-2.5 max-h-[140px] overflow-y-auto pr-1 scrollbar-thin">
+                    {(Object.entries(qualityReport.completeness) as [string, number][]).map(([col, pct]) => {
+                      const isPerfect = pct === 100;
+                      const isOk = pct >= 90;
+                      const barColor = isPerfect ? "bg-emerald-500" : isOk ? "bg-amber-500" : "bg-rose-500";
+                      const textColor = isPerfect ? "text-emerald-500" : isOk ? "text-amber-500" : "text-rose-500";
+                      
+                      return (
+                        <div key={col} className="space-y-1">
+                          <div className="flex justify-between text-[10px] font-mono">
+                            <span className="text-muted-foreground truncate max-w-[120px]">{col}</span>
+                            <span className={cn("font-bold", textColor)}>{pct}%</span>
+                          </div>
+                          <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden border border-border/20">
+                            <div className={cn("h-full rounded-full transition-all duration-500", barColor)} style={{ width: `${pct}%` }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Duplicados, Inconsistências e Correções Rápidas */}
+                <div className="md:col-span-4 p-4 border border-border/80 rounded-xl flex flex-col justify-between bg-muted/10 gap-3">
+                  <div className="space-y-2">
+                    <h5 className="text-[11px] font-bold text-foreground/80 flex items-center gap-1.5 border-b border-border/60 pb-1">
+                      <span className={cn("h-1.5 w-1.5 rounded-full bg-current", theme.accent)} />
+                      Detecção de Pendências
+                    </h5>
+                    
+                    <div className="space-y-1.5 text-[10px]">
+                      <div className="flex justify-between items-center p-1.5 rounded bg-background border border-border/60 font-mono">
+                        <span className="text-muted-foreground">{t("duplicates")}:</span>
+                        <span className={cn("font-bold", qualityReport.duplicateCount > 0 ? "text-amber-500" : "text-emerald-500")}>
+                          {qualityReport.duplicateCount} registros
+                        </span>
+                      </div>
+                      
+                      <div className="flex justify-between items-center p-1.5 rounded bg-background border border-border/60 font-mono">
+                        <span className="text-muted-foreground">{t("inconsistencies")}:</span>
+                        <span className={cn("font-bold", qualityReport.inconsistentCount > 0 ? "text-rose-500 font-semibold" : "text-emerald-500")}>
+                          {qualityReport.inconsistentCount} valores
+                        </span>
+                      </div>
+                    </div>
+
+                    {qualityReport.inconsistentCount > 0 && (
+                      <div className="text-[9px] max-h-[75px] overflow-y-auto border border-rose-500/15 rounded bg-rose-500/[0.02] p-1.5 space-y-0.5 scrollbar-thin">
+                        <div className="font-bold text-rose-500/90 flex items-center gap-1">
+                          <AlertTriangle className="h-3 w-3 shrink-0" />
+                          Listagem de Inconsistências:
+                        </div>
+                        {qualityReport.inconsistentRows.slice(0, 3).map((inc, idx) => (
+                          <div key={idx} className="text-rose-500/80 font-mono leading-tight">
+                            {`• L.${inc.rowIndex + 1} '${inc.column}': "${inc.value}" (${inc.reason})`}
+                          </div>
+                        ))}
+                        {qualityReport.inconsistentCount > 3 && (
+                          <div className="text-muted-foreground font-semibold pl-1.5 text-[8px]">
+                            ... e mais {qualityReport.inconsistentCount - 3} valores
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Ações Corretivas (CA04) */}
+                  <div className="space-y-1.5 pt-1.5 border-t border-border/40">
+                    <span className="text-[9px] uppercase font-bold text-muted-foreground block">Limpeza e Ajustes Rápidos</span>
+                    <div className="flex flex-col gap-1">
+                      <Button
+                        onClick={handleRemoveDuplicates}
+                        disabled={qualityReport.duplicateCount === 0}
+                        variant="outline"
+                        className="text-[9px] font-bold h-7 w-full border-amber-500/25 bg-amber-500/5 hover:bg-amber-500/10 text-amber-500 disabled:opacity-40"
+                      >
+                        <Trash2 className="h-3 w-3 mr-1 shrink-0" />
+                        {t("remove_duplicates")}
+                      </Button>
+                      <Button
+                        onClick={handleRemoveIncomplete}
+                        disabled={!Object.values(qualityReport.completeness).some((pct) => pct < 100)}
+                        variant="outline"
+                        className="text-[9px] font-bold h-7 w-full border-rose-500/25 bg-rose-500/5 hover:bg-rose-500/10 text-rose-500 disabled:opacity-40"
+                      >
+                        <Trash2 className="h-3 w-3 mr-1 shrink-0" />
+                        {t("remove_empty_rows")}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ABA 2: Distribuição de Valores das Principais Variáveis (RF43 - CA02) */}
+            {qualityReport && activeReportTab === "distribution" && (
+              <div className="p-4 border border-border/80 rounded-xl space-y-3 bg-muted/10 animate-in fade-in duration-200">
+                <h5 className="text-[11px] font-bold text-foreground/80 flex items-center gap-1.5 border-b border-border/60 pb-1">
+                  <span className={cn("h-1.5 w-1.5 rounded-full bg-current", theme.accent)} />
+                  Histograma de Distribuição (Variáveis do Domínio)
+                </h5>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {expectedCols.map((header) => {
+                    const colIndex = fileDetails.headers.findIndex(h => h.toLowerCase() === header.toLowerCase());
+                    if (colIndex === -1) return null;
+
+                    const isNumeric = DOMAIN_SCHEMAS[activeDomain]?.find(s => s.name === header)?.type === "numeric";
+                    const valueCounts: Record<string, number> = {};
+                    
+                    allRows.forEach(row => {
+                      const rawVal = row[colIndex];
+                      if (rawVal === undefined || rawVal === null || rawVal.trim() === "") return;
+                      
+                      let bucket = rawVal;
+                      if (isNumeric) {
+                        const valNum = Number(rawVal.replace(",", "."));
+                        if (isNaN(valNum)) {
+                          bucket = "Texto/Inválido";
+                        } else {
+                          if (activeDomain === "maintenance") {
+                            if (header === "temperatura") {
+                              if (valNum < 60) bucket = "Frio (< 60ºC)";
+                              else if (valNum < 80) bucket = "Normal (60 - 80ºC)";
+                              else if (valNum < 100) bucket = "Alerta (80 - 100ºC)";
+                              else bucket = "Perigo (> 100ºC)";
+                            } else if (header === "vibracao") {
+                              if (valNum < 1.5) bucket = "Baixa (< 1.5)";
+                              else if (valNum < 3.0) bucket = "Média (1.5 - 3.0)";
+                              else if (valNum < 5.0) bucket = "Alta (3.0 - 5.0)";
+                              else bucket = "Crítica (> 5.0)";
+                            } else {
+                              if (valNum < 50) bucket = "Crítico (< 50%)";
+                              else if (valNum < 80) bucket = "Razoável (50 - 80%)";
+                              else bucket = "Excelente (>= 80%)";
+                            }
+                          } else if (activeDomain === "credit-risk") {
+                            if (header === "score") {
+                              if (valNum < 500) bucket = "Baixo (< 500)";
+                              else if (valNum < 750) bucket = "Médio (500 - 750)";
+                              else bucket = "Alto (>= 750)";
+                            } else if (header === "probabilidade_retorno") {
+                              if (valNum < 0.5) bucket = "Baixa (< 50%)";
+                              else if (valNum < 0.8) bucket = "Média (50 - 80%)";
+                              else bucket = "Alta (>= 80%)";
+                            } else {
+                              bucket = "Faixa de Valor";
+                            }
+                          } else if (activeDomain === "churn") {
+                            if (header === "score_risco") {
+                              if (valNum < 30) bucket = "Baixo Risco (< 30%)";
+                              else if (valNum < 70) bucket = "Médio Risco (30 - 70%)";
+                              else bucket = "Alto Risco (>= 70%)";
+                            } else if (header === "ltv") {
+                              if (valNum < 5000) bucket = "Bronze (< 5k)";
+                              else if (valNum < 15000) bucket = "Prata (5k - 15k)";
+                              else bucket = "Ouro (>= 15k)";
+                            } else {
+                              bucket = "Faixa";
+                            }
+                          } else {
+                            bucket = "Faixa de Valores";
+                          }
+                        }
+                      }
+                      valueCounts[bucket] = (valueCounts[bucket] || 0) + 1;
+                    });
+
+                    const totalVals = Object.values(valueCounts).reduce((a, b) => a + b, 0);
+
+                    return (
+                      <div key={header} className="p-2.5 bg-background border border-border/60 rounded-xl space-y-1.5">
+                        <span className="text-[9px] font-bold text-foreground/80 uppercase tracking-wide block border-b border-border/40 pb-0.5">{header}</span>
+                        <div className="space-y-1 max-h-[120px] overflow-y-auto pr-1 scrollbar-thin">
+                          {Object.entries(valueCounts).map(([bucket, count]) => {
+                            const pct = totalVals > 0 ? Math.round((count / totalVals) * 100) : 0;
+                            return (
+                              <div key={bucket} className="space-y-0.5">
+                                <div className="flex justify-between text-[9px] font-mono leading-none">
+                                  <span className="text-muted-foreground truncate max-w-[100px]">{bucket}</span>
+                                  <span className="font-bold text-foreground/70">{count} ({pct}%)</span>
+                                </div>
+                                <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
+                                  <div className={cn("h-full rounded-full", theme.progress)} style={{ width: `${pct}%` }} />
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* ABA 3: Amostragem dos Dados (Tabela de Preview original) */}
+            {(!qualityReport || activeReportTab === "preview") && (
+              <div className="overflow-x-auto w-full max-w-full border border-border/80 rounded-xl bg-card shadow-inner scrollbar-thin scrollbar-thumb-muted-foreground/20 animate-in fade-in duration-200">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-muted/50 border-b border-border">
+                      {fileDetails.headers.map((header) => (
+                        <th
+                          key={header}
+                          className="p-2.5 text-[9px] font-bold text-muted-foreground uppercase font-sans border-r border-border/40 min-w-[120px]"
+                        >
+                          {header}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {previewRows.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={fileDetails.headers.length}
+                          className="p-4 text-[10px] text-center text-muted-foreground italic border-b border-border/60"
+                        >
+                          {t("no_records_available")}
+                        </td>
+                      </tr>
+                    ) : (
+                      previewRows.map((row, rIdx) => (
+                        <tr key={rIdx} className="hover:bg-muted/20 transition-colors duration-150">
+                          {row.map((cell, cIdx) => {
+                            const isError = isCellEmptyOrError(cell);
+                            return (
+                              <td
+                                key={cIdx}
+                                className={cn(
+                                  "p-2.5 border-r border-b border-border/60 text-[10px] min-w-[120px] max-w-[200px] truncate font-mono",
+                                  isError ? "bg-rose-500/10 text-rose-500 font-semibold italic border-rose-500/20" : "text-foreground/80"
+                                )}
+                                title={cell}
+                              >
+                                {isError ? (
+                                  <span className="flex items-center gap-1">
+                                    <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-ping shrink-0" />
+                                    [vazio/erro]
+                                  </span>
+                                ) : (
+                                  cell
+                                )}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Controles de Confirmação/Descarte com Bloqueio de Treino (CA01, CA03, CA06) */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pt-3 border-t border-border/60">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="confirm-quality-checkbox"
+                  checked={isQualityReportConfirmed}
+                  onChange={(e) => setIsQualityReportConfirmed(e.target.checked)}
+                  className="h-3.5 w-3.5 rounded border-gray-300 text-green-500 focus:ring-green-500 accent-emerald-500 cursor-pointer"
+                />
+                <label htmlFor="confirm-quality-checkbox" className="text-[10px] text-muted-foreground select-none cursor-pointer font-semibold hover:text-foreground transition-colors duration-150">
+                  {t("confirm_and_proceed")}
+                </label>
+              </div>
+
               <div className="flex gap-2 w-full sm:w-auto justify-end">
+                {qualityReport && (
+                  <Button
+                    onClick={handleExportQualityReportCSV}
+                    variant="outline"
+                    className="text-[10px] font-bold h-8 px-3 border-border hover:bg-muted"
+                  >
+                    <Download className="h-3.5 w-3.5 mr-1" />
+                    {t("export_quality_report")}
+                  </Button>
+                )}
                 <Button
                   onClick={handleReset}
                   variant="outline"
-                  className="text-[10px] font-bold h-8 px-3.5 border-border hover:bg-muted flex-1 sm:flex-initial"
+                  className="text-[10px] font-bold h-8 px-3 border-border hover:bg-muted flex-1 sm:flex-initial"
                 >
                   <Trash2 className="h-3.5 w-3.5 mr-1" />
-                   {t("discard_import")}
+                  {t("discard_import")}
                 </Button>
                 <Button
                   onClick={handleConfirm}
-                  disabled={validationReport ? !validationReport.isValid : false}
+                  disabled={(validationReport ? !validationReport.isValid : false) || !isQualityReportConfirmed}
                   className={cn(
                     "text-[10px] font-bold h-8 px-3.5 flex-1 sm:flex-initial",
-                    (validationReport ? !validationReport.isValid : false)
+                    ((validationReport ? !validationReport.isValid : false) || !isQualityReportConfirmed)
                       ? "bg-muted text-muted-foreground border-border cursor-not-allowed hover:bg-muted"
                       : theme.button
                   )}
                 >
                   <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
-                   {t("confirm_advance")}
+                  {t("confirm_advance")}
                 </Button>
               </div>
             </div>
@@ -3164,20 +3753,28 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                 // Executar a ação pendente
                 const domainName = activeDomain ? DOMAINS[activeDomain].name : "teste";
                 if (isMockPending) {
+                  const mockRows = generateMockCSVRows(activeDomain || "maintenance");
                   setFileDetails({
                     name: `dados_historicos_${activeDomain || 'teste'}.csv`,
                     size: "45 KB",
                     sizeBytes: 45000,
-                    rows: 150,
+                    rows: mockRows.length,
                     encoding: "UTF-8",
                     delimiter: ",",
                     headers: expectedCols
                   });
-                  setUploadStatus("success");
+                  setAllRows(mockRows);
+                  setPreviewRows(mockRows.slice(0, 5));
+                  
+                  const report = calculateDataQuality(expectedCols, mockRows, activeDomain || "maintenance");
+                  setQualityReport(report);
+                  setIsQualityReportConfirmed(false);
+                  
+                  setUploadStatus("preview"); // Ir para a etapa de preview/relatório
                   setIsMockPending(false);
                   
                   // Disparar o Log de Auditoria (CA03)
-                  addLogWithProfile(userProfile, `Consentimento LGPD confirmado para importação de dados no domínio ${domainName}`);
+                  addLogWithProfile(userProfile, `Consentimento LGPD verificado e dados de demonstração gerados para o domínio ${domainName}`);
                 } else if (pendingFile) {
                   processFile(pendingFile);
                   setPendingFile(null);
