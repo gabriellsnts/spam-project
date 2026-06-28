@@ -12,7 +12,7 @@ interface SchedulingCardProps {
 }
 
 export function SchedulingCard({ domain }: SchedulingCardProps) {
-  const { schedules, saveSchedule, deleteSchedule, runScheduledTrigger, t, DOMAINS } = useDomain();
+  const { schedules, saveSchedule, deleteSchedule, runScheduledTrigger, t } = useDomain();
   const schedule = schedules[domain];
 
   const [frequency, setFrequency] = useState<"daily" | "weekly" | "monthly">("daily");
