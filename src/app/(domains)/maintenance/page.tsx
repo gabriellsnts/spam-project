@@ -26,6 +26,7 @@ import { calculateMachineRUL, BASE_RULS } from "@/lib/predictive-engine";
 import { AlertThresholdSettings } from "@/components/shared/alert-threshold-settings";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { ComparisonView } from "@/components/shared/comparison-view";
+import { SchedulingCard } from "@/components/shared/scheduling-card";
 
 export default function MaintenancePage() {
   const { addLog, isTraining, trainedModels, alertThresholds, addAlert, currentView } = useDomain();
@@ -942,6 +943,8 @@ ${
               activeDomain="maintenance"
             />
           )}
+
+          <SchedulingCard domain="maintenance" />
         </div>
       )}
 

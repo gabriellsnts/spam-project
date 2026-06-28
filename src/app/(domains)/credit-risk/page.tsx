@@ -11,6 +11,7 @@ import { FeatureImportanceChart } from "@/components/shared/feature-importance-c
 import { Input } from "@/components/ui/input";
 import { AlertThresholdSettings } from "@/components/shared/alert-threshold-settings";
 import { ComparisonView } from "@/components/shared/comparison-view";
+import { SchedulingCard } from "@/components/shared/scheduling-card";
 import { ExportDropdown } from "@/components/shared/export-dropdown";
 import { ShareAnalysisDialog } from "@/components/shared/share-analysis-dialog";
 import { ModelCertificateDialog } from "@/components/shared/model-certificate-dialog";
@@ -1012,6 +1013,7 @@ export default function CreditRiskPage() {
         )}
 
         <CSVUploader />
+        <SchedulingCard domain="credit-risk" />
       </div>
     )}
 

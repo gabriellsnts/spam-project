@@ -9,6 +9,7 @@ import { CSVUploader, ConfusionMatrixView } from "@/components/shared/csv-upload
 import { FeatureImportanceChart } from "@/components/shared/feature-importance-chart";
 import { AlertThresholdSettings } from "@/components/shared/alert-threshold-settings";
 import { ComparisonView } from "@/components/shared/comparison-view";
+import { SchedulingCard } from "@/components/shared/scheduling-card";
 
 type RiskLevel = "all" | "high" | "medium" | "low";
 
@@ -539,6 +540,7 @@ export default function ChurnPage() {
         )}
 
         <CSVUploader />
+        <SchedulingCard domain="churn" />
       </div>
     )}
 

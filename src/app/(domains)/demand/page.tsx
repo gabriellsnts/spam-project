@@ -10,6 +10,7 @@ import { FeatureImportanceChart } from "@/components/shared/feature-importance-c
 import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts";
 import { AlertThresholdSettings } from "@/components/shared/alert-threshold-settings";
 import { ComparisonView } from "@/components/shared/comparison-view";
+import { SchedulingCard } from "@/components/shared/scheduling-card";
 
 export default function DemandPage() {
   const { addLog, isTraining, trainedModels, alertThresholds, addAlert, currentView } = useDomain();
@@ -521,6 +522,7 @@ export default function DemandPage() {
         )}
 
         <CSVUploader />
+        <SchedulingCard domain="demand" />
       </div>
     )}
 
