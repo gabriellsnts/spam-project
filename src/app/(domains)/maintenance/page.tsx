@@ -85,12 +85,12 @@ export default function MaintenancePage() {
     );
     addAlert({
       domain: "maintenance",
-      item: "Torno CNC 01 (M01)",
-      value: "Vibração: 8.5 mm/s, Temp: 92°C",
-      metric: "Telemetria Física",
+      item: `${t("machine_m01")} (M01)`,
+      value: `${t("vibration")}: 8.5 mm/s, Temp: 92°C`,
+      metric: t("physical_telemetry"),
       criticality: "high"
     });
-    addLog("Simulação de anomalia crítica iniciada: Vibração excessiva no Torno CNC 01.");
+    addLog(t("anomaly_simulation_started_log", { name: t("machine_m01") }));
   };
 
   const resetSimulation = () => {
@@ -102,7 +102,7 @@ export default function MaintenancePage() {
           : m
       )
     );
-    addLog("Simulação finalizada. Retorno das máquinas ao estado operacional estável.");
+    addLog(t("simulation_finished_log"));
   };
 
   // Estados e funções para o RF12 – Sandbox de Simulação
@@ -120,15 +120,15 @@ export default function MaintenancePage() {
       if (rul <= threshold * 24) {
         list.push({
           id: m.id,
-          name: m.name,
+          name: t("machine_" + m.id.toLowerCase()),
           value: Math.ceil(rul / 24),
           threshold: threshold,
-          details: `Vida útil restante estimada em ${Math.ceil(rul / 24)} dias, menor ou igual ao limiar de segurança de ${threshold} dias.`,
+          details: t("alert_details_template", { rulDays: String(Math.ceil(rul / 24)), threshold: String(threshold) }),
         });
       }
     });
     return list;
-  }, [machines, simulatedSpecs, threshold]);
+  }, [machines, simulatedSpecs, threshold, t]);
 
   const calculateCriticalCount = (t: number) => {
     let count = 0;
@@ -393,8 +393,8 @@ ${
             <div>
               <strong className="text-amber-500 block mb-1">{t("auto_insight")}</strong>
               {simulationActive 
-                ? t("insight_critical_maintenance")
-                : t("insight_stable_maintenance")}
+                ? t("insight_critical_maintenance", { machine: t("machine_m01") })
+                : t("insight_stable_maintenance", { machine: t("machine_m02") })}
             </div>
           </div>
 
@@ -451,7 +451,7 @@ ${
                         key={m.id}
                         onClick={() => {
                           setSelectedMachineId(m.id);
-                          addLog(`Equipamento ${m.name} selecionado.`);
+                          addLog(t("equipment_selected_log", { name: t("machine_" + m.id.toLowerCase()) }));
                         }}
                         className={`p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer transition ${
                           isSelected 
@@ -471,7 +471,7 @@ ${
                           </div>
                           <div>
                             <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                              {m.name}
+                              {t("machine_" + m.id.toLowerCase())}
                               {isMachineSimulated && (
                                 <span className="text-[9px] px-1 bg-amber-500/15 text-amber-500 border border-amber-500/20 rounded font-bold font-sans">
                                   {t("simulating")}
@@ -568,7 +568,7 @@ ${
                       <div key={m.id} className="space-y-2">
                         <div className="flex justify-between text-xs">
                           <span className="text-muted-foreground flex items-center gap-1">
-                            {m.name} (RUL)
+                            {t("machine_" + m.id.toLowerCase())} (RUL)
                             {simOverride && (
                               <span className="text-[8px] px-1 bg-amber-500/10 text-amber-500 rounded border border-amber-500/20 font-bold">
                                 {t("simulating")}
@@ -576,7 +576,7 @@ ${
                             )}
                           </span>
                           <span className={`font-mono font-bold ${textClass}`}>
-                            {rul.toFixed(1)} horas
+                            {rul.toFixed(1)} {t("hours")}
                           </span>
                         </div>
                         <div className="w-full bg-muted h-1.5 rounded-full overflow-hidden border border-border">

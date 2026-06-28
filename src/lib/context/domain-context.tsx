@@ -354,7 +354,7 @@ interface DomainContextProps {
   deleteCustomTheme: (id: string) => void;
   language: LanguageType;
   setLanguage: (lang: LanguageType) => void;
-  t: (key: string) => string;
+  t: (key: string, params?: Record<string, string>) => string;
   getDomainName: (type: DomainType) => string;
 
   // Glossary fields:
@@ -816,14 +816,27 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     let integrityErrorFound = false;
     const failedDomains: DomainType[] = [];
 
-    // Carregar configurações de idioma (RF54)
-    const savedLanguage = localStorage.getItem("spam-language") as LanguageType | null;
+    // Carregar configurações de idioma (RF54) com dupla persistência (localStorage & Cookies)
+    let savedLanguage: LanguageType | null = null;
+    if (typeof document !== "undefined") {
+      const match = document.cookie.match(/(?:^|; )spam-language=([^;]*)/);
+      if (match) savedLanguage = match[1] as LanguageType;
+    }
+    if (!savedLanguage) {
+      savedLanguage = localStorage.getItem("spam-language") as LanguageType | null;
+    }
+    
     let finalLanguage: LanguageType = "pt";
 
-    if (savedLanguage) {
+    if (savedLanguage && (savedLanguage === "pt" || savedLanguage === "en" || savedLanguage === "es")) {
       finalLanguage = savedLanguage;
       currentModuleLanguage = savedLanguage;
       setLanguageState(savedLanguage);
+      // Sincronizar em ambos
+      localStorage.setItem("spam-language", savedLanguage);
+      if (typeof document !== "undefined") {
+        document.cookie = `spam-language=${savedLanguage}; path=/; max-age=31536000; SameSite=Lax`;
+      }
     } else {
       // Detecção automática do idioma do navegador (CA04)
       const browserLang = navigator.language.toLowerCase();
@@ -836,6 +849,9 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
       }
 
       localStorage.setItem("spam-language", finalLanguage);
+      if (typeof document !== "undefined") {
+        document.cookie = `spam-language=${finalLanguage}; path=/; max-age=31536000; SameSite=Lax`;
+      }
       currentModuleLanguage = finalLanguage;
       setLanguageState(finalLanguage);
 
@@ -2097,17 +2113,34 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     showPremiumToast("Tema removido com sucesso!", "success");
   }, []);
 
-  const t = useCallback((key: string): string => {
+  const t = useCallback((key: string, params?: Record<string, string>): string => {
+    if (!key) return "";
     const dictionary = translations[language] as Record<string, string>;
+    let text = "";
+    
     if (dictionary && dictionary[key]) {
-      return dictionary[key];
+      text = dictionary[key];
+    } else {
+      // fallback to pt
+      const fallbackDict = translations["pt"] as Record<string, string>;
+      if (fallbackDict && fallbackDict[key]) {
+        text = fallbackDict[key];
+      } else {
+        if (key.includes('_')) {
+          const clean = key.replace(/_/g, ' ');
+          text = clean.charAt(0).toUpperCase() + clean.slice(1);
+        } else {
+          text = key.charAt(0).toUpperCase() + key.slice(1);
+        }
+      }
     }
-    // fallback to pt
-    const fallbackDict = translations["pt"] as Record<string, string>;
-    if (fallbackDict && fallbackDict[key]) {
-      return fallbackDict[key];
+
+    if (params) {
+      Object.entries(params).forEach(([k, v]) => {
+        text = text.replace(new RegExp(`{${k}}`, 'g'), v);
+      });
     }
-    return key;
+    return text;
   }, [language]);
 
   const getDomainName = useCallback((type: DomainType): string => {
@@ -2391,6 +2424,9 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     setLanguageState(lang);
     currentModuleLanguage = lang;
     localStorage.setItem("spam-language", lang);
+    if (typeof document !== "undefined") {
+      document.cookie = `spam-language=${lang}; path=/; max-age=31536000; SameSite=Lax`;
+    }
 
     // Salvar preferência de idioma no perfil de usuário logado (CA03)
     if (currentUser) {
@@ -2475,8 +2511,13 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         department: user.department,
         lastLogin: new Date().toISOString(),
         status: user.status,
-        theme: user.theme || "dark"
+        theme: user.theme || "dark",
+        language: user.language || language
       };
+      
+      if (user.language) {
+        setLanguage(user.language);
+      }
       
       setThemeState(user.theme || "dark");
       
@@ -2516,7 +2557,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
 
       return { success: false, message };
     }
-  }, [isUserLocked, addLogWithProfile, setUsers]);
+  }, [isUserLocked, addLogWithProfile, setUsers, language, setLanguage]);
 
   const logout = useCallback((reason?: string) => {
     const oldProfile = currentUser ? currentUser.profileName : "Visitante";

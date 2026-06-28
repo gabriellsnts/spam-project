@@ -185,7 +185,7 @@ export function AlertThresholdSettings({
                 <strong className={styles.accent}>{draftCriticalCount} de {totalCount} registros</strong> {t("threshold_marked_critical")}
               </p>
               <span className="text-[10px] text-muted-foreground block">
-                {t("currently_active_threshold")} <strong className="text-foreground">{appliedValue} {unit}</strong> (com {activeAlerts.length} {t("active_alerts_count")}).
+                {t("currently_active_threshold")} <strong className="text-foreground">{appliedValue} {unit}</strong> ({t("with")} {activeAlerts.length} {t("active_alerts_count")}).
               </span>
             </div>
 
