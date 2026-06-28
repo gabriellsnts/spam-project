@@ -258,3 +258,17 @@
 
 ### 3. Impacto e Resultados Técnicos (A Conclusão)
 - Automação operacional segura do pipeline preditivo e treinamento de ponta a ponta client-side com resiliência contra exceções e falhas catastróficas, garantindo plena transparência e rastreabilidade técnica dos eventos executados na esteira analítica.
+
+---
+
+## 📅 2026-06-27 — i18n Profile Page Correction
+### 1. Contexto e Problemática (O Problema)
+- Havia strings estáticas em inglês e misturadas na interface de Perfil (/profile), violando a unificação da tradução (pt/en/es) e dificultando a navegação de usuários que alterassem o idioma. Além disso, a data de último acesso do usuário logado utilizava um locale estático fixo para pt-BR.
+
+### 2. Solução Proposta e Fundamentação (O Desenvolvimento)
+- Mapeamento e substituição de todas as strings estáticas da página de perfil por chaves dinâmicas suportadas pela biblioteca de internacionalização global (i18n) do projeto.
+- Inclusão das novas chaves de tradução em `translations.ts` para Português, Inglês e Espanhol.
+- Adequação do formatador de data do último acesso para utilizar dinamicamente a propriedade locale baseada no idioma ativo do usuário logado (`pt-BR`, `es-ES`, ou `en-US`).
+
+### 3. Impacto e Resultados Técnicos (A Conclusão)
+- Unificação total da tela de perfil com o sistema de tradução dinâmico do projeto, garantindo consistência i18n em tempo real sem erros de compilação ou build em produção.
