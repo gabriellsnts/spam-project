@@ -349,3 +349,18 @@
 
 ### 3. Impacto e Resultados Técnicos (A Conclusão)
 - Isolamento absoluto da barra de navegação esquerda na rota `/profile` e sincronização perfeita e limpa via Context API. Transições de seções ativas na direita respondem instantaneamente aos cliques nos itens da Sidebar, sem causar recarregamento de página. Build final Next.js em produção bem-sucedido com zero erros de compilação ou ESLint.
+
+---
+
+## 📅 2026-06-28 — Otimização de Layout e Hierarquia Visual do Perfil e Sidebar
+### 1. Contexto e Problemática (O Problema)
+- Havia desalinhamento na hierarquia visual da rota `/profile`. O card com as informações detalhadas do usuário logado ocupava muito espaço e espremia as configurações de preferências e administração para o lado. Na Sidebar esquerda, os subtópicos "Aparência do Painel" e "Idioma da Interface" pareciam links soltos e sem conexão visual com o item pai "Preferências".
+
+### 2. Solução Proposta e Fundamentação (O Desenvolvimento)
+- Removido o card de dados do usuário logado do corpo principal da págna `/profile/page.tsx` para permitir que o painel de configurações ativas ocupe 100% da largura útil disponível (com `max-w-4xl mx-auto` para visual e leitura ideais).
+- Integrado o bloco de usuário diretamente no topo da `Sidebar` esquerda no formato compacto e premium: iniciais estilizadas em gradiente, nome completo e badge do cargo de privilégio ("Administrador"), ocultando detalhes em modo colapsado (`isCollapsed`).
+- Reestruturados os sublinks de "Aparência do Painel" e "Idioma da Interface" para que fiquem explicitamente aninhados abaixo do pai "Preferências" por meio de indentação clara (`pl-6`), redução sutil na fonte e indicação de bullet ativo vertical, exibindo-os somente se a seção "Preferências" estiver ativa.
+- Expurgadas as importações não utilizadas (`Building`, `Calendar`, `Tag`) da página de perfil para manter a estrita conformidade com as diretrizes do ESLint e build de produção.
+
+### 3. Impacto e Resultados Técnicos (A Conclusão)
+- Visual extremamente limpo e focado com perfeita ocupação e fluidez no corpo principal do perfil. Hierarquia visual organizada em árvore de navegação com aninhamento estrito e elegante no menu de configurações do perfil. Build de produção passou com 100% de sucesso.

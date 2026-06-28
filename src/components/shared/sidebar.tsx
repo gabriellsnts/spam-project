@@ -198,6 +198,45 @@ export function Sidebar() {
 
         {/* Nav Content */}
         <div className="p-3 space-y-6 flex-1 flex flex-col overflow-y-auto">
+          {/* User Block */}
+          {currentUser && (
+            <div className={cn(
+              "flex flex-col items-center border-b border-border/60 pb-5 mb-2 transition-all duration-300",
+              isCollapsed ? "px-1" : "px-3"
+            )}>
+              <div className={cn(
+                "rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/25 border border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-black shadow-md relative overflow-hidden group transition-all duration-300 shrink-0",
+                isCollapsed ? "h-9 w-9 text-xs" : "h-14 w-14 text-lg"
+              )}>
+                <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/15" />
+                {currentUser.fullName
+                  ? currentUser.fullName.split(" ").map((n) => n[0]).join("").substring(0, 2).toUpperCase()
+                  : "AD"}
+              </div>
+              
+              {!isCollapsed && (
+                <div className="text-center mt-3 animate-in fade-in duration-300 w-full overflow-hidden">
+                  <div className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate leading-tight">
+                    {currentUser.fullName}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground/75 font-mono truncate mt-0.5">
+                    @{currentUser.username}
+                  </div>
+                  <div className="mt-2 flex items-center justify-center gap-1">
+                    <span className={cn(
+                      "text-[9px] font-extrabold px-2 py-0.5 rounded-full border tracking-wide uppercase shadow-sm",
+                      isAdmin
+                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                        : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
+                    )}>
+                      {currentUser.accessProfile}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {!isCollapsed && (
             <div className="px-3 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest animate-in fade-in duration-300">
               {t("profile_settings") || "Configurações"}
@@ -237,27 +276,33 @@ export function Sidebar() {
 
               {/* Subtópicos de Preferências */}
               {!isCollapsed && activeProfileSection === "preferences" && (
-                <div className="pl-9 space-y-1 animate-in slide-in-from-top-2 duration-200">
+                <div className="pl-6 pt-0.5 space-y-1 animate-in slide-in-from-top-1.5 duration-200 border-l border-zinc-200/50 dark:border-zinc-800/40 ml-5 mt-1">
                   <button
                     onClick={() => setActiveProfileSubSection("appearance")}
                     className={cn(
-                      "w-full text-left text-[11px] py-1.5 px-2.5 rounded-lg transition-colors block font-medium",
+                      "w-full text-left text-[10.5px] py-1.5 px-2.5 rounded-lg transition-colors block font-medium relative",
                       activeProfileSubSection === "appearance"
                         ? "text-emerald-500 bg-emerald-500/5 font-bold"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/20"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/15"
                     )}
                   >
+                    {activeProfileSubSection === "appearance" && (
+                      <span className="absolute left-0 top-[9px] w-1 h-1 rounded-full bg-emerald-500" />
+                    )}
                     {t("dashboard_appearance")}
                   </button>
                   <button
                     onClick={() => setActiveProfileSubSection("language")}
                     className={cn(
-                      "w-full text-left text-[11px] py-1.5 px-2.5 rounded-lg transition-colors block font-medium",
+                      "w-full text-left text-[10.5px] py-1.5 px-2.5 rounded-lg transition-colors block font-medium relative",
                       activeProfileSubSection === "language"
                         ? "text-emerald-500 bg-emerald-500/5 font-bold"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/20"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/15"
                     )}
                   >
+                    {activeProfileSubSection === "language" && (
+                      <span className="absolute left-0 top-[9px] w-1 h-1 rounded-full bg-emerald-500" />
+                    )}
                     {t("language_selection")}
                   </button>
                 </div>
