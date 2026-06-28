@@ -385,3 +385,12 @@
 ### 3. Impacto e Resultados Técnicos (A Conclusão)
 - O Analista de Dados possui agora total visibilidade estrutural da integridade e da fidelidade estatística da base histórica antes de calibrar o motor preditivo. Lógica validada em build de produção do Next.js sem nenhuma quebra de lint ou falha de TypeScript.
 
+---
+
+## 📅 2026-06-28 — Implementação de Simulação de Cenários (RF44) - Autor: luizsantos011
+### 1. Contexto e Problemática
+- Necessidade de avaliar como alterações em condições operacionais (ex: temperatura, vibração) afetam a probabilidade de falha dos equipamentos sem a necessidade de retreinar o modelo de IA, garantindo suporte seguro a decisões estratégicas.
+### 2. Solução Proposta e Fundamentação
+- Desenvolvimento do componente client-side 'what-if-simulator.tsx' isolando a lógica de estados. Implementação de botão "Modo Demo" para testes ágeis, uso de sliders interativos para alteração das variáveis de entrada e gráficos do Recharts para sobreposição em tempo real (Cenário Base vs Cenário Simulado).
+### 3. Impacto e Resultados Técnicos
+- Gestores industriais agora podem comparar cenários hipotéticos instantaneamente e salvar predefinições. A arquitetura estritamente client-side garantiu performance sem lag nas re-renderizações dos gráficos, e a tipagem estrita eliminou riscos de falha em runtime.
