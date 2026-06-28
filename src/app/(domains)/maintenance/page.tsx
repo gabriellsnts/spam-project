@@ -6,14 +6,9 @@ import {
   Wrench, 
   Settings, 
   AlertTriangle, 
-  Download, 
   Sparkles,
   BarChart3,
   Radio,
-  Sliders,
-  RotateCcw,
-  ClipboardCopy,
-  Check,
   CheckCircle2,
   AlertCircle
 } from "lucide-react";
@@ -30,7 +25,7 @@ import { SchedulingCard } from "@/components/shared/scheduling-card";
 import WhatIfSimulator from "@/components/shared/what-if-simulator";
 
 export default function MaintenancePage() {
-  const { addLog, isTraining, trainedModels, alertThresholds, addAlert, currentView, t, language } = useDomain();
+  const { addLog, trainedModels, alertThresholds, currentView, t, language } = useDomain();
   const activeModel = trainedModels["maintenance"];
   const isModelObsolete = activeModel ? (Date.now() - activeModel.timestamp > 30 * 24 * 60 * 60 * 1000) : false;
   const [horizon, setHorizon] = useState<7 | 30 | 90>(30);
@@ -67,49 +62,17 @@ export default function MaintenancePage() {
     setCsvAllRows(null);
   };
 
-  const [machines, setMachines] = useState([
+  const [machines] = useState([
     { id: "M01", name: "Torno CNC 01", status: "ok", temp: 58, vibration: 1.2, oee: 88 },
     { id: "M02", name: "Braço Robotizado A", status: "ok", temp: 62, vibration: 2.1, oee: 84 },
     { id: "M03", name: "Esteira Transportadora", status: "ok", temp: 45, vibration: 0.8, oee: 91 },
     { id: "M04", name: "Prensa Hidráulica 04", status: "warning", temp: 78, vibration: 4.8, oee: 73 },
   ]);
-  const [simulationActive, setSimulationActive] = useState(false);
 
-  const triggerAnomalySimulation = () => {
-    setSimulationActive(true);
-    setMachines((prev) =>
-      prev.map((m) =>
-        m.id === "M01"
-          ? { ...m, status: "critical", temp: 92, vibration: 8.5, oee: 45 }
-          : m
-      )
-    );
-    addAlert({
-      domain: "maintenance",
-      item: `${t("machine_m01")} (M01)`,
-      value: `${t("vibration")}: 8.5 mm/s, Temp: 92°C`,
-      metric: t("physical_telemetry"),
-      criticality: "high"
-    });
-    addLog(t("anomaly_simulation_started_log", { name: t("machine_m01") }));
-  };
-
-  const resetSimulation = () => {
-    setSimulationActive(false);
-    setMachines((prev) =>
-      prev.map((m) =>
-        m.id === "M01"
-          ? { ...m, status: "ok", temp: 58, vibration: 1.2, oee: 88 }
-          : m
-      )
-    );
-    addLog(t("simulation_finished_log"));
-  };
 
   // Estados e funções para o RF12 – Sandbox de Simulação
   const [selectedMachineId, setSelectedMachineId] = useState<string>("M01");
-  const [simulatedSpecs, setSimulatedSpecs] = useState<Record<string, { temp: number; vibration: number; oee: number }>>({});
-  const [reportCopied, setReportCopied] = useState(false);
+  const [simulatedSpecs] = useState<Record<string, { temp: number; vibration: number; oee: number }>>({});
   const [isAccordionOpen, setIsAccordionOpen] = useState(false);
 
   const activeAlertsList = useMemo(() => {
@@ -155,115 +118,7 @@ export default function MaintenancePage() {
     return totalRul / machines.length;
   }, [machines, simulatedSpecs]);
 
-  const selectedMachine = machines.find((m) => m.id === selectedMachineId) || machines[0];
-  const hasOverrides = !!simulatedSpecs[selectedMachine.id];
-  
-  const sim = simulatedSpecs[selectedMachine.id] || { 
-    temp: selectedMachine.temp, 
-    vibration: selectedMachine.vibration, 
-    oee: selectedMachine.oee 
-  };
 
-  const handleSliderChange = (field: "temp" | "vibration" | "oee", val: number) => {
-    setSimulatedSpecs((prev) => ({
-      ...prev,
-      [selectedMachine.id]: {
-        ...sim,
-        [field]: val,
-      },
-    }));
-  };
-
-  const handleResetSandbox = () => {
-    const updated = { ...simulatedSpecs };
-    delete updated[selectedMachine.id];
-    setSimulatedSpecs(updated);
-    addLog(`Parâmetros de simulação resetados para o equipamento ${selectedMachine.name}.`);
-  };
-
-  const realRul = calculateMachineRUL(
-    selectedMachine.id, 
-    selectedMachine.temp, 
-    selectedMachine.vibration, 
-    selectedMachine.oee
-  ).rul;
-
-  const simRulResult = calculateMachineRUL(
-    selectedMachine.id, 
-    sim.temp, 
-    sim.vibration, 
-    sim.oee
-  );
-  
-  const simRul = simRulResult.rul;
-  const simStatus = simRulResult.status;
-
-  const diffPct = realRul > 0 ? ((simRul - realRul) / realRul) * 100 : 0;
-  const isSimulatedCritical = sim.temp > 80 || sim.vibration > 4.5;
-
-  const generateReportText = () => {
-    return `==================================================
-${t("report_hypothetical_title") || "RELATÓRIO DE IMPACTO DE CENÁRIO HIPOTÉTICO (RF12)"}
-==================================================
-${t("equipment") || "Equipamento"}          : ${selectedMachine.name}
-${t("identifier_code") || "Código identificador"} : ${selectedMachine.id}-SENSOR
-${t("simulation_date") || "Data da Simulação"}    : ${new Date().toLocaleString(language === "pt" ? "pt-BR" : language === "es" ? "es-ES" : "en-US")}
-
---------------------------------------------------
-${t("physical_variables_comparison") || "COMPARAÇÃO DE VARIÁVEIS FÍSICAS"}
---------------------------------------------------
-${t("variable") || "Variável"}        | ${t("real_state_telemetry") || "Estado Real (Telemetria)"} | ${t("simulated_scenario") || "Cenário Simulado"}
-${t("temperature") || "Temperatura"}     | ${selectedMachine.temp.toFixed(1)} °C                 | ${sim.temp.toFixed(1)} °C
-${t("vibration") || "Vibração"}        | ${selectedMachine.vibration.toFixed(1)} mm/s                | ${sim.vibration.toFixed(1)} mm/s
-${t("oee_efficiency") || "Eficiência OEE"}  | ${selectedMachine.oee.toFixed(1)} %                 | ${sim.oee.toFixed(1)} %
-
---------------------------------------------------
-${t("predictive_impact_analysis") || "ANÁLISE DE IMPACTO PREDITIVO (RUL)"}
---------------------------------------------------
-${t("current_real_rul") || "RUL Atual Real"}  : ${realRul.toFixed(1)} horas
-${t("simulated_rul") || "RUL Simulado"}    : ${simRul.toFixed(1)} horas
-${t("rul_variation") || "Variação de RUL"} : ${diffPct === 0 ? (t("no_change") || "Sem alteração") : `${diffPct > 0 ? "+" : ""}${diffPct.toFixed(1)}%`}
-
-Status ${t("current") || "Atual"}    : ${selectedMachine.status.toUpperCase()}
-Status ${t("simulated") || "Simulado"} : ${simStatus.toUpperCase()}
-
---------------------------------------------------
-${t("recommended_contingency_plan") || "PLANO DE CONTINGÊNCIA RECOMENDADO"}
---------------------------------------------------
-${
-  simStatus === "critical"
-    ? (t("critical_contingency_desc") || "ALERTA CRÍTICO: Os parâmetros simulados ultrapassaram os limites de segurança da engenharia (Temp > 80°C ou Vibração > 4.5 mm/s). Recomenda-se a interrupção imediata das atividades da máquina para manutenção corretiva e lubrificação, mitigando riscos de falha catastrófica.")
-    : simStatus === "warning"
-    ? (t("warning_contingency_desc") || "AVISO TÉCNICO: Variáveis físicas em nível de atenção. Recomenda-se programar uma vistoria preventiva nas próximas 24 horas para reajuste de calibração.")
-    : (t("normal_contingency_desc") || "SITUAÇÃO NORMAL: O cenário simulado está dentro das faixas aceitáveis de operação. Continue monitorando as variáveis por meio da telemetria padrão.")
-}
-==================================================`;
-  };
-
-  const handleCopyReport = async () => {
-    try {
-      await navigator.clipboard.writeText(generateReportText());
-      setReportCopied(true);
-      addLog(`Relatório de impacto simulado copiado para a área de transferência (${selectedMachine.name}).`);
-      setTimeout(() => setReportCopied(false), 2000);
-    } catch (err) {
-      console.error("Erro ao copiar relatório:", err);
-    }
-  };
-
-  const handleDownloadReport = () => {
-    const blob = new Blob([generateReportText()], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `relatorio-simulacao-${selectedMachine.id.toLowerCase()}.txt`;
-    link.style.display = "none";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    addLog(`Relatório de impacto simulado baixado como arquivo texto (${selectedMachine.name}).`);
-  };
 
   const handleExport = () => {
     window.print();
@@ -393,9 +248,7 @@ ${
             <Sparkles className="h-5 w-5 text-amber-500 shrink-0" />
             <div>
               <strong className="text-amber-500 block mb-1">{t("auto_insight")}</strong>
-              {simulationActive 
-                ? t("insight_critical_maintenance", { machine: t("machine_m01") })
-                : t("insight_stable_maintenance", { machine: t("machine_m02") })}
+              {t("insight_stable_maintenance", { machine: t("machine_m02") })}
             </div>
           </div>
 

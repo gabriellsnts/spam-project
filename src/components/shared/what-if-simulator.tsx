@@ -43,7 +43,7 @@ const domainVariables: Record<string, Record<string, VariableInfo>> = {
 export default function WhatIfSimulator() {
   const { activeDomain, addLog } = useDomain();
   const domainKey = activeDomain || "maintenance";
-  const variables: Record<string, VariableInfo> = domainVariables[domainKey] || {};
+  const variables: Record<string, VariableInfo> = useMemo(() => domainVariables[domainKey] || {}, [domainKey]);
 
   const defaultValues = useMemo(() => {
     return Object.fromEntries(Object.entries(variables).map(([k, v]) => [k, v.default]));
@@ -54,7 +54,13 @@ export default function WhatIfSimulator() {
   const [simulatedPrediction, setSimulatedPrediction] = useState<number | null>(null);
   const [scenarioName, setScenarioName] = useState("");
   
-  const [savedScenarios, setSavedScenarios] = useState<any[]>([
+  interface SavedScenario {
+    name: string;
+    values: Record<string, number>;
+    simulatedPrediction: number | null;
+  }
+  
+  const [savedScenarios, setSavedScenarios] = useState<SavedScenario[]>([
     { name: "Padrão de Fábrica", values: { ...defaultValues }, simulatedPrediction: 15.0 }
   ]);
   const [selectedScenario, setSelectedScenario] = useState<string>("");
@@ -70,8 +76,8 @@ export default function WhatIfSimulator() {
       if (isMounted) {
         let baseCalc = 0;
         let simCalc = 0;
-        Object.entries(defaultValues).forEach(([k, v]) => { baseCalc += v; });
-        Object.entries(values).forEach(([k, v]) => { simCalc += v; });
+        Object.values(defaultValues).forEach((v) => { baseCalc += v; });
+        Object.values(values).forEach((v) => { simCalc += v; });
         
         const baseProb = Math.min(100, Math.max(0, (baseCalc / 500) * 100));
         const simProb = Math.min(100, Math.max(0, (simCalc / 500) * 100));

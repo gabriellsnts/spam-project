@@ -119,7 +119,14 @@ export function predictCreditRisk(
   return { probabilidadeRetorno, acao };
 }
 
-export async function getPrediction(domain: string, params: Record<string, number>): Promise<any> {
+export interface PredictionResult {
+  status: string;
+  predicted: boolean;
+  domain: string;
+  params: Record<string, number>;
+}
+
+export async function getPrediction(domain: string, params: Record<string, number>): Promise<PredictionResult> {
   // Simulação de predição isolada
   return { status: "success", predicted: true, domain, params };
 }
