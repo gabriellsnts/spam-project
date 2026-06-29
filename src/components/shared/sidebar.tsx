@@ -10,9 +10,12 @@ import {
   Sliders,
   Settings,
   Sparkles,
+  BookOpen,
+  HelpCircle,
   History as HistoryIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 import { usePathname } from "next/navigation";
 
@@ -482,6 +485,44 @@ export function Sidebar() {
             )
           )}
         </nav>
+        
+        {/* Help & Docs Section */}
+        <div className="pt-4 border-t border-border mt-4">
+          {!isCollapsed && (
+            <div className="px-3 pb-2 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest animate-in fade-in duration-300">
+              {t("Suporte & Docs")}
+            </div>
+          )}
+          <nav className="space-y-2">
+            <Link 
+              href="/docs/glossary"
+              className={cn(
+                "w-full flex items-center p-2.5 rounded-xl border border-transparent transition-all duration-200 group text-muted-foreground hover:text-foreground hover:bg-muted/40",
+                isCollapsed ? "justify-center" : "gap-3 px-3"
+              )}
+              title="Glossário"
+            >
+              <BookOpen className="h-5 w-5 shrink-0" />
+              {!isCollapsed && (
+                <div className="text-xs font-bold leading-none">Glossário (RF55)</div>
+              )}
+            </Link>
+            
+            <Link 
+              href="/docs/help"
+              className={cn(
+                "w-full flex items-center p-2.5 rounded-xl border border-transparent transition-all duration-200 group text-muted-foreground hover:text-foreground hover:bg-muted/40",
+                isCollapsed ? "justify-center" : "gap-3 px-3"
+              )}
+              title="Central de Ajuda"
+            >
+              <HelpCircle className="h-5 w-5 shrink-0" />
+              {!isCollapsed && (
+                <div className="text-xs font-bold leading-none">Central de Ajuda (RF56)</div>
+              )}
+            </Link>
+          </nav>
+        </div>
       </div>
 
       {/* Footer Area: Active Module Summary Info */}
