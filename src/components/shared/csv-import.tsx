@@ -45,7 +45,7 @@ interface ProcessedRow {
 }
 
 export function CSVImport() {
-  const { activeDomain, addLog, addLogWithProfile, privacyNoticeText, userProfile } = useDomain();
+  const { t, activeDomain, addLog, addLogWithProfile, privacyNoticeText, userProfile } = useDomain();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Estados principais de processamento
@@ -349,7 +349,7 @@ export function CSVImport() {
     reader.onload = (e) => {
       try {
         const buffer = e.target?.result as ArrayBuffer;
-        if (!buffer) throw new Error("Falha na leitura do arquivo.");
+        if (!buffer) throw new Error(t("failed_read_file"));
 
         // Decodificação inteligente
         const { text, encoding } = detectAndDecodeFile(buffer);
@@ -358,7 +358,7 @@ export function CSVImport() {
         // Parse do CSV
         const lines = text.split("\n").map(l => l.trim()).filter(l => l.length > 0);
         if (lines.length < 2) {
-          throw new Error("O arquivo CSV deve conter pelo menos uma linha de cabeçalho e um registro de dados.");
+          throw new Error(t("csv_must_contain_header_row"));
         }
 
         // Delimitador automático
@@ -382,15 +382,15 @@ export function CSVImport() {
 
         // Simulação do progresso do motor de análise
         setProgress(15);
-        setLoadingStep("Analisando colunas e identificando padrões...");
+        setLoadingStep(t("analyzing_columns_patterns"));
 
         setTimeout(() => {
           setProgress(50);
-          setLoadingStep("Calculando mediana para numéricos e moda para categóricos...");
+          setLoadingStep(t("calculating_median_mode"));
 
           setTimeout(() => {
             setProgress(85);
-            setLoadingStep("Aplicando normalização Min-Max e imputação de nulos...");
+            setLoadingStep(t("applying_minmax_imputation"));
 
             setTimeout(() => {
               // Rodar a lógica de negócios RF08 na memória
@@ -419,7 +419,7 @@ export function CSVImport() {
       } catch (err) {
         setIsUploading(false);
         setUploadStatus("error");
-        setErrorMessage(err instanceof Error ? err.message : "Erro desconhecido ao processar arquivo.");
+        setErrorMessage(err instanceof Error ? err.message : t("unknown_error_processing"));
         addLog(`Erro no processamento do arquivo '${file.name}'.`);
       }
     };
@@ -427,7 +427,7 @@ export function CSVImport() {
     reader.onerror = () => {
       setIsUploading(false);
       setUploadStatus("error");
-      setErrorMessage("Erro de leitura do sistema operacional ao carregar o arquivo.");
+      setErrorMessage(t("os_read_error"));
     };
 
     reader.readAsArrayBuffer(file);
@@ -439,7 +439,7 @@ export function CSVImport() {
 
     if (!file.name.toLowerCase().endsWith(".csv")) {
       setUploadStatus("error");
-      setErrorMessage("Extensão inválida. Por favor, faça upload apenas de arquivos CSV.");
+      setErrorMessage(t("invalid_extension_csv"));
       addLog(`Falha na importação: O arquivo '${file.name}' não é um CSV válido.`);
       return;
     }
@@ -447,7 +447,7 @@ export function CSVImport() {
     // Limites de tamanho (máximo 5MB para frontend robusto)
     if (file.size > 5 * 1024 * 1024) {
       setUploadStatus("error");
-      setErrorMessage("O tamanho do arquivo excede o limite máximo permitido de 5MB.");
+      setErrorMessage(t("file_size_exceeds_5mb"));
       return;
     }
 
@@ -537,10 +537,10 @@ export function CSVImport() {
           <CardHeader>
             <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
               <Database className="h-4.5 w-4.5 text-muted-foreground/60" />
-              Pré-processador Inteligente de Dados (RF08)
+              {t("smart_preprocessor_rf08")}
             </CardTitle>
             <CardDescription className="text-[11px] text-muted-foreground">
-              Carregue uma base histórica em CSV. O sistema tratará valores nulos automaticamente (mediana/moda) e aplicará normalização Min-Max [0, 1] em tempo real na memória.
+              {t("smart_preprocessor_desc")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -561,17 +561,17 @@ export function CSVImport() {
               </div>
               <div className="text-center space-y-1">
                 <p className="text-xs font-semibold text-foreground">
-                  Selecione o arquivo CSV histórico para tratar
+                  {t("select_historical_csv")}
                 </p>
                 <p className="text-[10px] text-muted-foreground">
-                  Formatos aceitos: delimitados por vírgula (,), ponto e vírgula (;) ou tabulações
+                  {t("accepted_formats_csv")}
                 </p>
               </div>
             </div>
 
             <div className="flex justify-between items-center gap-2 pt-2 border-t border-border/50">
               <span className="text-[10px] text-muted-foreground leading-relaxed">
-                Quer validar o tratamento com dados de teste nulos? Baixe o modelo ideal para este módulo:
+                {t("test_with_nulls_desc")}
               </span>
               <Button
                 onClick={handleDownloadTestCSV}
@@ -579,7 +579,7 @@ export function CSVImport() {
                 className="text-[10px] h-7 px-3 gap-1 rounded-lg border-border hover:bg-muted text-foreground flex-shrink-0"
               >
                 <Download className="h-3.5 w-3.5" />
-                Baixar CSV com Nulos
+                {t("download_nulls_csv")}
               </Button>
             </div>
           </CardContent>
@@ -591,7 +591,7 @@ export function CSVImport() {
         <Card className="bg-card border-border p-8 flex flex-col items-center justify-center gap-4 bg-muted/10 animate-in fade-in duration-300">
           <Loader2 className={`h-8 w-8 animate-spin ${theme.text}`} />
           <div className="text-center space-y-2 w-full max-w-xs">
-            <h4 className="text-xs font-bold text-foreground">Higienizando & Normalizando Dados...</h4>
+            <h4 className="text-xs font-bold text-foreground">{t("cleaning_normalizing")}</h4>
             <p className="text-[10px] text-muted-foreground leading-relaxed h-8 flex items-center justify-center text-center">
               {loadingStep}
             </p>
@@ -616,7 +616,7 @@ export function CSVImport() {
           </div>
           <div className="space-y-3 flex-1 w-full">
             <div className="space-y-1">
-              <h4 className="text-xs font-bold text-foreground">Inconsistência no Arquivo</h4>
+              <h4 className="text-xs font-bold text-foreground">{t("file_inconsistency")}</h4>
               <p className="text-[10px] text-rose-500 leading-relaxed font-semibold">
                 {errorMessage}
               </p>
@@ -626,7 +626,7 @@ export function CSVImport() {
               variant="outline"
               className="text-[9px] h-7 px-3 border-rose-500/20 bg-rose-500/5 hover:bg-rose-500/10 text-rose-500 font-bold"
             >
-              Tentar Novamente
+              {t("try_again")}
             </Button>
           </div>
         </Card>
@@ -640,14 +640,14 @@ export function CSVImport() {
               <div className="space-y-1">
                 <div className="flex items-center gap-1.5 text-emerald-500 text-xs font-bold">
                   <CheckCircle2 className="h-4 w-4" />
-                  Dados Pré-processados e Prontos (RF08)
+                  {t("preprocessed_ready_rf08")}
                 </div>
                 <CardTitle className="text-base font-black text-foreground tracking-tight flex items-center gap-2">
                   <FileCheck className="h-5 w-5 text-muted-foreground/80" />
                   {fileName}
                 </CardTitle>
                 <CardDescription className="text-[10px] text-muted-foreground font-mono">
-                  Tamanho: {fileSizeStr} | Registros: {processedRows.length} linhas | Delimitador e Tipagem auto-detectados
+                  {t("size")}: {fileSizeStr} | {t("records")}: {processedRows.length} {t("lines")} | {t("delimiter_type_auto")}
                 </CardDescription>
               </div>
 
@@ -658,7 +658,7 @@ export function CSVImport() {
                   className="text-[10px] h-8 px-3.5 border-border hover:bg-muted text-foreground font-bold"
                 >
                   <RefreshCw className="h-3.5 w-3.5 mr-1" />
-                  Resetar
+                  {t("reset")}
                 </Button>
               </div>
             </div>
@@ -675,7 +675,7 @@ export function CSVImport() {
               }`}
             >
               <Sliders className="h-3.5 w-3.5" />
-              Relatório de Imputação
+              {t("imputation_report")}
             </button>
             <button
               onClick={() => setActiveTab("preview")}
@@ -686,7 +686,7 @@ export function CSVImport() {
               }`}
             >
               <FileSpreadsheet className="h-3.5 w-3.5" />
-              Visualizador de Dados
+              {t("data_viewer")}
             </button>
             <button
               onClick={() => setActiveTab("logs")}
@@ -697,7 +697,7 @@ export function CSVImport() {
               }`}
             >
               <List className="h-3.5 w-3.5" />
-              Logs de Auditoria ({localAuditLogs.length})
+              {t("audit_logs")} ({localAuditLogs.length})
             </button>
           </div>
 
@@ -708,27 +708,27 @@ export function CSVImport() {
                 {/* KPIs */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="p-4 rounded-xl border border-border bg-muted/20">
-                    <span className="text-muted-foreground text-[10px] uppercase font-bold tracking-wide">Lacunas Preenchidas</span>
+                    <span className="text-muted-foreground text-[10px] uppercase font-bold tracking-wide">{t("filled_gaps")}</span>
                     <div className="text-2xl font-black text-foreground font-mono mt-1">
-                      {totalImputed} <span className="text-[11px] text-muted-foreground font-normal font-sans">células</span>
+                      {totalImputed} <span className="text-[11px] text-muted-foreground font-normal font-sans">{t("cells")}</span>
                     </div>
-                    <span className="text-[9px] text-muted-foreground/80 block mt-1">Substituído por Mediana (N) ou Moda (C)</span>
+                    <span className="text-[9px] text-muted-foreground/80 block mt-1">{t("replaced_by_median_mode")}</span>
                   </div>
 
                   <div className="p-4 rounded-xl border border-border bg-muted/20">
-                    <span className="text-muted-foreground text-[10px] uppercase font-bold tracking-wide">Colunas Tratadas</span>
+                    <span className="text-muted-foreground text-[10px] uppercase font-bold tracking-wide">{t("processed_columns")}</span>
                     <div className="text-2xl font-black text-foreground font-mono mt-1">
-                      {columnsInfo.length} <span className="text-[11px] text-muted-foreground font-normal font-sans">campos</span>
+                      {columnsInfo.length} <span className="text-[11px] text-muted-foreground font-normal font-sans">{t("fields")}</span>
                     </div>
-                    <span className="text-[9px] text-muted-foreground/80 block mt-1">Classificação auto-detectada</span>
+                    <span className="text-[9px] text-muted-foreground/80 block mt-1">{t("auto_detected_classification")}</span>
                   </div>
 
                   <div className="p-4 rounded-xl border border-border bg-muted/20">
-                    <span className="text-muted-foreground text-[10px] uppercase font-bold tracking-wide">Normalização do Modelo</span>
+                    <span className="text-muted-foreground text-[10px] uppercase font-bold tracking-wide">{t("model_normalization")}</span>
                     <div className="text-2xl font-black text-sky-500 font-mono mt-1">
                       Min-Max <span className="text-[11px] text-muted-foreground font-normal font-sans">[0, 1]</span>
                     </div>
-                    <span className="text-[9px] text-muted-foreground/80 block mt-1">Simulado com dados escalados</span>
+                    <span className="text-[9px] text-muted-foreground/80 block mt-1">{t("simulated_scaled_data")}</span>
                   </div>
                 </div>
 
@@ -736,7 +736,7 @@ export function CSVImport() {
                 <div className="space-y-3">
                   <h3 className="text-xs font-bold text-foreground flex items-center gap-1.5">
                     <Info className="h-4 w-4 text-muted-foreground/60" />
-                    Parâmetros Estatísticos Aplicados por Coluna
+                    {t("applied_stats_params")}
                   </h3>
 
                   <div className="border border-border/80 rounded-xl overflow-hidden bg-card">
@@ -744,11 +744,11 @@ export function CSVImport() {
                       <table className="w-full text-left border-collapse text-xs">
                         <thead>
                           <tr className="bg-muted/50 border-b border-border">
-                            <th className="p-3 font-bold text-muted-foreground">Coluna</th>
-                            <th className="p-3 font-bold text-muted-foreground">Tipo de Campo</th>
-                            <th className="p-3 font-bold text-muted-foreground text-center">Nulos Imputados</th>
-                            <th className="p-3 font-bold text-muted-foreground">Valor Substituto (Mediana/Moda)</th>
-                            <th className="p-3 font-bold text-muted-foreground">Intervalo (Min/Max)</th>
+                            <th className="p-3 font-bold text-muted-foreground">{t("column")}</th>
+                            <th className="p-3 font-bold text-muted-foreground">{t("field_type")}</th>
+                            <th className="p-3 font-bold text-muted-foreground text-center">{t("imputed_nulls")}</th>
+                            <th className="p-3 font-bold text-muted-foreground">{t("substitute_value")}</th>
+                            <th className="p-3 font-bold text-muted-foreground">{t("range")}</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-border/60">
@@ -761,7 +761,7 @@ export function CSVImport() {
                                     ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
                                     : "bg-indigo-500/10 text-indigo-500 border-indigo-500/20"
                                 }`}>
-                                  {col.type === "numeric" ? "🔢 Numérico" : "🔤 Categórico"}
+                                  {col.type === "numeric" ? `🔢 ${t("numeric")}` : `🔤 ${t("categorical")}`}
                                 </span>
                               </td>
                               <td className="p-3 text-center font-mono font-bold">
@@ -770,7 +770,7 @@ export function CSVImport() {
                                 </span>
                               </td>
                               <td className="p-3 font-mono font-semibold italic text-foreground/80">
-                                {col.type === "numeric" ? `Mediana: ${col.imputedValue}` : `Moda: "${col.imputedValue}"`}
+                                {col.type === "numeric" ? `${t("median")}: ${col.imputedValue}` : `${t("mode")}: "${col.imputedValue}"`}
                               </td>
                               <td className="p-3 text-muted-foreground font-mono text-[11px]">
                                 {col.type === "numeric" ? `[${col.min?.toFixed(1)} ; ${col.max?.toFixed(1)}]` : "—"}
@@ -787,7 +787,7 @@ export function CSVImport() {
                 <div className="space-y-3 pt-2">
                   <h3 className="text-xs font-bold text-foreground flex items-center gap-1.5">
                     <BarChart3 className="h-4 w-4 text-muted-foreground/60" />
-                    Percentual de Dados Imputados/Corrigidos por Coluna
+                    {t("percent_imputed_data")}
                   </h3>
 
                   <div className="p-5 rounded-2xl border border-border bg-muted/15 space-y-4">
@@ -796,10 +796,10 @@ export function CSVImport() {
                         <div className="flex justify-between text-[11px] font-mono">
                           <span className="font-bold text-foreground/80 flex items-center gap-1">
                             {col.name}
-                            <span className="text-[9px] text-muted-foreground">({col.type === "numeric" ? "Num" : "Cat"})</span>
+                            <span className="text-[9px] text-muted-foreground">({col.type === "numeric" ? t("num") : t("cat")})</span>
                           </span>
                           <span className="font-bold text-foreground flex items-center gap-1">
-                            {col.percentageAltered.toFixed(1)}% <span className="text-[9px] font-sans font-normal text-muted-foreground">corrigido</span>
+                            {col.percentageAltered.toFixed(1)}% <span className="text-[9px] font-sans font-normal text-muted-foreground">{t("corrected")}</span>
                           </span>
                         </div>
                         {/* Container da Barra */}
@@ -829,10 +829,10 @@ export function CSVImport() {
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border pb-4">
                   <div className="space-y-0.5">
                     <h3 className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                      Amostra dos Dados Pré-processados
+                      {t("preprocessed_data_sample")}
                     </h3>
                     <p className="text-[10px] text-muted-foreground">
-                      Células destacadas em <span className="text-amber-500 font-bold">Laranja</span> representam valores que estavam vazios e foram imputados pelo sistema.
+                      {t("highlighted_cells_desc")}
                     </p>
                   </div>
 
@@ -846,7 +846,7 @@ export function CSVImport() {
                           : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
-                      Métrica Real (Tratada)
+                      {t("real_metric")}
                     </button>
                     <button
                       onClick={() => setPreviewMode("normalized")}
@@ -856,7 +856,7 @@ export function CSVImport() {
                           : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
-                      Normalizado [0, 1]
+                      {t("normalized_0_1")}
                     </button>
                   </div>
                 </div>
@@ -865,20 +865,20 @@ export function CSVImport() {
                 <div className="p-4 bg-emerald-500/10 dark:bg-emerald-500/5 border border-emerald-500/20 rounded-xl space-y-3 animate-in fade-in duration-300">
                   <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400">
                     <Sliders className="h-4 w-4 shrink-0" />
-                    <span>Resumo de Otimização e Tratamento de Dados</span>
+                    <span>{t("optimization_summary")}</span>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[10.5px] text-foreground/80 font-medium">
                     {columnsInfo.map((col) => (
                       <div key={col.name} className="flex items-center justify-between bg-muted/40 p-2 rounded-lg border border-border/50 font-mono">
                         <span className="truncate mr-2">
-                          Coluna <strong className="font-bold text-foreground">{col.name}</strong>
+                          {t("column")} <strong className="font-bold text-foreground">{col.name}</strong>
                         </span>
                         <span className="shrink-0 text-right">
                           <strong className={col.missingCount > 0 ? "text-amber-500 font-bold" : "text-emerald-500"}>
                             {col.missingCount}
                           </strong>{" "}
-                          valores corrigidos pela {col.type === "numeric" ? "mediana" : "moda"}
+                          {col.type === "numeric" ? t("corrected_by_median") : t("corrected_by_mode")}
                         </span>
                       </div>
                     ))}
@@ -886,7 +886,7 @@ export function CSVImport() {
 
                   <div className="text-xs text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1.5 pt-1.5 border-t border-emerald-500/15">
                     <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                    A base de dados está otimizada para o início imediato do treinamento técnico da IA.
+                    {t("database_optimized_training")}
                   </div>
                 </div>
 
@@ -933,7 +933,7 @@ export function CSVImport() {
                                     <span>{valueStr}</span>
                                     {isImputed && (
                                       <span className="text-[8px] bg-amber-500/20 text-amber-600 dark:text-amber-400 px-1 py-0.2 rounded border border-amber-500/30 uppercase tracking-wide font-sans">
-                                        Filtro
+                                        {t("filter")}
                                       </span>
                                     )}
                                   </div>
@@ -946,11 +946,11 @@ export function CSVImport() {
                     </table>
                   </div>
                   <div className="bg-muted/10 p-2.5 text-[10px] text-muted-foreground italic border-t border-border flex justify-between items-center">
-                    <span>Exibindo as primeiras {Math.min(processedRows.length, 10)} de {processedRows.length} linhas.</span>
+                    <span>{t("showing_first_n_rows", { limit: Math.min(processedRows.length, 10).toString(), total: processedRows.length.toString() })}</span>
                     {previewMode === "normalized" && (
                       <span className="flex items-center gap-1 text-[9px] text-sky-500 font-bold not-italic">
                         <Info className="h-3 w-3" />
-                        Campos numéricos normalizados no intervalo [0.0000 - 1.0000]
+                        {t("numeric_normalized_range")}
                       </span>
                     )}
                   </div>
@@ -962,8 +962,8 @@ export function CSVImport() {
             {activeTab === "logs" && (
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xs font-bold text-foreground">Sessão do Processador Estatístico</h3>
-                  <span className="text-[9px] font-mono text-muted-foreground">Auditoria Integrada</span>
+                  <h3 className="text-xs font-bold text-foreground">{t("processor_session")}</h3>
+                  <span className="text-[9px] font-mono text-muted-foreground">{t("integrated_audit")}</span>
                 </div>
                 <div className="p-4 rounded-xl border border-border bg-zinc-950 font-mono text-[10.5px] text-emerald-400 leading-relaxed space-y-2 h-[280px] overflow-y-auto shadow-inner">
                   {localAuditLogs.map((log, index) => (
@@ -973,7 +973,7 @@ export function CSVImport() {
                     </div>
                   ))}
                   <div className="text-emerald-500/50 pt-2 border-t border-emerald-500/10">
-                    &gt; Processamento concluído. Dados persistidos na memória volátil.
+                    &gt; {t("processing_completed_persisted")}
                   </div>
                 </div>
               </div>
@@ -997,10 +997,10 @@ export function CSVImport() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-foreground font-bold text-sm">
               <Shield className="h-5 w-5 text-green-500 shrink-0" />
-              Aviso de Privacidade & Consentimento (LGPD)
+              {t("privacy_notice_lgpd")}
             </DialogTitle>
             <DialogDescription className="text-muted-foreground text-xs">
-              Por favor, leia atentamente as diretrizes de privacidade antes de prosseguir com a importação de dados.
+              {t("read_privacy_guidelines")}
             </DialogDescription>
           </DialogHeader>
 
@@ -1012,16 +1012,16 @@ export function CSVImport() {
             <div className="flex flex-col gap-2 p-3.5 bg-muted/40 border border-border/60 rounded-xl text-[10px] text-muted-foreground">
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-green-500 shrink-0" />
-                <span>Uso de dados exclusivo para modelagem analítica e predição neste sistema.</span>
+                <span>{t("lgpd_rule_1")}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-green-500 shrink-0" />
-                <span>Confidencialidade estrita, sem compartilhamento ou transferência de informações com terceiros.</span>
+                <span>{t("lgpd_rule_2")}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-green-500 shrink-0" />
                 <span className="flex-1">
-                  Direito dos titulares assegurados. Para mais informações, consulte a nossa{" "}
+                  {t("lgpd_rule_3")}{" "}
                   <a 
                     href="#privacy-policy" 
                     onClick={(e) => {
@@ -1030,13 +1030,13 @@ export function CSVImport() {
                     }} 
                     className="text-green-500 hover:text-green-600 underline font-bold"
                   >
-                    Política de Privacidade
+                    {t("privacy_policy_link")}
                   </a>.
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-green-500 shrink-0" />
-                <span>Contato do Encarregado pelo tratamento de dados pessoais (DPO): dpo@empresa.com</span>
+                <span>{t("lgpd_rule_4")}</span>
               </div>
             </div>
 
@@ -1050,7 +1050,7 @@ export function CSVImport() {
                 className="mt-0.5 h-4 w-4 rounded border-border bg-background text-green-500 focus:ring-green-500 cursor-pointer accent-green-600"
               />
               <label htmlFor="lgpd-consent-checkbox-import" className="text-[11px] text-muted-foreground leading-snug cursor-pointer select-none">
-                Estou ciente e concordo com o processamento dos dados importados em conformidade com a LGPD e as finalidades descritas.
+                {t("lgpd_consent_label")}
               </label>
             </div>
           </div>
@@ -1068,7 +1068,7 @@ export function CSVImport() {
               }}
               className="text-[10px] font-bold h-8 px-3.5 border-border hover:bg-muted text-muted-foreground"
             >
-              Recusar e Cancelar
+              {t("decline_cancel")}
             </Button>
             <Button
               disabled={!hasConsented}
@@ -1087,7 +1087,7 @@ export function CSVImport() {
               }}
               className="text-[10px] font-bold h-8 px-3.5 bg-green-500 hover:bg-green-600 text-zinc-950 disabled:opacity-50 transition"
             >
-              Confirmar e Consentir
+              {t("confirm_consent")}
             </Button>
           </div>
         </DialogContent>

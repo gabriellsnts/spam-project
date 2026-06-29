@@ -129,7 +129,7 @@ export const getDomainTheme = (domain: string): DomainTheme => {
 };
 
 export function ResidualsPlotView({ model, theme: customTheme }: { model: TrainedModel; theme?: DomainTheme }) {
-  const { theme: currentThemeMode } = useDomain();
+  const { t, theme: currentThemeMode } = useDomain();
   const [selectedPoint, setSelectedPoint] = useState<ResidualPoint | null>(null);
   const [hoveredPoint, setHoveredPoint] = useState<ResidualPoint | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -284,9 +284,9 @@ export function ResidualsPlotView({ model, theme: customTheme }: { model: Traine
     <div className="space-y-4 border border-border/60 bg-muted/20 p-4.5 rounded-xl animate-in fade-in duration-300">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <div>
-          <h5 className="text-xs font-bold text-foreground">Gráfico de Resíduos da Previsão</h5>
+          <h5 className="text-xs font-bold text-foreground">{t("prediction_residuals_chart")}</h5>
           <p className="text-[10px] text-muted-foreground">
-            Inspeção de erros de predição numérica (Erro = Real - Predito). Eixos autoajustados.
+            {t("inspection_prediction_errors")}
           </p>
         </div>
         <div className="flex gap-1.5">
@@ -294,7 +294,7 @@ export function ResidualsPlotView({ model, theme: customTheme }: { model: Traine
             onClick={handleDownloadSVG}
             variant="outline"
             className="text-[9px] font-bold h-6.5 px-2 border-border hover:bg-muted font-sans text-muted-foreground hover:text-foreground"
-            title="Baixar em formato vetorial SVG"
+            title={t("download_svg")}
           >
             SVG
           </Button>
@@ -302,7 +302,7 @@ export function ResidualsPlotView({ model, theme: customTheme }: { model: Traine
             onClick={handleDownloadPNG}
             variant="outline"
             className="text-[9px] font-bold h-6.5 px-2 border-border hover:bg-muted font-sans text-muted-foreground hover:text-foreground"
-            title="Baixar em alta resolução PNG"
+            title={t("download_png")}
           >
             PNG
           </Button>
@@ -310,7 +310,7 @@ export function ResidualsPlotView({ model, theme: customTheme }: { model: Traine
             onClick={handleDownloadJPEG}
             variant="outline"
             className="text-[9px] font-bold h-6.5 px-2 border-border hover:bg-muted font-sans text-muted-foreground hover:text-foreground"
-            title="Baixar em alta resolução JPEG"
+            title={t("download_jpeg")}
           >
             JPEG
           </Button>
@@ -403,7 +403,7 @@ export function ResidualsPlotView({ model, theme: customTheme }: { model: Traine
               fontFamily="sans-serif"
               fontWeight="bold"
             >
-              Erro Zero
+              {t("zero_error")}
             </text>
 
             {/* CA03 - Axes Titles */}
@@ -416,7 +416,7 @@ export function ResidualsPlotView({ model, theme: customTheme }: { model: Traine
               fontWeight="bold"
               fontFamily="sans-serif"
             >
-              Valor Predito pelo Modelo
+              {t("predicted_value_by_model")}
             </text>
 
             <text
@@ -427,7 +427,7 @@ export function ResidualsPlotView({ model, theme: customTheme }: { model: Traine
               fontWeight="bold"
               fontFamily="sans-serif"
             >
-              Resíduo (Erro de Previsão)
+              {t("residual_prediction_error")}
             </text>
 
             {/* Scatter Dots */}
@@ -466,11 +466,11 @@ export function ResidualsPlotView({ model, theme: customTheme }: { model: Traine
                 transform: 'translate(-50%, -125%)',
               }}
             >
-              <div className="font-bold text-center border-b border-border pb-0.5 mb-1 text-[9px] text-muted-foreground">Ponto #{showPoint.id}</div>
-              <div>Real: <span className="font-bold text-foreground">{showPoint.real.toFixed(2)}</span></div>
-              <div>Predito: <span className="font-bold text-foreground">{showPoint.predicted.toFixed(2)}</span></div>
+              <div className="font-bold text-center border-b border-border pb-0.5 mb-1 text-[9px] text-muted-foreground">{t("point_hash")}{showPoint.id}</div>
+              <div>{t("actual")}: <span className="font-bold text-foreground">{showPoint.real.toFixed(2)}</span></div>
+              <div>{t("predicted")}: <span className="font-bold text-foreground">{showPoint.predicted.toFixed(2)}</span></div>
               <div className="mt-0.5 pt-0.5 border-t border-border/50">
-                Erro: <span className={`font-bold ${showPoint.residual >= 0 ? "text-sky-600 dark:text-sky-400" : "text-amber-600 dark:text-amber-400"}`}>
+                {t("error")}: <span className={`font-bold ${showPoint.residual >= 0 ? "text-sky-600 dark:text-sky-400" : "text-amber-600 dark:text-amber-400"}`}>
                   {showPoint.residual >= 0 ? "+" : ""}{showPoint.residual.toFixed(2)}
                 </span>
               </div>
@@ -483,25 +483,25 @@ export function ResidualsPlotView({ model, theme: customTheme }: { model: Traine
           <div className="space-y-2.5">
             <h6 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
               <span className={cn("h-1.5 w-1.5 rounded-full bg-current", domainTheme.accent)} />
-              Inspeção do Resíduo
+              {t("residual_inspection")}
             </h6>
             
             {selectedPoint ? (
               <div className="space-y-2 animate-in fade-in duration-200">
                 <div className="flex justify-between items-center text-[10px]">
-                  <span className="text-muted-foreground font-semibold">Registro ID</span>
+                  <span className="text-muted-foreground font-semibold">{t("record_id")}</span>
                   <span className="text-foreground font-mono font-bold"># {selectedPoint.id}</span>
                 </div>
                 <div className="flex justify-between items-center text-[10px]">
-                  <span className="text-muted-foreground font-semibold">Valor Real</span>
+                  <span className="text-muted-foreground font-semibold">{t("actual_value")}</span>
                   <span className="text-foreground font-mono font-bold">{selectedPoint.real.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center text-[10px]">
-                  <span className="text-muted-foreground font-semibold">Valor Predito</span>
+                  <span className="text-muted-foreground font-semibold">{t("predicted_value")}</span>
                   <span className="text-foreground font-mono font-bold">{selectedPoint.predicted.toFixed(2)}</span>
                 </div>
                 <div className="border-t border-border/60 my-1 pt-1.5 flex justify-between items-center text-[10px]">
-                  <span className="text-muted-foreground font-semibold">Erro Absoluto</span>
+                  <span className="text-muted-foreground font-semibold">{t("absolute_error")}</span>
                   <span className={cn(
                     "font-mono font-bold text-xs px-1.5 py-0.5 rounded",
                     selectedPoint.residual >= 0 
@@ -513,28 +513,28 @@ export function ResidualsPlotView({ model, theme: customTheme }: { model: Traine
                 </div>
                 <p className="text-[9px] text-muted-foreground leading-relaxed italic pt-1 border-t border-border/40 font-sans">
                   {selectedPoint.residual === 0 
-                    ? "Previsão perfeita." 
+                    ? t("perfect_prediction")
                     : selectedPoint.residual > 0 
-                      ? "O modelo subestimou o valor real (erro positivo)." 
-                      : "O modelo superestimou o valor real (erro negativo)."}
+                      ? t("model_underestimated")
+                      : t("model_overestimated")}
                 </p>
               </div>
             ) : (
               <div className="py-6 text-center text-muted-foreground italic text-[10px] leading-relaxed">
-                Clique em qualquer ponto de dispersão no gráfico para exibir e inspecionar os valores exatos de erro.
+                {t("click_scatter_point_inspect")}
               </div>
             )}
           </div>
 
           <div className="p-2.5 rounded bg-muted/20 border border-border/40 text-[9px] text-muted-foreground leading-relaxed font-sans">
-            <span className="font-bold text-foreground/80 block mb-0.5">Legenda:</span>
+            <span className="font-bold text-foreground/80 block mb-0.5">{t("legend")}:</span>
             <div className="flex items-center gap-1.5 mb-1">
               <span className="h-2 w-2 rounded-full bg-[#38bdf8] shrink-0" />
-              <span>Erro Positivo (Subestimado)</span>
+              <span>{t("positive_error_underestimated")}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-[#f59e0b] shrink-0" />
-              <span>Erro Negativo (Superestimado)</span>
+              <span>{t("negative_error_overestimated")}</span>
             </div>
           </div>
         </div>
@@ -544,7 +544,7 @@ export function ResidualsPlotView({ model, theme: customTheme }: { model: Traine
 }
 
 export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
-  const { theme: currentThemeMode } = useDomain();
+  const { t, theme: currentThemeMode } = useDomain();
   const svgRef = useRef<SVGSVGElement>(null);
   const [hoveredCell, setHoveredCell] = useState<"tp" | "tn" | "fp" | "fn" | null>(null);
   const [selectedCell, setSelectedCell] = useState<"tp" | "tn" | "fp" | "fn" | null>(null);
@@ -599,7 +599,7 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
       link.click();
       document.body.removeChild(link);
     } catch (err) {
-      console.error("Erro ao exportar SVG:", err);
+      console.error(t("error_exporting_svg"), err);
     }
   };
 
@@ -635,7 +635,7 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
       };
       image.src = blobURL;
     } catch (err) {
-      console.error("Erro ao converter para PNG:", err);
+      console.error(t("error_exporting_png"), err);
     }
   };
 
@@ -671,105 +671,51 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
       };
       image.src = blobURL;
     } catch (err) {
-      console.error("Erro ao converter para JPEG:", err);
+      console.error(t("error_exporting_jpeg"), err);
     }
   };
 
   const activeCell = hoveredCell || selectedCell;
 
   const getCellDetails = (cell: "tp" | "tn" | "fp" | "fn") => {
-    const isChurn = model.domain === "churn";
-    
-    // Values and percentages
-    let value = 0;
-    switch (cell) {
-      case "tp": value = matrix.tp; break;
-      case "tn": value = matrix.tn; break;
-      case "fp": value = matrix.fp; break;
-      case "fn": value = matrix.fn; break;
-    }
-    const percentStr = pct(value);
-
-    if (isChurn) {
       switch (cell) {
         case "tn":
           return {
-            title: "Verdadeiro Negativo (TN)",
-            badge: "Sucesso de Retenção",
+            title: t("cm_tn_title"),
+            badge: isChurn ? t("cm_tn_badge_churn") : t("cm_tn_badge_credit"),
             badgeColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
             value,
             percent: percentStr,
-            desc: "Clientes saudáveis e ativos identificados corretamente pelo modelo. Nenhuma ação de retenção é necessária para estes casos.",
+            desc: isChurn ? t("cm_tn_desc_churn") : t("cm_tn_desc_credit"),
           };
         case "tp":
           return {
-            title: "Verdadeiro Positivo (TP)",
-            badge: "Alerta de Churn Correto",
+            title: t("cm_tp_title"),
+            badge: isChurn ? t("cm_tp_badge_churn") : t("cm_tp_badge_credit"),
             badgeColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
             value,
             percent: percentStr,
-            desc: "Clientes com alto risco de cancelamento identificados corretamente. Permite agir proativamente com campanhas de engajamento antes do cancelamento efetivo.",
+            desc: isChurn ? t("cm_tp_desc_churn") : t("cm_tp_desc_credit"),
           };
         case "fp":
           return {
-            title: "Falso Positivo (FP)",
-            badge: "Alerta Falso (Erro Tipo I)",
+            title: t("cm_fp_title"),
+            badge: isChurn ? t("cm_fp_badge_churn") : t("cm_fp_badge_credit"),
             badgeColor: "bg-rose-500/10 text-rose-400 border-rose-500/20",
             value,
             percent: percentStr,
-            desc: "Clientes estáveis que o modelo previu incorretamente como risco de churn. Pode gerar custos operacionais ou descontos desnecessários com ofertas de retenção.",
+            desc: isChurn ? t("cm_fp_desc_churn") : t("cm_fp_desc_credit"),
           };
         case "fn":
           return {
-            title: "Falso Negativo (FN)",
-            badge: "Perda Silenciosa (Erro Tipo II)",
+            title: t("cm_fn_title"),
+            badge: isChurn ? t("cm_fn_badge_churn") : t("cm_fn_badge_credit"),
             badgeColor: "bg-rose-500/10 text-rose-400 border-rose-500/20",
             value,
             percent: percentStr,
-            desc: "Clientes em risco crítico que o modelo classificou incorretamente como saudáveis. É a falha mais grave, pois impede qualquer ação preventiva de retenção.",
+            desc: isChurn ? t("cm_fn_desc_churn") : t("cm_fn_desc_credit"),
           };
       }
-    } else {
-      // credit-risk
-      switch (cell) {
-        case "tn":
-          return {
-            title: "Verdadeiro Negativo (TN)",
-            badge: "Bom Pagador Confirmado",
-            badgeColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-            value,
-            percent: percentStr,
-            desc: "Clientes de baixo risco (adimplentes) classificados corretamente. Permite a liberação automática de crédito com segurança e agilidade.",
-          };
-        case "tp":
-          return {
-            title: "Verdadeiro Positivo (TP)",
-            badge: "Risco Mitigado",
-            badgeColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-            value,
-            percent: percentStr,
-            desc: "Clientes inadimplentes ou de alto risco detectados com sucesso pelo modelo. Evita a concessão indevida de crédito e protege o caixa da empresa.",
-          };
-        case "fp":
-          return {
-            title: "Falso Positivo (FP)",
-            badge: "Crédito Negado Injustamente",
-            badgeColor: "bg-rose-500/10 text-rose-400 border-rose-500/20",
-            value,
-            percent: percentStr,
-            desc: "Bons pagadores classificados incorretamente como risco de inadimplência. Representa perda de receita e de oportunidades comerciais viáveis.",
-          };
-        case "fn":
-          return {
-            title: "Falso Negativo (FN)",
-            badge: "Prejuízo Direto (Erro Tipo II)",
-            badgeColor: "bg-rose-500/10 text-rose-400 border-rose-500/20",
-            value,
-            percent: percentStr,
-            desc: "Clientes inadimplentes classificados incorretamente como seguros. É o erro de maior impacto financeiro direto, resultando em calote e inadimplência ativa.",
-          };
-      }
-    }
   };
 
   const details = activeCell ? getCellDetails(activeCell) : null;
@@ -778,9 +724,9 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
     <div className="space-y-4 border border-border/60 bg-muted/20 p-4.5 rounded-xl animate-in fade-in duration-300">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <div>
-          <h5 className="text-xs font-bold text-foreground">Matriz de Confusão do Modelo</h5>
+          <h5 className="text-xs font-bold text-foreground">{t("confusion_matrix_title")}</h5>
           <p className="text-[10px] text-muted-foreground">
-            Visualização da distribuição de acertos e erros de classificação baseada no tamanho do teste ({total} instâncias).
+            {t("confusion_matrix_desc", { total: total.toString() })}
           </p>
         </div>
         <div className="flex gap-1.5">
@@ -788,7 +734,7 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
             onClick={handleDownloadSVG}
             variant="outline"
             className="text-[9px] font-bold h-6.5 px-2 border-border hover:bg-muted font-sans text-muted-foreground hover:text-foreground"
-            title="Baixar em formato vetorial SVG"
+            title={t("download_svg")}
           >
             SVG
           </Button>
@@ -796,7 +742,7 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
             onClick={handleDownloadPNG}
             variant="outline"
             className="text-[9px] font-bold h-6.5 px-2 border-border hover:bg-muted font-sans text-muted-foreground hover:text-foreground"
-            title="Baixar em alta resolução PNG"
+            title={t("download_png")}
           >
             PNG
           </Button>
@@ -852,8 +798,8 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
             <text x={282.5} y={50} textAnchor="middle" fill={textMutedColor} fontSize="9px" fontWeight="bold" fontFamily="monospace">POSITIVO (1)</text>
 
             {/* Rows Header (Actual) */}
-            <text x={110} y={115} textAnchor="end" fill={textMutedColor} fontSize="9px" fontWeight="bold" fontFamily="monospace">NEGATIVO (0)</text>
-            <text x={110} y={225} textAnchor="end" fill={textMutedColor} fontSize="9px" fontWeight="bold" fontFamily="monospace">POSITIVO (1)</text>
+            <text x={110} y={115} textAnchor="end" fill={textMutedColor} fontSize="9px" fontWeight="bold" fontFamily="monospace">{t("negative_0")}</text>
+            <text x={110} y={225} textAnchor="end" fill={textMutedColor} fontSize="9px" fontWeight="bold" fontFamily="monospace">{t("positive_1")}</text>
 
             {/* TN: Real 0, Pred 0 */}
             <g 
@@ -875,7 +821,7 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
               />
               <text x={172.5} y={110} textAnchor="middle" fill={greenTextMain} fontSize="16px" fontWeight="extrabold" fontFamily="monospace">{matrix.tn}</text>
               <text x={172.5} y={130} textAnchor="middle" fill={greenTextSub} fontSize="9px" fontWeight="bold" fontFamily="monospace">{pct(matrix.tn)}%</text>
-              <text x={172.5} y={150} textAnchor="middle" fill={greenTextLabel} fontSize="8px" fontWeight="bold" fontFamily="sans-serif">Verdadeiro Negativo</text>
+              <text x={172.5} y={150} textAnchor="middle" fill={greenTextLabel} fontSize="8px" fontWeight="bold" fontFamily="sans-serif">{t("cm_tn_label")}</text>
             </g>
 
             {/* FP: Real 0, Pred 1 */}
@@ -898,7 +844,7 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
               />
               <text x={282.5} y={110} textAnchor="middle" fill={roseTextMain} fontSize="16px" fontWeight="extrabold" fontFamily="monospace">{matrix.fp}</text>
               <text x={282.5} y={130} textAnchor="middle" fill={roseTextSub} fontSize="9px" fontWeight="bold" fontFamily="monospace">{pct(matrix.fp)}%</text>
-              <text x={282.5} y={150} textAnchor="middle" fill={roseTextLabel} fontSize="8px" fontWeight="bold" fontFamily="sans-serif">Falso Positivo</text>
+              <text x={282.5} y={150} textAnchor="middle" fill={roseTextLabel} fontSize="8px" fontWeight="bold" fontFamily="sans-serif">{t("cm_fp_label")}</text>
             </g>
 
             {/* FN: Real 1, Pred 0 */}
@@ -921,7 +867,7 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
               />
               <text x={172.5} y={220} textAnchor="middle" fill={roseTextMain} fontSize="16px" fontWeight="extrabold" fontFamily="monospace">{matrix.fn}</text>
               <text x={172.5} y={240} textAnchor="middle" fill={roseTextSub} fontSize="9px" fontWeight="bold" fontFamily="monospace">{pct(matrix.fn)}%</text>
-              <text x={172.5} y={260} textAnchor="middle" fill={roseTextLabel} fontSize="8px" fontWeight="bold" fontFamily="sans-serif">Falso Negativo</text>
+              <text x={172.5} y={260} textAnchor="middle" fill={roseTextLabel} fontSize="8px" fontWeight="bold" fontFamily="sans-serif">{t("cm_fn_label")}</text>
             </g>
 
             {/* TP: Real 1, Pred 1 */}
@@ -944,7 +890,7 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
               />
               <text x={282.5} y={220} textAnchor="middle" fill={greenTextMain} fontSize="16px" fontWeight="extrabold" fontFamily="monospace">{matrix.tp}</text>
               <text x={282.5} y={240} textAnchor="middle" fill={greenTextSub} fontSize="9px" fontWeight="bold" fontFamily="monospace">{pct(matrix.tp)}%</text>
-              <text x={282.5} y={260} textAnchor="middle" fill={greenTextLabel} fontSize="8px" fontWeight="bold" fontFamily="sans-serif">Verdadeiro Positivo</text>
+              <text x={282.5} y={260} textAnchor="middle" fill={greenTextLabel} fontSize="8px" fontWeight="bold" fontFamily="sans-serif">{t("cm_tp_label")}</text>
             </g>
           </svg>
         </div>
@@ -954,7 +900,7 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
           {details ? (
             <div className="space-y-2 animate-in fade-in duration-200">
               <h6 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                Análise do Quadrante
+                {t("quadrant_analysis")}
               </h6>
               
               <div className="space-y-1">
@@ -968,11 +914,11 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
 
               <div className="grid grid-cols-2 gap-2 text-[10px] font-mono border-y border-border/40 py-2 my-1">
                 <div>
-                  <span className="text-muted-foreground block text-[8px] uppercase font-sans">Quantidade</span>
-                  <span className="text-foreground font-bold">{details.value} casos</span>
+                  <span className="text-muted-foreground block text-[8px] uppercase font-sans">{t("quantity")}</span>
+                  <span className="text-foreground font-bold">{details.value} {t("cases")}</span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground block text-[8px] uppercase font-sans">Proporção</span>
+                  <span className="text-muted-foreground block text-[8px] uppercase font-sans">{t("proportion")}</span>
                   <span className="text-foreground font-bold">{details.percent}%</span>
                 </div>
               </div>
@@ -985,41 +931,41 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
             <div className="space-y-2.5">
               <h6 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#8b5cf6]" />
-                Métricas do Classificador
+                {t("classifier_metrics")}
               </h6>
               <div className="space-y-1.5 text-[10px] font-mono">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Acurácia Geral:</span>
+                  <span className="text-muted-foreground">{t("overall_accuracy")}</span>
                   <span className="text-foreground font-bold">{((model.metrics.accuracy || 0) * 100).toFixed(1)}%</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Precisão:</span>
+                  <span className="text-muted-foreground">{t("precision")}:</span>
                   <span className="text-foreground font-bold">{((model.metrics.precision || 0) * 100).toFixed(1)}%</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Sensibilidade:</span>
+                  <span className="text-muted-foreground">{t("sensitivity")}:</span>
                   <span className="text-foreground font-bold">{((model.metrics.recall || 0) * 100).toFixed(1)}%</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">F1-Score:</span>
+                  <span className="text-muted-foreground">{t("f1_score")}:</span>
                   <span className="text-foreground font-bold">{(model.metrics.f1Score || 0).toFixed(3)}</span>
                 </div>
               </div>
               <p className="text-[9px] text-muted-foreground leading-relaxed italic border-t border-border/40 pt-2 mt-2 font-sans">
-                Passe o mouse ou clique em qualquer quadrante da matriz para inspecionar os detalhes operacionais e o impacto comercial de cada erro/acerto.
+                {t("cm_hover_desc")}
               </p>
             </div>
           )}
 
           <div className="p-2 rounded bg-muted/20 border border-border/40 text-[9px] text-muted-foreground leading-relaxed font-sans">
-            <span className="font-bold text-foreground/80 block mb-0.5">Legenda:</span>
+            <span className="font-bold text-foreground/80 block mb-0.5">{t("legend")}:</span>
             <div className="flex items-center gap-1.5 mb-1">
               <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
-              <span>Verdadeiros (Acertos)</span>
+              <span>{t("true_hits")}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-rose-500 shrink-0" />
-              <span>Falsos (Erros)</span>
+              <span>{t("false_errors")}</span>
             </div>
           </div>
         </div>
@@ -1050,7 +996,7 @@ export interface QualityReportData {
   inconsistentCount: number;
   inconsistentRows: { rowIndex: number; column: string; value: string; reason: string }[];
   readinessScore: number;
-  readinessLabel: "Pronto" | "Requer Atenção" | "Não Recomendado";
+  readinessLabel: string;
   readinessColor: string;
   readinessBg: string;
   readinessBorder: string;
@@ -1159,7 +1105,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
 
     addLogWithProfile(
       userProfile,
-      `Arquivo de modelo exportado com sucesso no domínio ${DOMAINS[activeModel.domain].name} utilizando o algoritmo ${activeModel.algorithm}`
+      `${t("model_exported_success")} ${DOMAINS[activeModel.domain].name} ${t("using_algorithm")} ${activeModel.algorithm}`
     );
   };
 
@@ -1243,40 +1189,40 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
 
         if (domain === "maintenance") {
           if (header === "temperatura" && !isNaN(numVal) && (numVal < 0 || numVal > 150)) {
-            inconsistentRows.push({ rowIndex, column: header, value: val, reason: "Temperatura fora da faixa normal [0, 150]" });
+            inconsistentRows.push({ rowIndex, column: header, value: val, reason: t("temperature_out_of_range") });
           }
           if (header === "vibracao" && !isNaN(numVal) && (numVal < 0.0 || numVal > 15.0)) {
-            inconsistentRows.push({ rowIndex, column: header, value: val, reason: "Vibração fora da faixa normal [0, 15.0]" });
+            inconsistentRows.push({ rowIndex, column: header, value: val, reason: t("vibration_out_of_range") });
           }
           if (header === "oee" && !isNaN(numVal) && (numVal < 0 || numVal > 100)) {
-            inconsistentRows.push({ rowIndex, column: header, value: val, reason: "OEE fora da faixa percentual [0, 100]" });
+            inconsistentRows.push({ rowIndex, column: header, value: val, reason: t("oee_out_of_range") });
           }
         } else if (domain === "demand") {
           if (header === "estoque_atual" && !isNaN(numVal) && numVal < 0) {
-            inconsistentRows.push({ rowIndex, column: header, value: val, reason: "Estoque atual não pode ser negativo" });
+            inconsistentRows.push({ rowIndex, column: header, value: val, reason: t("current_stock_cannot_be_negative") });
           }
           if (header === "demanda_mensal" && !isNaN(numVal) && numVal < 0) {
-            inconsistentRows.push({ rowIndex, column: header, value: val, reason: "Demanda mensal não pode ser negativa" });
+            inconsistentRows.push({ rowIndex, column: header, value: val, reason: t("monthly_demand_cannot_be_negative") });
           }
           if (header === "lead_time" && !isNaN(numVal) && (numVal < 0 || numVal > 365)) {
-            inconsistentRows.push({ rowIndex, column: header, value: val, reason: "Lead time fora da faixa anual [0, 365]" });
+            inconsistentRows.push({ rowIndex, column: header, value: val, reason: t("lead_time_out_of_range") });
           }
         } else if (domain === "churn") {
           if (header === "score_risco" && !isNaN(numVal) && (numVal < 0 || numVal > 100)) {
-            inconsistentRows.push({ rowIndex, column: header, value: val, reason: "Score de risco fora da faixa percentual [0, 100]" });
+            inconsistentRows.push({ rowIndex, column: header, value: val, reason: t("risk_score_out_of_range") });
           }
           if (header === "ltv" && !isNaN(numVal) && numVal < 0) {
-            inconsistentRows.push({ rowIndex, column: header, value: val, reason: "LTV não pode ser negativo" });
+            inconsistentRows.push({ rowIndex, column: header, value: val, reason: t("ltv_cannot_be_negative") });
           }
         } else if (domain === "credit-risk") {
           if (header === "valor" && !isNaN(numVal) && numVal <= 0) {
-            inconsistentRows.push({ rowIndex, column: header, value: val, reason: "Valor da proposta deve ser positivo" });
+            inconsistentRows.push({ rowIndex, column: header, value: val, reason: t("proposal_value_must_be_positive") });
           }
           if (header === "score" && !isNaN(numVal) && (numVal < 0 || numVal > 1000)) {
-            inconsistentRows.push({ rowIndex, column: header, value: val, reason: "Score de crédito fora da faixa score [0, 1000]" });
+            inconsistentRows.push({ rowIndex, column: header, value: val, reason: t("credit_score_out_of_range") });
           }
           if (header === "probabilidade_retorno" && !isNaN(numVal) && (numVal < 0 || numVal > 1)) {
-            inconsistentRows.push({ rowIndex, column: header, value: val, reason: "Probabilidade fora da faixa [0, 1]" });
+            inconsistentRows.push({ rowIndex, column: header, value: val, reason: t("probability_out_of_range") });
           }
         }
       });
@@ -1293,18 +1239,18 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
 
     const readinessScore = Math.max(0, Math.round(avgCompleteness - dupPenalty - incPenalty));
 
-    let readinessLabel: "Pronto" | "Requer Atenção" | "Não Recomendado" = "Pronto";
+    let readinessLabel: "Pronto" | "Requer Atenção" | "Não Recomendado" | string = t("ready");
     let readinessColor: "text-emerald-500" | "text-amber-500" | "text-rose-500" = "text-emerald-500";
     let readinessBg: "bg-emerald-500/10" | "bg-amber-500/10" | "bg-rose-500/10" = "bg-emerald-500/10";
     let readinessBorder: "border-emerald-500/20" | "border-amber-500/20" | "border-rose-500/20" = "border-emerald-500/20";
 
     if (readinessScore < 50) {
-      readinessLabel = "Não Recomendado";
+      readinessLabel = t("not_recommended");
       readinessColor = "text-rose-500";
       readinessBg = "bg-rose-500/10";
       readinessBorder = "border-rose-500/20";
     } else if (readinessScore < 85) {
-      readinessLabel = "Requer Atenção";
+      readinessLabel = t("requires_attention");
       readinessColor = "text-amber-500";
       readinessBg = "bg-amber-500/10";
       readinessBorder = "border-amber-500/20";
@@ -1400,22 +1346,22 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
     if (!fileDetails || !qualityReport) return;
     
     let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += `Relatório de Qualidade de Dados - Domínio: ${activeDomain}\n`;
-    csvContent += `Arquivo analisado: ${fileDetails.name}\n`;
-    csvContent += `Tamanho: ${fileDetails.size}\n`;
-    csvContent += `Total de Linhas: ${fileDetails.rows}\n`;
-    csvContent += `Pontuação Geral de Prontidão: ${qualityReport.readinessScore}/100 (${qualityReport.readinessLabel})\n\n`;
+    csvContent += `${t("data_quality_report_domain")} ${activeDomain}\n`;
+    csvContent += `${t("analyzed_file")} ${fileDetails.name}\n`;
+    csvContent += `${t("size")} ${fileDetails.size}\n`;
+    csvContent += `${t("total_rows_csv")} ${fileDetails.rows}\n`;
+    csvContent += `${t("overall_readiness_score")} ${qualityReport.readinessScore}/100 (${qualityReport.readinessLabel})\n\n`;
     
-    csvContent += "Coluna,Completude (%)\n";
+    csvContent += `${t("column_completeness")}\n`;
     Object.entries(qualityReport.completeness).forEach(([col, comp]) => {
       csvContent += `"${col}",${comp}%\n`;
     });
     
-    csvContent += `\nRegistros Duplicados Encontrados: ${qualityReport.duplicateCount}\n`;
-    csvContent += `Valores Inconsistentes Encontrados: ${qualityReport.inconsistentCount}\n\n`;
+    csvContent += `\n${t("duplicate_records_found")} ${qualityReport.duplicateCount}\n`;
+    csvContent += `${t("inconsistent_values_found")} ${qualityReport.inconsistentCount}\n\n`;
     
     if (qualityReport.inconsistentCount > 0) {
-      csvContent += "Linha,Coluna,Valor,Motivo da Inconsistência\n";
+      csvContent += `${t("csv_report_headers")}\n`;
       qualityReport.inconsistentRows.forEach((r) => {
         csvContent += `${r.rowIndex + 1},"${r.column}","${r.value}","${r.reason}"\n`;
       });
@@ -1429,7 +1375,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
     link.click();
     document.body.removeChild(link);
 
-    addLogWithProfile(userProfile, `Relatório de qualidade de dados exportado no domínio ${DOMAINS[activeDomain].name} para o arquivo ${fileDetails.name}`);
+    addLogWithProfile(userProfile, `${t("data_quality_report_exported_domain")} ${DOMAINS[activeDomain].name} ${t("for_file")} ${fileDetails.name}`);
   };
 
   // RF43 - CA04: Ações Corretivas Rápidas na Interface
@@ -1585,12 +1531,12 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
   // Validação interna da estrutura e delimitador do CSV (CA02)
   const validateCSV = (text: string) => {
     if (!text || text.trim() === "") {
-      throw new Error("O arquivo fornecido está totalmente vazio.");
+      throw new Error(t("error_file_empty"));
     }
 
     const lines = text.split("\n").map(line => line.trim()).filter(line => line.length > 0);
     if (lines.length === 0) {
-      throw new Error("Nenhum registro legível de dados foi encontrado.");
+      throw new Error(t("error_no_readable_records"));
     }
 
     const firstLine = lines[0];
@@ -1602,16 +1548,14 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
     } else if (firstLine.includes("\t")) {
       delimiter = "\t";
     } else {
-      throw new Error(
-        "Estrutura inválida. Separador de campos não detectado. O arquivo deve utilizar vírgulas (,), ponto e vírgulas (;) ou tabulações como delimitador."
-      );
+      throw new Error(t("error_invalid_structure"));
     }
 
     const headers = firstLine.split(delimiter).map(h => h.trim().replace(/^["']|["']$/g, ""));
     const rowCount = lines.length - 1;
 
     if (headers.length < 2) {
-      throw new Error("O arquivo deve conter pelo menos duas colunas de dados identificáveis.");
+      throw new Error(t("error_at_least_two_columns"));
     }
 
     return { delimiter, headers, rowCount };
@@ -1626,7 +1570,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
     // Validação imediata da extensão (CA01, CA05)
     if (!file.name.toLowerCase().endsWith(".csv")) {
       setUploadStatus("error");
-      setErrorMessage("Extensão de arquivo inválida. Apenas documentos com a extensão .csv são suportados para importação.");
+      setErrorMessage(t("error_invalid_extension"));
       return;
     }
 
@@ -1634,7 +1578,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
     const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
     if (file.size > MAX_SIZE) {
       setUploadStatus("error");
-      setErrorMessage(`O arquivo excede o limite máximo permitido de 5 MB (tamanho do arquivo: ${formatBytes(file.size)}).`);
+      setErrorMessage(`${t("error_file_size_exceeded")} ${formatBytes(file.size)}`);
       return;
     }
 
@@ -1644,7 +1588,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
       try {
         const buffer = e.target?.result as ArrayBuffer;
         if (!buffer) {
-          throw new Error("Falha ao ler o buffer do arquivo.");
+          throw new Error(t("error_failed_read_buffer"));
         }
 
         // Decodificação segura UTF-8 e ISO-8859-1 (CA04)
@@ -1676,8 +1620,8 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
             missingColumns.push(expectedField.name);
             columnTypes.push({
               column: expectedField.name,
-              expected: expectedField.type === "numeric" ? "Numérico" : "Texto",
-              detected: "Ausente",
+              expected: expectedField.type === "numeric" ? t("numeric") : t("text_type"),
+              detected: t("missing"),
               status: "mismatch"
             });
           } else {
@@ -1708,16 +1652,16 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
 
             columnTypes.push({
               column: headers[index],
-              expected: expectedField.type === "numeric" ? "Numérico" : "Texto",
-              detected: detectedType === "numeric" ? "Numérico" : "Texto",
+              expected: expectedField.type === "numeric" ? t("numeric") : t("text_type"),
+              detected: detectedType === "numeric" ? t("numeric") : t("text_type"),
               status: isMismatch ? "mismatch" : "match"
             });
 
             if (isMismatch) {
               typeErrors.push({
                 column: headers[index],
-                expected: "Numérico",
-                detected: "Texto"
+                expected: t("numeric"),
+                detected: t("text_type")
               });
             }
           }
@@ -1735,17 +1679,17 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
         // Feedback de progresso de processamento simulado (CA03)
         setUploadStatus("loading");
         setProgress(0);
-        setLoadingStep("Lendo cabeçalhos e decodificando conteúdo...");
+        setLoadingStep(t("reading_headers"));
 
         // Fase 1: Leitura e detecção
         setTimeout(() => {
           setProgress(35);
-          setLoadingStep(`Codificação ${encoding} identificada. Validando estrutura com delimitador '${delimiter}'...`);
+          setLoadingStep(`${t("encoding_identified")} ${encoding}. ${t("validating_structure_delimiter")} '${delimiter}'...`);
 
           // Fase 2: Validação e preparação
           setTimeout(() => {
             setProgress(70);
-            setLoadingStep(`Tabela de dados validada. Gerando pré-visualização de registros...`);
+            setLoadingStep(t("data_table_validated"));
 
             // Fase 3: Conclusão do processamento e preparação da pré-visualização
             setTimeout(() => {
@@ -1786,14 +1730,14 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
 
       } catch (err) {
         setUploadStatus("error");
-        const msg = err instanceof Error ? err.message : "Erro desconhecido ao processar o arquivo CSV.";
+        const msg = err instanceof Error ? err.message : t("unknown_error_processing_csv");
         setErrorMessage(msg);
       }
     };
 
     reader.onerror = () => {
       setUploadStatus("error");
-      setErrorMessage("Erro de leitura do sistema operacional ao abrir o documento.");
+      setErrorMessage(t("os_read_error"));
     };
 
     reader.readAsArrayBuffer(file);
@@ -1889,10 +1833,10 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
       <CardHeader className="pb-4">
         <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
           <FileSpreadsheet className="h-4.5 w-4.5 text-muted-foreground/60" />
-          Ingestão de Dados Históricos (Engenheiro de Dados)
+          {t("historical_data_ingestion")}
         </CardTitle>
         <CardDescription className="text-[11px] text-muted-foreground">
-          Importe bases de dados históricas no formato exclusivo CSV para recalibração local dos algoritmos do módulo.
+          {t("import_historical_databases_desc")}
         </CardDescription>
       </CardHeader>
 
@@ -1904,21 +1848,21 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
             ? [
                 {
                   name: "Random Forest",
-                  desc: "Algoritmo ensemble baseado em múltiplas árvores de decisão. Excelente para capturar relações não-lineares complexas."
+                  desc: t("rf_desc_classification")
                 },
                 {
                   name: "Regressão Logística",
-                  desc: "Modelo estatístico clássico que calcula a probabilidade de uma classe. Altamente interpretável e eficiente."
+                  desc: t("lr_desc_classification")
                 }
               ]
             : [
                 {
                   name: "Random Forest",
-                  desc: "Algoritmo ensemble baseado em múltiplas árvores de decisão. Excelente para prever valores numéricos contínuos sem supor linearidade."
+                  desc: t("rf_desc_regression")
                 },
                 {
                   name: "Regressão Linear",
-                  desc: "Modelo estatístico linear que estabelece a relação entre variáveis. Simples, rápido e de fácil interpretação."
+                  desc: t("lr_desc_regression")
                 }
               ];
           const selectedAlg = selectedAlgorithms[activeDomain] || "Random Forest";
@@ -1928,10 +1872,10 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
               <div className="flex items-center justify-between">
                 <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
                   <span className={cn("h-1.5 w-1.5 rounded-full bg-current", theme.accent)} />
-                  Algoritmo de Aprendizado de Máquina (RF30)
+                  {t("machine_learning_algorithm")}
                 </h4>
                 <span className="text-[9px] text-muted-foreground font-mono bg-muted/65 border border-border/40 px-1.5 py-0.5 rounded font-semibold uppercase">
-                  {isClassification ? "Classificação" : "Regressão"}
+                  {isClassification ? t("classification") : t("regression")}
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -1991,7 +1935,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                     : "bg-emerald-500/10 text-emerald-500 border-emerald-500/25 animate-pulse"
                 )}>
                   <CheckCircle2 className="h-3.5 w-3.5" />
-                  Modelo Pronto para Uso
+                  {t("ready_to_use_model")}
                 </span>
                 <span className="text-[10px] text-muted-foreground font-mono">
                   ID: {activeModel.modelId}
@@ -1999,22 +1943,22 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
               </div>
               {isModelObsolete && (
                 <span className="text-[9px] text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full font-semibold uppercase">
-                  ⚠️ Obsoleto ({">"} 30 dias)
+                  ⚠️ {t("obsolete_30_days")}
                 </span>
               )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-[11px]">
               <div>
-                <span className="text-muted-foreground block text-[9px] uppercase font-bold tracking-wider">Domínio</span>
+                <span className="text-muted-foreground block text-[9px] uppercase font-bold tracking-wider">{t("domain")}</span>
                 <span className="text-foreground font-semibold font-sans">{domainInfo.name}</span>
               </div>
               <div>
-                <span className="text-muted-foreground block text-[9px] uppercase font-bold tracking-wider">Algoritmo</span>
+                <span className="text-muted-foreground block text-[9px] uppercase font-bold tracking-wider">{t("algorithm")}</span>
                 <span className="text-foreground font-semibold font-sans">{activeModel.algorithm}</span>
               </div>
               <div>
-                <span className="text-muted-foreground block text-[9px] uppercase font-bold tracking-wider">Calibrado em</span>
+                <span className="text-muted-foreground block text-[9px] uppercase font-bold tracking-wider">{t("calibrated_at")}</span>
                 <span className="text-foreground font-semibold font-mono">
                   {formattedTimestamp}
                 </span>
@@ -2022,7 +1966,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
             </div>
 
             <div className="pt-2 border-t border-border/60">
-              <span className="text-muted-foreground block text-[9px] uppercase font-bold tracking-wider mb-1.5">Métricas de Desempenho</span>
+              <span className="text-muted-foreground block text-[9px] uppercase font-bold tracking-wider mb-1.5">{t("performance_metrics")}</span>
               <div className="flex flex-wrap gap-2">
                 {activeModel.type === "Classification" ? (
                   <>
@@ -2031,15 +1975,15 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                       <span className="text-emerald-500 font-bold">{((activeModel.metrics.aucRoc || 0) * 100).toFixed(2)}%</span>
                     </div>
                     <div className="bg-zinc-900/60 border border-border/60 px-2 py-1 rounded text-[10px] font-mono">
-                      <span className="text-muted-foreground text-[8px] uppercase block">Acurácia</span>
+                      <span className="text-muted-foreground text-[8px] uppercase block">{t("accuracy")}</span>
                       <span className="text-foreground font-bold">{((activeModel.metrics.accuracy || 0) * 100).toFixed(2)}%</span>
                     </div>
                     <div className="bg-zinc-900/60 border border-border/60 px-2 py-1 rounded text-[10px] font-mono">
-                      <span className="text-muted-foreground text-[8px] uppercase block">Precisão</span>
+                      <span className="text-muted-foreground text-[8px] uppercase block">{t("precision")}</span>
                       <span className="text-foreground font-bold">{((activeModel.metrics.precision || 0) * 100).toFixed(2)}%</span>
                     </div>
                     <div className="bg-zinc-900/60 border border-border/60 px-2 py-1 rounded text-[10px] font-mono">
-                      <span className="text-muted-foreground text-[8px] uppercase block">Recall</span>
+                      <span className="text-muted-foreground text-[8px] uppercase block">{t("recall")}</span>
                       <span className="text-foreground font-bold">{((activeModel.metrics.recall || 0) * 100).toFixed(2)}%</span>
                     </div>
                   </>
@@ -2066,7 +2010,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
               <div className="p-3 bg-amber-500/10 border border-amber-500/25 rounded-lg text-[10px] text-amber-500 flex items-start gap-2 mt-2 animate-in fade-in duration-300">
                 <AlertTriangle className="h-4.5 w-4.5 shrink-0 mt-0.5" />
                 <div>
-                  <strong>Aviso de Obsolescência:</strong> Este modelo foi treinado há mais de 30 dias. Sugerimos realizar um novo treinamento com dados recentes para melhor acurácia preditiva.
+                  <strong>{t("obsolescence_warning")}</strong> {t("obsolescence_desc")}
                 </div>
               </div>
             )}
@@ -2076,7 +2020,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
             <AlertCircle className="h-8 w-8 text-amber-500/80 mb-2" />
             <h5 className="text-xs font-bold text-foreground mb-1">{t("no_model_detected")}</h5>
             <p className="text-[10px] text-muted-foreground max-w-md leading-relaxed">
-              Você ainda não realizou o treinamento do modelo para o domínio de <strong>{domainInfo.name}</strong> nesta sessão. Faça o upload do arquivo CSV correspondente na área abaixo e inicie o treinamento para habilitar as previsões.
+              {t("no_model_domain_desc")} <strong>{domainInfo.name}</strong> {t("no_model_domain_desc_suffix")}
             </p>
           </div>
         )}
@@ -2095,10 +2039,10 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
         {uploadStatus === "idle" && !isTraining && trainingProgress === 0 && (
           <Tabs defaultValue="upload" className="w-full space-y-4">
             <TabsList className="w-full grid grid-cols-2">
-              <TabsTrigger value="upload" className="text-[11px] font-bold">Upload Local</TabsTrigger>
+              <TabsTrigger value="upload" className="text-[11px] font-bold">{t("local_upload")}</TabsTrigger>
               <TabsTrigger value="api" className="text-[11px] font-bold flex items-center gap-1.5">
                 <Webhook className="w-3.5 h-3.5" />
-                API Externa (RF50)
+                {t("external_api")}
               </TabsTrigger>
             </TabsList>
             
@@ -2159,7 +2103,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                   {t("expected_cols_structure")}
                 </div>
                 <p className="text-muted-foreground text-[10px] leading-relaxed">
-                  Para o correto alinhamento do motor analítico neste módulo, certifique-se de que o CSV contemple os cabeçalhos abaixo (delimitados por <code className="font-mono text-foreground font-semibold px-0.5 bg-muted">,</code> ou <code className="font-mono text-foreground font-semibold px-0.5 bg-muted">;</code>):
+                  {t("expected_cols_desc1")} <code className="font-mono text-foreground font-semibold px-0.5 bg-muted">,</code> {t("or")} <code className="font-mono text-foreground font-semibold px-0.5 bg-muted">;</code>):
                 </p>
                 <div className="flex flex-wrap gap-1.5 pt-1">
                   {expectedCols.map((col) => (
@@ -2176,19 +2120,19 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                 <div className="space-y-1">
                   <h4 className="text-sm font-bold flex items-center gap-2">
                     <Webhook className={cn("w-4 h-4", theme.accent)} />
-                    Sincronização via API
+                    {t("api_sync")}
                   </h4>
                   <p className="text-xs text-muted-foreground">
-                    Conecte o sistema a um Data Warehouse ou Endpoint REST para ingestão contínua.
+                    {t("api_sync_desc")}
                   </p>
                 </div>
                 <div className="space-y-3">
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Endpoint URL</label>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{t("endpoint_url")}</label>
                     <Input placeholder="https://api.empresa.com/v1/data" className="font-mono text-xs" />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Bearer Token / API Key</label>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{t("bearer_token")}</label>
                     <Input type="password" placeholder="••••••••••••••••" className="font-mono text-xs" />
                   </div>
                   <Button 
@@ -2199,7 +2143,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                     }}
                     className={cn("w-full text-xs font-bold", theme.button)}
                   >
-                    Testar Conexão e Importar Dados
+                    {t("test_connection_import")}
                   </Button>
                 </div>
               </div>
@@ -2268,17 +2212,17 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                   {t("validation_inconsistencies")}
                 </div>
                 <p className="text-[10px] leading-relaxed text-rose-500/90 font-medium">
-                  O validador automático encontrou inconsistências na estrutura do arquivo. O início do treinamento está bloqueado até que as seguintes pendências sejam resolvidas:
+                  {t("automatic_validator_inconsistencies")}
                 </p>
                 <div className="space-y-1.5 pl-1 font-sans text-[10px]">
                   {validationReport.missingColumns.length > 0 && (
                     <div>
-                      <strong>• Colunas obrigatórias ausentes:</strong> {validationReport.missingColumns.join(", ")}
+                      <strong>• {t("missing_mandatory_columns")}:</strong> {validationReport.missingColumns.join(", ")}
                     </div>
                   )}
                   {validationReport.typeErrors.length > 0 && (
                     <div>
-                      <strong>• Incompatibilidade de tipos de dados:</strong> {validationReport.typeErrors.map(e => `A coluna '${e.column}' deveria ser do tipo ${e.expected}`).join(", ")}
+                      <strong>• {t("data_type_mismatch")}:</strong> {validationReport.typeErrors.map(e => `${t("the_column")} '${e.column}' ${t("should_be_of_type")} ${e.expected}`).join(", ")}
                     </div>
                   )}
                 </div>
@@ -2326,7 +2270,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                   )}
                 >
                   <Info className="h-3.5 w-3.5 mr-1 shrink-0" />
-                  Distribuição das Variáveis
+                  {t("variable_distribution")}
                 </Button>
                 <Button
                   onClick={() => setActiveReportTab("preview")}
@@ -2337,7 +2281,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                   )}
                 >
                   <FileSpreadsheet className="h-3.5 w-3.5 mr-1 shrink-0" />
-                  Amostragem dos Dados
+                  {t("data_sampling")}
                 </Button>
               </div>
             )}
@@ -2396,21 +2340,21 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                   <div className="space-y-2">
                     <h5 className="text-[11px] font-bold text-foreground/80 flex items-center gap-1.5 border-b border-border/60 pb-1">
                       <span className={cn("h-1.5 w-1.5 rounded-full bg-current", theme.accent)} />
-                      Detecção de Pendências
+                      {t("issue_detection")}
                     </h5>
                     
                     <div className="space-y-1.5 text-[10px]">
                       <div className="flex justify-between items-center p-1.5 rounded bg-background border border-border/60 font-mono">
                         <span className="text-muted-foreground">{t("duplicates")}:</span>
                         <span className={cn("font-bold", qualityReport.duplicateCount > 0 ? "text-amber-500" : "text-emerald-500")}>
-                          {qualityReport.duplicateCount} registros
+                          {qualityReport.duplicateCount} {t("records")}
                         </span>
                       </div>
                       
                       <div className="flex justify-between items-center p-1.5 rounded bg-background border border-border/60 font-mono">
                         <span className="text-muted-foreground">{t("inconsistencies")}:</span>
                         <span className={cn("font-bold", qualityReport.inconsistentCount > 0 ? "text-rose-500 font-semibold" : "text-emerald-500")}>
-                          {qualityReport.inconsistentCount} valores
+                          {qualityReport.inconsistentCount} {t("values")}
                         </span>
                       </div>
                     </div>
@@ -2419,7 +2363,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                       <div className="text-[9px] max-h-[75px] overflow-y-auto border border-rose-500/15 rounded bg-rose-500/[0.02] p-1.5 space-y-0.5 scrollbar-thin">
                         <div className="font-bold text-rose-500/90 flex items-center gap-1">
                           <AlertTriangle className="h-3 w-3 shrink-0" />
-                          Listagem de Inconsistências:
+                          {t("inconsistency_list")}:
                         </div>
                         {qualityReport.inconsistentRows.slice(0, 3).map((inc, idx) => (
                           <div key={idx} className="text-rose-500/80 font-mono leading-tight">
@@ -2428,7 +2372,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                         ))}
                         {qualityReport.inconsistentCount > 3 && (
                           <div className="text-muted-foreground font-semibold pl-1.5 text-[8px]">
-                            ... e mais {qualityReport.inconsistentCount - 3} valores
+                            ... {t("and_more")} {qualityReport.inconsistentCount - 3} {t("values")}
                           </div>
                         )}
                       </div>
@@ -2437,7 +2381,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
 
                   {/* Ações Corretivas (CA04) */}
                   <div className="space-y-1.5 pt-1.5 border-t border-border/40">
-                    <span className="text-[9px] uppercase font-bold text-muted-foreground block">Limpeza e Ajustes Rápidos</span>
+                    <span className="text-[9px] uppercase font-bold text-muted-foreground block">{t("cleanup_quick_adjustments")}</span>
                     <div className="flex flex-col gap-1">
                       <Button
                         onClick={handleRemoveDuplicates}
@@ -2468,7 +2412,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
               <div className="p-4 border border-border/80 rounded-xl space-y-3 bg-muted/10 animate-in fade-in duration-200">
                 <h5 className="text-[11px] font-bold text-foreground/80 flex items-center gap-1.5 border-b border-border/60 pb-1">
                   <span className={cn("h-1.5 w-1.5 rounded-full bg-current", theme.accent)} />
-                  Histograma de Distribuição (Variáveis do Domínio)
+                  {t("distribution_histogram")}
                 </h5>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                   {expectedCols.map((header) => {
@@ -2486,50 +2430,50 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                       if (isNumeric) {
                         const valNum = Number(rawVal.replace(",", "."));
                         if (isNaN(valNum)) {
-                          bucket = "Texto/Inválido";
+                          bucket = t("text_invalid");
                         } else {
                           if (activeDomain === "maintenance") {
                             if (header === "temperatura") {
-                              if (valNum < 60) bucket = "Frio (< 60ºC)";
-                              else if (valNum < 80) bucket = "Normal (60 - 80ºC)";
-                              else if (valNum < 100) bucket = "Alerta (80 - 100ºC)";
-                              else bucket = "Perigo (> 100ºC)";
+                              if (valNum < 60) bucket = t("cold");
+                              else if (valNum < 80) bucket = t("normal_temp");
+                              else if (valNum < 100) bucket = t("alert_temp");
+                              else bucket = t("danger_temp");
                             } else if (header === "vibracao") {
-                              if (valNum < 1.5) bucket = "Baixa (< 1.5)";
-                              else if (valNum < 3.0) bucket = "Média (1.5 - 3.0)";
-                              else if (valNum < 5.0) bucket = "Alta (3.0 - 5.0)";
-                              else bucket = "Crítica (> 5.0)";
+                              if (valNum < 1.5) bucket = t("low_vib");
+                              else if (valNum < 3.0) bucket = t("medium_vib");
+                              else if (valNum < 5.0) bucket = t("high_vib");
+                              else bucket = t("critical_vib");
                             } else {
-                              if (valNum < 50) bucket = "Crítico (< 50%)";
-                              else if (valNum < 80) bucket = "Razoável (50 - 80%)";
-                              else bucket = "Excelente (>= 80%)";
+                              if (valNum < 50) bucket = t("critical_oee");
+                              else if (valNum < 80) bucket = t("reasonable_oee");
+                              else bucket = t("excellent_oee");
                             }
                           } else if (activeDomain === "credit-risk") {
                             if (header === "score") {
-                              if (valNum < 500) bucket = "Baixo (< 500)";
-                              else if (valNum < 750) bucket = "Médio (500 - 750)";
-                              else bucket = "Alto (>= 750)";
+                              if (valNum < 500) bucket = t("low_score");
+                              else if (valNum < 750) bucket = t("medium_score");
+                              else bucket = t("high_score");
                             } else if (header === "probabilidade_retorno") {
-                              if (valNum < 0.5) bucket = "Baixa (< 50%)";
-                              else if (valNum < 0.8) bucket = "Média (50 - 80%)";
-                              else bucket = "Alta (>= 80%)";
+                              if (valNum < 0.5) bucket = t("low_prob");
+                              else if (valNum < 0.8) bucket = t("medium_prob");
+                              else bucket = t("high_prob");
                             } else {
-                              bucket = "Faixa de Valor";
+                              bucket = t("value_range");
                             }
                           } else if (activeDomain === "churn") {
                             if (header === "score_risco") {
-                              if (valNum < 30) bucket = "Baixo Risco (< 30%)";
-                              else if (valNum < 70) bucket = "Médio Risco (30 - 70%)";
-                              else bucket = "Alto Risco (>= 70%)";
+                              if (valNum < 30) bucket = t("low_risk_churn");
+                              else if (valNum < 70) bucket = t("medium_risk_churn");
+                              else bucket = t("high_risk_churn");
                             } else if (header === "ltv") {
-                              if (valNum < 5000) bucket = "Bronze (< 5k)";
-                              else if (valNum < 15000) bucket = "Prata (5k - 15k)";
-                              else bucket = "Ouro (>= 15k)";
+                              if (valNum < 5000) bucket = t("bronze_ltv");
+                              else if (valNum < 15000) bucket = t("silver_ltv");
+                              else bucket = t("gold_ltv");
                             } else {
-                              bucket = "Faixa";
+                              bucket = t("range");
                             }
                           } else {
-                            bucket = "Faixa de Valores";
+                            bucket = t("value_ranges");
                           }
                         }
                       }
@@ -2686,35 +2630,35 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
               <div className="space-y-1">
                 <h4 className="text-xs font-bold text-foreground">{t("import_success_title")}</h4>
                 <p className="text-[10px] text-muted-foreground">
-                  A base histórica foi validada, decodificada e já está pronta para processamento pelo motor analítico.
+                  {t("base_validated_ready")}
                 </p>
               </div>
 
               {/* Informações detalhadas do arquivo */}
               <div className="grid grid-cols-2 gap-3 p-3 bg-card border border-border/80 rounded-lg text-[10px] font-mono">
                 <div>
-                  <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Arquivo</span>
+                  <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">{t("file_label")}</span>
                   <span className="text-foreground font-semibold truncate block max-w-[150px]" title={fileDetails.name}>
                     {fileDetails.name}
                   </span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Tamanho</span>
+                  <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">{t("size_label")}</span>
                   <span className="text-foreground font-semibold">{fileDetails.size}</span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Codificação</span>
+                  <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">{t("encoding_label")}</span>
                   <span className="text-foreground font-semibold">{fileDetails.encoding}</span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Delimitador</span>
+                  <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">{t("delimiter_label")}</span>
                   <span className="text-foreground font-semibold font-sans">
-                    {fileDetails.delimiter === "\t" ? "Tabulação (Tab)" : `'${fileDetails.delimiter}'`}
+                    {fileDetails.delimiter === "\t" ? t("tabulation_tab") : `'${fileDetails.delimiter}'`}
                   </span>
                 </div>
                 <div className="col-span-2 border-t border-border/80 pt-2 mt-1">
-                  <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Registros Ingeridos</span>
-                  <span className="text-emerald-500 font-bold text-xs">{fileDetails.rows} linhas detectadas</span>
+                  <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">{t("ingested_records")}</span>
+                  <span className="text-emerald-500 font-bold text-xs">{fileDetails.rows} {t("lines_detected")}</span>
                 </div>
               </div>
 
@@ -2728,7 +2672,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                     className="rounded border-border text-rose-600 bg-background focus:ring-0 h-3.5 w-3.5 transition"
                   />
                   <span className="text-[10px] text-muted-foreground hover:text-foreground font-medium">
-                    Simular erro crítico (OOM) aos 45% (fins de teste)
+                    {t("simulate_oom_error")}
                   </span>
                 </label>
 
@@ -2739,7 +2683,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                     className="text-[10px] font-bold h-8 px-3.5 border-border hover:bg-muted"
                   >
                     <Trash2 className="h-3.5 w-3.5 mr-1" />
-                    Limpar
+                    {t("clear")}
                   </Button>
                   <Button
                     onClick={() => {
@@ -2751,7 +2695,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                     }}
                     disabled={!canEdit}
                     className={cn("text-[10px] font-bold h-8 px-3.5", theme.button, !canEdit && "opacity-50 cursor-not-allowed")}
-                    title={canEdit ? "" : "Somente Administradores podem iniciar o treinamento."}
+                    title={canEdit ? "" : t("only_admin_train")}
                     data-tutorial-target="train-model"
                   >
                     {t("start_model_training")}
@@ -2761,7 +2705,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
               {!canEdit && (
                 <div className="text-[10px] text-amber-500 font-semibold bg-amber-500/10 border border-amber-500/20 p-2 rounded flex items-center gap-1.5 mt-2">
                   <AlertTriangle className="h-3.5 w-3.5" />
-                  Somente Administradores têm permissão para disparar treinamentos de modelo.
+                  {t("only_admin_trigger_training")}
                 </div>
               )}
             </div>
@@ -2777,7 +2721,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
 
             <div className="space-y-3.5 flex-1 w-full">
               <div className="space-y-1">
-                <h4 className="text-xs font-bold text-foreground">Falha na validação do arquivo</h4>
+                <h4 className="text-xs font-bold text-foreground">{t("file_validation_failed")}</h4>
                 <p className="text-[10px] text-rose-500 leading-relaxed font-semibold">
                   {errorMessage}
                 </p>
@@ -2826,7 +2770,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
               <div className="space-y-1 flex-1">
                 <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
                   {trainingError ? (
-                    <span className="text-rose-500">{t("training_in_progress")}</span>
+                    <span className="text-rose-500">{t("training_error")}</span>
                   ) : trainingProgress === 100 ? (
                     <span className="text-emerald-500">{t("training_success_title")}</span>
                   ) : (
@@ -2835,10 +2779,10 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                 </h4>
                 <p className="text-[11px] text-muted-foreground leading-relaxed">
                   {trainingError 
-                    ? "O motor analítico encontrou uma exceção não tratada durante o processamento de gradientes."
+                    ? t("training_error_desc")
                     : trainingProgress === 100
-                      ? "Os parâmetros do algoritmo foram recalibrados com sucesso e o modelo está pronto para produção."
-                      : `Processando base de dados histórica '${fileDetails.name}' com ${fileDetails.rows} registros.`}
+                      ? t("training_success_desc")
+                      : `${t("processing_historical_db")} '${fileDetails.name}' ${t("with")} ${fileDetails.rows} ${t("records")}.`}
                 </p>
               </div>
             </div>
@@ -2859,7 +2803,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                 {/* Countdown Timer (CA04) */}
                 {!trainingError && trainingProgress < 100 && trainingETA > 0 && (
                   <span className="text-[10px] text-muted-foreground font-mono bg-muted border border-border/80 px-2 py-0.5 rounded-md font-semibold">
-                    Tempo restante estimado: {trainingETA}s
+                    {t("estimated_time_remaining")}: {trainingETA}s
                   </span>
                 )}
               </div>
@@ -2880,7 +2824,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
               </div>
 
               <div className="flex justify-between items-center text-[10px] font-mono text-muted-foreground">
-                <span>Progresso Real</span>
+                <span>{t("actual_progress")}</span>
                 <span className="font-bold">{trainingProgress}%</span>
               </div>
             </div>
@@ -2889,21 +2833,21 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
             {!trainingError && trainingProgress > 5 && (
               <div className="space-y-2 p-3 bg-zinc-950/40 rounded-xl border border-border/40 font-mono text-[9px] animate-in fade-in">
                 <div className="text-muted-foreground font-semibold mb-1 flex items-center gap-1">
-                  <Activity className="w-3 h-3" /> Auto Data Prep em andamento...
+                  <Activity className="w-3 h-3" /> {t("auto_data_prep_in_progress")}
                 </div>
                 {trainingProgress > 15 && (
                   <div className="text-blue-400 flex items-center gap-1.5 animate-in slide-in-from-left-2">
-                    <CheckCircle2 className="w-3 h-3" /> [RF88] Limpeza de Outliers: Remoção de anomalias via Z-Score (-2.4% linhas).
+                    <CheckCircle2 className="w-3 h-3" /> {t("rf88_outlier_cleaning")}
                   </div>
                 )}
                 {trainingProgress > 35 && (
                   <div className="text-purple-400 flex items-center gap-1.5 animate-in slide-in-from-left-2">
-                    <CheckCircle2 className="w-3 h-3" /> [RF71] Feature Selection: Drop de colunas redundantes (corr {">"} 0.9).
+                    <CheckCircle2 className="w-3 h-3" /> {t("rf71_feature_selection")}
                   </div>
                 )}
                 {trainingProgress > 60 && isClassification && (
                   <div className="text-emerald-400 flex items-center gap-1.5 animate-in slide-in-from-left-2">
-                    <CheckCircle2 className="w-3 h-3" /> [RF69] Balanceamento: SMOTE aplicado para corrigir classes desbalanceadas.
+                    <CheckCircle2 className="w-3 h-3" /> {t("rf69_balancing")}
                   </div>
                 )}
               </div>
@@ -2913,13 +2857,13 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
             {trainingError && trainingErrorDetails && (
               <div className="space-y-2 animate-in fade-in duration-350">
                 <div className="flex justify-between items-center">
-                  <span className="text-[10px] text-rose-500 font-bold uppercase tracking-wider">Mapeamento de Falha</span>
+                  <span className="text-[10px] text-rose-500 font-bold uppercase tracking-wider">{t("failure_mapping")}</span>
                   <Button
                     onClick={toggleTrainingDetails}
                     variant="outline"
                     className="text-[9px] font-bold h-6 px-2 border-rose-500/20 bg-rose-500/5 hover:bg-rose-500/10 text-rose-500 font-mono"
                   >
-                    {showTrainingDetails ? "Ocultar Detalhes" : "Ver Detalhes do Erro"}
+                    {showTrainingDetails ? t("hide_details") : t("view_error_details")}
                   </Button>
                 </div>
 
@@ -2941,20 +2885,20 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                     <div className="p-4 bg-emerald-500/5 border border-emerald-500/15 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-[11px]">
                       <div className="space-y-0.5 font-sans">
                         <p className="font-bold text-xs text-emerald-550 dark:text-emerald-400 flex items-center gap-1">
-                          ✨ Recalibração de Modelo Concluída!
+                          ✨ {t("model_recalibration_completed")}
                         </p>
                         <p className="text-muted-foreground">
-                          O modelo anterior foi atualizado. Variação na métrica de validação primária <strong>{comparison?.metricName}</strong>:
+                          {t("previous_model_updated")} <strong>{comparison?.metricName}</strong>:
                         </p>
                       </div>
                       <div className="flex items-center gap-1.5 shrink-0 font-mono font-bold text-sm">
                         {comparison?.isImprovement ? (
                           <span className="text-emerald-500 flex items-center gap-0.5 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-lg">
-                            ▲ +{comparison?.diffPct.toFixed(2)}% de Melhoria
+                            ▲ +{comparison?.diffPct.toFixed(2)}% {t("improvement")}
                           </span>
                         ) : (
                           <span className="text-rose-500 flex items-center gap-0.5 bg-rose-500/10 border border-rose-500/20 px-3 py-1.5 rounded-lg">
-                            ▼ {comparison?.diffPct.toFixed(2)}% de Regressão
+                            ▼ {comparison?.diffPct.toFixed(2)}% {t("regression_val")}
                           </span>
                         )}
                       </div>
@@ -2963,7 +2907,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                     {/* Comparativo de Taxas de Erro */}
                     <div className="p-4 bg-muted/20 border border-border/80 rounded-xl space-y-3">
                       <h5 className="text-xs font-bold text-foreground flex items-center gap-1.5 font-sans">
-                        📊 Comparativo de Taxas de Erro e Desempenho
+                        📊 {t("error_performance_comparison")}
                       </h5>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                         {activeModel.type === "Classification" && activeModel.confusionMatrix && previousModel.confusionMatrix ? (() => {
@@ -2982,29 +2926,29 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                           return (
                             <>
                               <div className="p-3 bg-card rounded-lg border border-border/60 text-xs">
-                                <span className="text-muted-foreground text-[9px] uppercase font-semibold block">Falsos Positivos (Erro Tipo I)</span>
+                                <span className="text-muted-foreground text-[9px] uppercase font-semibold block">{t("false_positives")}</span>
                                 <div className="text-lg font-black font-mono mt-1 text-foreground flex items-baseline gap-2">
                                   {prevFP} ➜ {activeFP}
                                   <span className={`text-[10px] font-bold ${fpDiff <= 0 ? "text-emerald-500" : "text-rose-500"}`}>
-                                    {fpDiff <= 0 ? `${fpDiff} (Melhor)` : `+${fpDiff} (Pior)`}
+                                    {fpDiff <= 0 ? `${fpDiff} (${t("better")})` : `+${fpDiff} (${t("worse")})`}
                                   </span>
                                 </div>
                               </div>
                               <div className="p-3 bg-card rounded-lg border border-border/60 text-xs">
-                                <span className="text-muted-foreground text-[9px] uppercase font-semibold block">Falsos Negativos (Erro Tipo II)</span>
+                                <span className="text-muted-foreground text-[9px] uppercase font-semibold block">{t("false_negatives")}</span>
                                 <div className="text-lg font-black font-mono mt-1 text-foreground flex items-baseline gap-2">
                                   {prevFN} ➜ {activeFN}
                                   <span className={`text-[10px] font-bold ${fnDiff <= 0 ? "text-emerald-500" : "text-rose-500"}`}>
-                                    {fnDiff <= 0 ? `${fnDiff} (Melhor)` : `+${fnDiff} (Pior)`}
+                                    {fnDiff <= 0 ? `${fnDiff} (${t("better")})` : `+${fnDiff} (${t("worse")})`}
                                   </span>
                                 </div>
                               </div>
                               <div className="p-3 bg-card rounded-lg border border-border/60 text-xs">
-                                <span className="text-muted-foreground text-[9px] uppercase font-semibold block">Taxa de Erro Geral</span>
+                                <span className="text-muted-foreground text-[9px] uppercase font-semibold block">{t("overall_error_rate")}</span>
                                 <div className="text-lg font-black font-mono mt-1 text-foreground flex items-baseline gap-2">
                                   {prevErr.toFixed(2)}% ➜ {activeErr.toFixed(2)}%
                                   <span className={`text-[10px] font-bold ${errDiff <= 0 ? "text-emerald-500" : "text-rose-500"}`}>
-                                    {errDiff <= 0 ? `${errDiff.toFixed(2)}% (Melhor)` : `+${errDiff.toFixed(2)}% (Pior)`}
+                                    {errDiff <= 0 ? `${errDiff.toFixed(2)}% (${t("better")})` : `+${errDiff.toFixed(2)}% (${t("worse")})`}
                                   </span>
                                 </div>
                               </div>
@@ -3029,7 +2973,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                           return (
                             <>
                               <div className="p-3 bg-card rounded-lg border border-border/60 text-xs">
-                                <span className="text-muted-foreground text-[9px] uppercase font-semibold block">RMSE (Erro Quadrático)</span>
+                                <span className="text-muted-foreground text-[9px] uppercase font-semibold block">{t("rmse_error")}</span>
                                 <div className="text-lg font-black font-mono mt-1 text-foreground flex items-baseline gap-2">
                                   {prevRMSE.toFixed(3)} ➜ {activeRMSE.toFixed(3)}
                                   <span className={`text-[10px] font-bold ${rmseDiff <= 0 ? "text-emerald-500" : "text-rose-500"}`}>
@@ -3038,7 +2982,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                                 </div>
                               </div>
                               <div className="p-3 bg-card rounded-lg border border-border/60 text-xs">
-                                <span className="text-muted-foreground text-[9px] uppercase font-semibold block">MAE (Erro Absoluto)</span>
+                                <span className="text-muted-foreground text-[9px] uppercase font-semibold block">{t("mae_error")}</span>
                                 <div className="text-lg font-black font-mono mt-1 text-foreground flex items-baseline gap-2">
                                   {prevMAE.toFixed(3)} ➜ {activeMAE.toFixed(3)}
                                   <span className={`text-[10px] font-bold ${maeDiff <= 0 ? "text-emerald-500" : "text-rose-500"}`}>
@@ -3047,7 +2991,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                                 </div>
                               </div>
                               <div className="p-3 bg-card rounded-lg border border-border/60 text-xs">
-                                <span className="text-muted-foreground text-[9px] uppercase font-semibold block">R² (Coeficiente Variância)</span>
+                                <span className="text-muted-foreground text-[9px] uppercase font-semibold block">{t("r2_variance")}</span>
                                 <div className="text-lg font-black font-mono mt-1 text-foreground flex items-baseline gap-2">
                                   {prevR2.toFixed(4)} ➜ {activeR2.toFixed(4)}
                                   <span className={`text-[10px] font-bold ${r2Diff >= 0 ? "text-emerald-500" : "text-rose-500"}`}>
@@ -3066,26 +3010,26 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                       {/* Painel do Modelo Anterior */}
                       <div className="p-4 bg-zinc-950/20 border border-border/80 rounded-xl space-y-3 relative opacity-85 hover:opacity-100 transition-opacity duration-300">
                         <div className="absolute top-2.5 right-3 text-[8px] bg-muted/60 text-muted-foreground border border-border/40 px-1.5 py-0.5 rounded font-mono uppercase">
-                          Modelo Anterior
+                          {t("previous_model")}
                         </div>
                         
                         <div className="space-y-1">
-                          <h5 className="text-xs font-bold text-foreground">Metadados do Modelo</h5>
+                          <h5 className="text-xs font-bold text-foreground">{t("model_metadata")}</h5>
                           <div className="grid grid-cols-2 gap-2 text-[10px] font-mono bg-muted/20 p-2 border border-border/40 rounded-lg">
                             <div>
-                              <span className="text-muted-foreground block text-[8px] uppercase font-sans">ID do Modelo</span>
+                              <span className="text-muted-foreground block text-[8px] uppercase font-sans">{t("model_id")}</span>
                               <span className="text-foreground font-semibold truncate block max-w-[130px]" title={previousModel.modelId}>{previousModel.modelId}</span>
                             </div>
                             <div>
-                              <span className="text-muted-foreground block text-[8px] uppercase font-sans">Algoritmo</span>
+                              <span className="text-muted-foreground block text-[8px] uppercase font-sans">{t("algorithm")}</span>
                               <span className="text-foreground font-semibold">{previousModel.algorithm}</span>
                             </div>
                             <div>
-                              <span className="text-muted-foreground block text-[8px] uppercase font-sans">Divisão (Treino/Teste)</span>
+                              <span className="text-muted-foreground block text-[8px] uppercase font-sans">{t("split_train_test")}</span>
                               <span className="text-foreground font-semibold">{previousModel.trainSize} / {previousModel.testSize}</span>
                             </div>
                             <div>
-                              <span className="text-muted-foreground block text-[8px] uppercase font-sans">Métrica Primária</span>
+                              <span className="text-muted-foreground block text-[8px] uppercase font-sans">{t("primary_metric")}</span>
                               <span className="text-foreground font-bold font-mono">
                                 {previousModel.type === "Classification" 
                                   ? `AUC-ROC: ${((previousModel.metrics.aucRoc || 0) * 100).toFixed(2)}%`
@@ -3097,20 +3041,20 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
 
                         {/* Métricas Detalhadas */}
                         <div className="space-y-1">
-                          <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Métricas Técnicas</span>
+                          <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">{t("technical_metrics")}</span>
                           <div className="flex flex-wrap gap-2 pt-0.5">
                             {previousModel.type === "Classification" ? (
                               <>
                                 <div className="bg-zinc-900/60 border border-border/60 px-2 py-0.5 rounded text-[10px] font-mono">
-                                  <span className="text-muted-foreground text-[8px] uppercase block">Acurácia</span>
+                                  <span className="text-muted-foreground text-[8px] uppercase block">{t("accuracy")}</span>
                                   <span className="text-foreground font-bold">{((previousModel.metrics.accuracy || 0) * 100).toFixed(2)}%</span>
                                 </div>
                                 <div className="bg-zinc-900/60 border border-border/60 px-2 py-0.5 rounded text-[10px] font-mono">
-                                  <span className="text-muted-foreground text-[8px] uppercase block">Precisão</span>
+                                  <span className="text-muted-foreground text-[8px] uppercase block">{t("precision")}</span>
                                   <span className="text-foreground font-bold">{((previousModel.metrics.precision || 0) * 100).toFixed(2)}%</span>
                                 </div>
                                 <div className="bg-zinc-900/60 border border-border/60 px-2 py-0.5 rounded text-[10px] font-mono">
-                                  <span className="text-muted-foreground text-[8px] uppercase block">Sensibilidade</span>
+                                  <span className="text-muted-foreground text-[8px] uppercase block">{t("sensitivity")}</span>
                                   <span className="text-foreground font-bold">{((previousModel.metrics.recall || 0) * 100).toFixed(2)}%</span>
                                 </div>
                               </>
@@ -3142,26 +3086,26 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                       {/* Painel do Novo Modelo (Retreinado) */}
                       <div className="p-4 bg-emerald-500/[0.01] border border-emerald-500/25 rounded-xl space-y-3 relative">
                         <div className="absolute top-2.5 right-3 text-[8px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded font-mono uppercase font-bold">
-                          Modelo Retreinado
+                          {t("retrained_model")}
                         </div>
                         
                         <div className="space-y-1">
-                          <h5 className="text-xs font-bold text-foreground">Metadados do Modelo</h5>
+                          <h5 className="text-xs font-bold text-foreground">{t("model_metadata")}</h5>
                           <div className="grid grid-cols-2 gap-2 text-[10px] font-mono bg-muted/20 p-2 border border-border/40 rounded-lg">
                             <div>
-                              <span className="text-muted-foreground block text-[8px] uppercase font-sans">ID do Modelo</span>
+                              <span className="text-muted-foreground block text-[8px] uppercase font-sans">{t("model_id")}</span>
                               <span className="text-foreground font-semibold truncate block max-w-[130px]" title={activeModel.modelId}>{activeModel.modelId}</span>
                             </div>
                             <div>
-                              <span className="text-muted-foreground block text-[8px] uppercase font-sans">Algoritmo</span>
+                              <span className="text-muted-foreground block text-[8px] uppercase font-sans">{t("algorithm")}</span>
                               <span className="text-foreground font-semibold">{activeModel.algorithm}</span>
                             </div>
                             <div>
-                              <span className="text-muted-foreground block text-[8px] uppercase font-sans">Divisão (Treino/Teste)</span>
+                              <span className="text-muted-foreground block text-[8px] uppercase font-sans">{t("split_train_test")}</span>
                               <span className="text-foreground font-semibold">{activeModel.trainSize} / {activeModel.testSize}</span>
                             </div>
                             <div>
-                              <span className="text-muted-foreground block text-[8px] uppercase font-sans">Métrica Primária</span>
+                              <span className="text-muted-foreground block text-[8px] uppercase font-sans">{t("primary_metric")}</span>
                               <span className="text-emerald-500 font-bold font-mono">
                                 {activeModel.type === "Classification" 
                                   ? `AUC-ROC: ${((activeModel.metrics.aucRoc || 0) * 100).toFixed(2)}%`
@@ -3173,20 +3117,20 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
 
                         {/* Métricas Detalhadas */}
                         <div className="space-y-1">
-                          <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Métricas Técnicas</span>
+                          <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">{t("technical_metrics")}</span>
                           <div className="flex flex-wrap gap-2 pt-0.5">
                             {activeModel.type === "Classification" ? (
                               <>
                                 <div className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded text-[10px] font-mono">
-                                  <span className="text-muted-foreground text-[8px] uppercase block">Acurácia</span>
+                                  <span className="text-muted-foreground text-[8px] uppercase block">{t("accuracy")}</span>
                                   <span className="text-foreground font-bold">{((activeModel.metrics.accuracy || 0) * 100).toFixed(2)}%</span>
                                 </div>
                                 <div className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded text-[10px] font-mono">
-                                  <span className="text-muted-foreground text-[8px] uppercase block">Precisão</span>
+                                  <span className="text-muted-foreground text-[8px] uppercase block">{t("precision")}</span>
                                   <span className="text-foreground font-bold">{((activeModel.metrics.precision || 0) * 100).toFixed(2)}%</span>
                                 </div>
                                 <div className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded text-[10px] font-mono">
-                                  <span className="text-muted-foreground text-[8px] uppercase block">Sensibilidade</span>
+                                  <span className="text-muted-foreground text-[8px] uppercase block">{t("sensitivity")}</span>
                                   <span className="text-foreground font-bold">{((activeModel.metrics.recall || 0) * 100).toFixed(2)}%</span>
                                 </div>
                               </>
@@ -3220,59 +3164,59 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                   // Layout Original para Quando Não Há Modelo Anterior
                   <div className="p-4 bg-emerald-500/5 border border-emerald-500/15 rounded-xl text-[11px] text-emerald-600 dark:text-emerald-400 space-y-2.5 animate-in fade-in duration-500">
                     <p className="font-bold flex items-center gap-1 text-xs text-emerald-550 dark:text-emerald-400">
-                      ✨ Recalibração de Modelo Concluída!
+                      ✨ {t("model_recalibration_completed")}
                     </p>
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[10px] font-mono border-b border-emerald-500/15 pb-2">
                       <div>
-                        <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">ID do Modelo</span>
+                        <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">{t("model_id")}</span>
                         <span className="text-foreground font-semibold">{activeModel.modelId}</span>
                       </div>
                       <div>
-                        <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Algoritmo Utilizado</span>
+                        <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">{t("algorithm")}</span>
                         <span className="text-foreground font-semibold">{activeModel.algorithm}</span>
                       </div>
                       <div>
-                        <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Divisão dos Dados (Treino/Teste)</span>
+                        <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">{t("split_train_test")}</span>
                         <span className="text-foreground font-semibold">{activeModel.trainSize} (80%) / {activeModel.testSize} (20%)</span>
                       </div>
                       <div>
-                        <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Tipo de Problema</span>
-                        <span className="text-foreground font-semibold">{activeModel.type === "Classification" ? "Classificação" : "Regressão"}</span>
+                        <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">{t("problem_type")}</span>
+                        <span className="text-foreground font-semibold">{activeModel.type === "Classification" ? t("classification") : t("regression")}</span>
                       </div>
                     </div>
 
                     <div className="space-y-1">
-                      <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Métricas de Validação (Conjunto de Teste)</span>
+                      <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">{t("validation_metrics")}</span>
                       <div className="flex flex-wrap gap-3 pt-1">
                         {activeModel.type === "Classification" ? (
                           <>
                             <div 
                               className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
-                              title="Área sob a Curva ROC. Varia de 0.5 (aleatório) a 1.0 (perfeito). Indica o poder discriminatório do modelo. Valores acima de 0.90 são excepcionais."
+                              title={t("auc_roc_tooltip")}
                             >
                               <span className="text-muted-foreground text-[8px] uppercase block">AUC-ROC</span>
                               <span className="text-foreground font-bold font-mono">{((activeModel.metrics.aucRoc || 0) * 100).toFixed(2)}%</span>
                             </div>
                             <div 
                               className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
-                              title="Acurácia Geral. Proporção de acertos do modelo sobre todas as predições. Eficiente para classes balanceadas. Bom acima de 85%."
+                              title={t("accuracy_tooltip")}
                             >
-                              <span className="text-muted-foreground text-[8px] uppercase block">Acurácia</span>
+                              <span className="text-muted-foreground text-[8px] uppercase block">{t("accuracy")}</span>
                               <span className="text-foreground font-bold font-mono">{((activeModel.metrics.accuracy || 0) * 100).toFixed(2)}%</span>
                             </div>
                             <div 
                               className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
-                              title="Precisão do Modelo. Indica a proporção de verdadeiros positivos dentre todas as classificações positivas. Minimiza falsos alarmes."
+                              title={t("precision_tooltip")}
                             >
-                              <span className="text-muted-foreground text-[8px] uppercase block">Precisão</span>
+                              <span className="text-muted-foreground text-[8px] uppercase block">{t("precision")}</span>
                               <span className="text-foreground font-bold font-mono">{((activeModel.metrics.precision || 0) * 100).toFixed(2)}%</span>
                             </div>
                             <div 
                               className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
-                              title="Sensibilidade (Recall). Proporção de casos reais positivos capturados pelo modelo. Evita negligenciar falhas ou riscos críticos."
+                              title={t("sensitivity_tooltip")}
                             >
-                              <span className="text-muted-foreground text-[8px] uppercase block">Sensibilidade</span>
+                              <span className="text-muted-foreground text-[8px] uppercase block">{t("sensitivity")}</span>
                               <span className="text-foreground font-bold font-mono">{((activeModel.metrics.recall || 0) * 100).toFixed(2)}%</span>
                             </div>
                           </>
@@ -3280,23 +3224,23 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                           <>
                             <div 
                               className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
-                              title="Coeficiente de Determinação (R²). Explica qual percentual da variância dos dados foi mapeado pelo modelo. Excelente acima de 90%."
+                              title={t("r2_tooltip")}
                             >
-                              <span className="text-muted-foreground text-[8px] uppercase block">R² (Score)</span>
+                              <span className="text-muted-foreground text-[8px] uppercase block">{t("r2_score")}</span>
                               <span className="text-foreground font-bold font-mono">{(activeModel.metrics.r2 || 0).toFixed(4)}</span>
                             </div>
                             <div 
                               className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
-                              title="Erro Quadrático Médio Root (RMSE). Desvio padrão dos resíduos de previsão. Quanto menor o valor em relação à faixa basal, melhor."
+                              title={t("rmse_tooltip")}
                             >
-                              <span className="text-muted-foreground text-[8px] uppercase block">RMSE</span>
+                              <span className="text-muted-foreground text-[8px] uppercase block">{t("rmse")}</span>
                               <span className="text-foreground font-bold font-mono">{(activeModel.metrics.rmse || 0).toFixed(3)}</span>
                             </div>
                             <div 
                               className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
-                              title="Erro Absoluto Médio (MAE). Distância absoluta média entre o valor real e a previsão. Não penaliza outliers de forma exponencial."
+                              title={t("mae_tooltip")}
                             >
-                              <span className="text-muted-foreground text-[8px] uppercase block">MAE</span>
+                              <span className="text-muted-foreground text-[8px] uppercase block">{t("mae")}</span>
                               <span className="text-foreground font-bold font-mono">{(activeModel.metrics.mae || 0).toFixed(3)}</span>
                             </div>
                           </>
@@ -3305,14 +3249,14 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                     </div>
 
                     <div className="space-y-1 pt-1.5 border-t border-emerald-500/15">
-                      <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">Hiperparâmetros Calibrados</span>
+                      <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">{t("calibrated_hyperparameters")}</span>
                       <pre className="p-2 bg-zinc-950/90 text-emerald-400/90 border border-emerald-500/10 rounded text-[9px] font-mono leading-relaxed overflow-x-auto max-h-[80px]">
                         {JSON.stringify(activeModel.hyperparameters, null, 2)}
                       </pre>
                     </div>
                     
                     <p className="text-[10px] text-muted-foreground leading-relaxed pl-1 pt-1 font-sans">
-                      Os parâmetros do motor analítico do módulo <strong>{DOMAINS[activeDomain].name}</strong> foram sincronizados localmente e estão ativos para previsões em tempo real nesta sessão.
+                      {t("analytical_engine_params_synced")} <strong>{DOMAINS[activeDomain].name}</strong> {t("active_for_realtime")}
                     </p>
 
                     {/* RF13 - Diagnosis Visualizations */}
@@ -3331,14 +3275,14 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                   <div className="pt-3 border-t border-border/40 space-y-2 mt-4 animate-in fade-in duration-300">
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold flex items-center gap-1">
-                        📜 Histórico de Calibrações (Ciclos de Retreio)
+                        📜 {t("calibration_history")}
                       </span>
                       <Button
                         onClick={() => clearHyperparameterHistory(activeDomain)}
                         variant="ghost"
                         className="text-[8px] font-bold h-5 px-1.5 hover:bg-rose-500/10 text-rose-500 font-sans"
                       >
-                        Limpar Histórico
+                        {t("clear_history")}
                       </Button>
                     </div>
 
@@ -3346,10 +3290,10 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                       <table className="w-full text-[10px] text-left border-collapse">
                         <thead>
                           <tr className="bg-muted/40 border-b border-border text-[8px] uppercase text-muted-foreground font-bold font-sans">
-                            <th className="p-2">Modelo</th>
-                            <th className="p-2">Data/Hora</th>
-                            <th className="p-2">Métricas de Validação</th>
-                            <th className="p-2">Hiperparâmetros Calibrados</th>
+                            <th className="p-2">{t("model")}</th>
+                            <th className="p-2">{t("date_time")}</th>
+                            <th className="p-2">{t("validation_metrics")}</th>
+                            <th className="p-2">{t("calibrated_hyperparameters")}</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-border/40 font-mono">
@@ -3396,7 +3340,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                     variant="outline"
                     className="text-[10px] font-bold h-8 px-3.5 border-border hover:bg-muted"
                   >
-                    Descartar e Voltar
+                    {t("discard_and_return")}
                   </Button>
                   <Button
                     onClick={() => {
@@ -3407,7 +3351,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                     }}
                     className="text-[10px] font-bold h-8 px-3.5 bg-rose-600 hover:bg-rose-500 text-white"
                   >
-                    Tentar Novamente
+                    {t("try_again_btn")}
                   </Button>
                 </>
               ) : trainingProgress === 100 ? (
@@ -3417,7 +3361,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                     variant="outline"
                     className="text-[10px] font-bold h-8 px-3.5 border-border hover:bg-muted text-foreground"
                   >
-                    Exportar JSON
+                    {t("export_json")}
                   </Button>
                   <Button
                     onClick={() => {
@@ -3426,7 +3370,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                     }}
                     className="text-[10px] font-bold h-8 px-3.5 bg-emerald-600 hover:bg-emerald-500 text-white"
                   >
-                    Concluir e Fechar
+                    {t("finish_and_close")}
                   </Button>
                 </>
               ) : (
@@ -3435,7 +3379,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                   variant="outline"
                   className="text-[10px] font-bold h-8 px-3.5 border-rose-500/25 bg-rose-500/5 hover:bg-rose-500/10 text-rose-500"
                 >
-                  Cancelar Treinamento
+                  {t("cancel_training")}
                 </Button>
               )}
             </div>
@@ -3466,7 +3410,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
           };
 
           const formatVal = (val: number | undefined, isPct = false, decimals = 4) => {
-            if (val === undefined || val === null) return "Não treinado";
+            if (val === undefined || val === null) return t("not_trained");
             return isPct ? `${(val * 100).toFixed(1)}%` : val.toFixed(decimals);
           };
 
@@ -3480,16 +3424,16 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
             decimals?: number;
           }[] = isClassification
             ? [
-                { name: "Acurácia (Accuracy)", key: "accuracy", rf: rfModel?.metrics.accuracy, alt: altModel?.metrics.accuracy, isPct: true, isLowerBetter: false, decimals: undefined },
-                { name: "Precisão (Precision)", key: "precision", rf: rfModel?.metrics.precision, alt: altModel?.metrics.precision, isPct: true, isLowerBetter: false, decimals: undefined },
-                { name: "Sensibilidade (Recall)", key: "recall", rf: rfModel?.metrics.recall, alt: altModel?.metrics.recall, isPct: true, isLowerBetter: false, decimals: undefined },
+                { name: t("accuracy"), key: "accuracy", rf: rfModel?.metrics.accuracy, alt: altModel?.metrics.accuracy, isPct: true, isLowerBetter: false, decimals: undefined },
+                { name: t("precision"), key: "precision", rf: rfModel?.metrics.precision, alt: altModel?.metrics.precision, isPct: true, isLowerBetter: false, decimals: undefined },
+                { name: t("sensitivity"), key: "recall", rf: rfModel?.metrics.recall, alt: altModel?.metrics.recall, isPct: true, isLowerBetter: false, decimals: undefined },
                 { name: "F1-Score", key: "f1Score", rf: rfModel?.metrics.f1Score, alt: altModel?.metrics.f1Score, isPct: true, isLowerBetter: false, decimals: undefined },
                 { name: "AUC-ROC", key: "aucRoc", rf: rfModel?.metrics.aucRoc, alt: altModel?.metrics.aucRoc, isPct: true, isLowerBetter: false, decimals: undefined },
               ]
             : [
-                { name: "R² (Coef. Determinação)", key: "r2", rf: rfModel?.metrics.r2, alt: altModel?.metrics.r2, isPct: false, decimals: 4, isLowerBetter: false },
-                { name: "RMSE (Erro Quadrático)", key: "rmse", rf: rfModel?.metrics.rmse, alt: altModel?.metrics.rmse, isPct: false, decimals: 3, isLowerBetter: true },
-                { name: "MAE (Erro Absoluto)", key: "mae", rf: rfModel?.metrics.mae, alt: altModel?.metrics.mae, isPct: false, decimals: 3, isLowerBetter: true },
+                { name: t("r2_score"), key: "r2", rf: rfModel?.metrics.r2, alt: altModel?.metrics.r2, isPct: false, decimals: 4, isLowerBetter: false },
+                { name: t("rmse_error"), key: "rmse", rf: rfModel?.metrics.rmse, alt: altModel?.metrics.rmse, isPct: false, decimals: 3, isLowerBetter: true },
+                { name: t("mae_error"), key: "mae", rf: rfModel?.metrics.mae, alt: altModel?.metrics.mae, isPct: false, decimals: 3, isLowerBetter: true },
               ];
 
           const selectedAlg = selectedAlgorithms[activeDomain] || "Random Forest";
@@ -3499,15 +3443,15 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                 <div>
                   <h5 className="text-xs font-bold text-foreground flex items-center gap-1.5 font-sans">
-                    📊 Comparação Side-by-Side de Desempenho (RF30 - CA04)
+                    📊 {t("side_by_side_comparison")}
                   </h5>
                   <p className="text-[10px] text-muted-foreground leading-relaxed font-sans">
-                    Métricas de validação comparadas lado a lado. O melhor algoritmo em cada métrica é destacado em verde.
+                    {t("side_by_side_desc")}
                   </p>
                 </div>
                 {rfModel && altModel && (
                   <span className="text-[9px] text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded font-mono font-bold uppercase shrink-0">
-                    Ambos Treinados
+                    {t("both_trained")}
                   </span>
                 )}
               </div>
@@ -3516,10 +3460,10 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                 <table className="w-full text-left border-collapse text-[11px] font-sans">
                   <thead>
                     <tr className="bg-muted/50 border-b border-border/60 text-[9px] uppercase tracking-wider text-muted-foreground font-bold font-sans">
-                      <th className="p-3">Métrica de Validação</th>
+                      <th className="p-3">{t("validation_metric_label")}</th>
                       <th className="p-3 text-center min-w-[130px]">Random Forest</th>
                       <th className="p-3 text-center min-w-[130px]">{altName}</th>
-                      <th className="p-3 text-center min-w-[110px]">Variação</th>
+                      <th className="p-3 text-center min-w-[110px]">{t("variation_label")}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/40 font-mono">
@@ -3537,13 +3481,13 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                           const sign = diff > 0 ? "+" : "";
                           
                           if (row.isPct) {
-                            variationStr = `${sign}${(diff * 100).toFixed(1)}% abs`;
+                            variationStr = `${sign}${(diff * 100).toFixed(1)}% ${t("abs")}`;
                           } else {
-                            variationStr = `${sign}${percentageDiff.toFixed(1)}% var`;
+                            variationStr = `${sign}${percentageDiff.toFixed(1)}% ${t("var")}`;
                           }
                           varColor = rfBetter ? "text-emerald-400 font-bold" : "text-rose-400 font-bold";
                         } else {
-                          variationStr = "Empate";
+                          variationStr = t("tie");
                           varColor = "text-muted-foreground";
                         }
                       }
@@ -3574,7 +3518,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
               {/* Botões rápidos para alternar ou treinar o algoritmo restante */}
               <div className="flex flex-wrap gap-2 text-[10px] justify-between items-center bg-muted/20 border border-border/40 p-3 rounded-xl font-sans">
                 <span className="text-muted-foreground">
-                  Algoritmo ativo atualmente: <strong className={cn("font-bold text-foreground", theme.accent)}>{selectedAlg}</strong>
+                  {t("currently_active_algorithm")} <strong className={cn("font-bold text-foreground", theme.accent)}>{selectedAlg}</strong>
                 </span>
                 <div className="flex gap-2">
                   {!rfModel && (
@@ -3583,7 +3527,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                       variant="outline"
                       className="text-[9px] font-bold h-7 px-2.5 hover:bg-muted border-dashed border-muted-foreground/30 text-muted-foreground hover:text-foreground"
                     >
-                      Selecionar Random Forest
+                      {t("select")} Random Forest
                     </Button>
                   )}
                   {!altModel && (
@@ -3592,7 +3536,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                       variant="outline"
                       className="text-[9px] font-bold h-7 px-2.5 hover:bg-muted border-dashed border-muted-foreground/30 text-muted-foreground hover:text-foreground"
                     >
-                      Selecionar {altName}
+                      {t("select")} {altName}
                     </Button>
                   )}
                 </div>
@@ -3608,10 +3552,10 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
           <DialogHeader className="pb-3 border-b border-border/80">
             <DialogTitle className="text-sm font-bold text-foreground flex items-center gap-1.5 font-sans">
               <FileSpreadsheet className="h-4.5 w-4.5 text-muted-foreground shrink-0" />
-              Relatório de Conformidade de Esquema
+              {t("schema_compliance_report")}
             </DialogTitle>
             <DialogDescription className="text-[10px] text-muted-foreground mt-0.5">
-              Comparação detalhada entre a estrutura detectada no arquivo importado e o esquema esperado pelo domínio.
+              {t("schema_compliance_desc")}
             </DialogDescription>
           </DialogHeader>
 
@@ -3620,10 +3564,10 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
               <table className="w-full text-left border-collapse text-[10px]">
                 <thead>
                   <tr className="bg-muted/40 border-b border-border font-sans font-bold text-muted-foreground uppercase text-[8px]">
-                    <th className="p-2 border-r border-border/40">Coluna</th>
-                    <th className="p-2 border-r border-border/40">Esperado</th>
-                    <th className="p-2 border-r border-border/40">Detectado</th>
-                    <th className="p-2">Status</th>
+                    <th className="p-2 border-r border-border/40">{t("column")}</th>
+                    <th className="p-2 border-r border-border/40">{t("expected")}</th>
+                    <th className="p-2 border-r border-border/40">{t("detected")}</th>
+                    <th className="p-2">{t("status")}</th>
                   </tr>
                 </thead>
                 <tbody className="font-mono">
@@ -3633,8 +3577,8 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                       <td className="p-2 border-r border-border/40 text-muted-foreground">{col.expected}</td>
                       <td className={cn(
                         "p-2 border-r border-border/40",
-                        col.detected === "Ausente" ? "text-rose-500 font-bold" : "text-muted-foreground"
-                      )}>{col.detected}</td>
+                        (col.detected === "Ausente" || col.detected === t("missing")) ? "text-rose-500 font-bold" : "text-muted-foreground"
+                      )}>{col.detected === "Ausente" ? t("missing") : col.detected}</td>
                       <td className="p-2">
                         <span className={cn(
                           "px-1.5 py-0.5 rounded text-[8px] font-bold uppercase",
@@ -3642,7 +3586,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                             ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20" 
                             : "bg-rose-500/10 text-rose-500 border border-rose-500/20 animate-pulse"
                         )}>
-                          {col.status === "match" ? "Conforme" : "Erro"}
+                          {col.status === "match" ? t("compliant") : t("error")}
                         </span>
                       </td>
                     </tr>
@@ -3653,7 +3597,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
 
             {validationReport && !validationReport.isValid && (
               <div className="p-2.5 rounded-lg bg-rose-500/10 text-[9px] text-rose-500/90 leading-relaxed font-sans border border-rose-500/20">
-                <strong>Nota Técnica:</strong> A divergência na estrutura impede a aprovação pelo validador. Por favor, ajuste os dados conforme os tipos indicados na coluna <em>Esperado</em>.
+                <strong>{t("technical_note")}:</strong> {t("divergence_prevents_approval")} <em>{t("expected")}</em>.
               </div>
             )}
           </div>
@@ -3665,13 +3609,13 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
               className="text-[10px] font-bold h-8 px-3.5 border-border hover:bg-muted"
             >
               <Download className="h-3.5 w-3.5 mr-1" />
-              Modelo de Exemplo
+              {t("example_model")}
             </Button>
             <Button
               onClick={() => setIsReportOpen(false)}
               className={cn("text-[10px] font-bold h-8 px-3.5", theme.button)}
             >
-              Fechar Relatório
+              {t("close_report")}
             </Button>
           </div>
         </DialogContent>
@@ -3684,21 +3628,21 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
             <div className="flex items-center gap-2.5 text-rose-500 mb-1">
               <AlertTriangle className="h-5.5 w-5.5" />
               <DialogTitle className="text-sm font-bold text-foreground font-sans">
-                Sobrescrever modelo anterior?
+                {t("overwrite_previous_model_q")}
               </DialogTitle>
             </div>
             <DialogDescription className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
-              Um modelo preditivo já está treinado e operacional para o módulo <strong>{domainInfo.name}</strong> nesta sessão.
+              {t("predictive_model_already_trained")} <strong>{domainInfo.name}</strong> {t("in_this_session")}.
               <br />
               <br />
-              Se você prosseguir com o retreinamento, o modelo anterior (<strong>{activeModel?.modelId}</strong>) e suas calibrações de hiperparâmetros serão <span className="text-rose-500 font-semibold font-bold">permanentemente substituídos</span> no motor analítico por esta nova versão.
+              {t("if_proceed_retrain")} (<strong>{activeModel?.modelId}</strong>) {t("hyperparameters_replaced_permanently")} <span className="text-rose-500 font-semibold font-bold">{t("permanently_replaced")}</span> {t("in_analytical_engine")}.
             </DialogDescription>
           </DialogHeader>
 
           <div className="py-3 text-[10px] text-muted-foreground bg-muted/40 border border-border/80 rounded-lg p-3 flex gap-2">
             <Info className="h-4 w-4 text-muted-foreground/60 shrink-0 mt-0.5" />
             <div>
-              <span className="font-semibold text-foreground">Aviso Técnico:</span> O novo modelo será treinado com base no arquivo <strong>{fileDetails?.name}</strong> contendo {fileDetails?.rows} registros. A alteração das taxas de erro e a nova matriz de classificação/resíduos poderão ser comparadas imediatamente após a conclusão.
+              <span className="font-semibold text-foreground">{t("technical_warning")}:</span> {t("new_model_trained_based_on")} <strong>{fileDetails?.name}</strong> {t("containing")} {fileDetails?.rows} {t("records_lc")}. {t("error_rates_comparison_after_completion")}
             </div>
           </div>
 
@@ -3708,7 +3652,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
               variant="outline"
               className="text-[10px] font-bold h-8 px-3.5 border-border hover:bg-muted"
             >
-              Cancelar
+              {t("cancel")}
             </Button>
             <Button
               onClick={() => {
@@ -3720,7 +3664,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
               disabled={!canEdit}
               className={cn("text-[10px] font-bold h-8 px-3.5 bg-rose-600 hover:bg-rose-500 text-white font-semibold transition", !canEdit && "opacity-50 cursor-not-allowed")}
             >
-              Confirmar
+              {t("confirm")}
             </Button>
           </div>
         </DialogContent>
@@ -3742,10 +3686,10 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-foreground font-bold text-sm">
               <Shield className="h-5 w-5 text-green-500 shrink-0" />
-              Aviso de Privacidade & Consentimento (LGPD)
+              {t("privacy_notice_title")}
             </DialogTitle>
             <DialogDescription className="text-muted-foreground text-xs">
-              Por favor, leia atentamente as diretrizes de privacidade antes de prosseguir com a importação de dados.
+              {t("privacy_notice_desc")}
             </DialogDescription>
           </DialogHeader>
 
@@ -3757,31 +3701,31 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
             <div className="flex flex-col gap-2 p-3.5 bg-muted/40 border border-border/60 rounded-xl text-[10px] text-muted-foreground">
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-green-500 shrink-0" />
-                <span>Uso de dados exclusivo para modelagem analítica e predição neste sistema.</span>
+                <span>{t("lgpd_item_1")}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-green-500 shrink-0" />
-                <span>Confidencialidade estrita, sem compartilhamento ou transferência de informações com terceiros.</span>
+                <span>{t("lgpd_item_2")}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-green-500 shrink-0" />
                 <span className="flex-1">
-                  Direito dos titulares assegurados. Para mais informações, consulte a nossa{" "}
+                  {t("lgpd_item_3_prefix")}{" "}
                   <a 
                     href="#privacy-policy" 
                     onClick={(e) => {
                       e.preventDefault();
-                      alert("Política de Privacidade do Sistema SPAM (Demonstração de Homologação)");
+                      alert(t("privacy_policy_alert"));
                     }} 
                     className="text-green-500 hover:text-green-600 underline font-bold"
                   >
-                    Política de Privacidade
+                    {t("privacy_policy")}
                   </a>.
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-green-500 shrink-0" />
-                <span>Contato do Encarregado pelo tratamento de dados pessoais (DPO): dpo@empresa.com</span>
+                <span>{t("lgpd_item_4")}</span>
               </div>
             </div>
 
@@ -3795,7 +3739,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                 className="mt-0.5 h-4 w-4 rounded border-border bg-background text-green-500 focus:ring-green-500 cursor-pointer accent-green-600"
               />
               <label htmlFor="lgpd-consent-checkbox" className="text-[11px] text-muted-foreground leading-snug cursor-pointer select-none">
-                Estou ciente e concordo com o processamento dos dados importados em conformidade com a LGPD e as finalidades descritas.
+                {t("lgpd_consent_label")}
               </label>
             </div>
           </div>
@@ -3814,7 +3758,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
               }}
               className="text-[10px] font-bold h-8 px-3.5 border-border hover:bg-muted text-muted-foreground"
             >
-              Recusar e Cancelar
+              {t("refuse_and_cancel")}
             </Button>
             <Button
               disabled={!hasConsented}
@@ -3857,7 +3801,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
               }}
               className="text-[10px] font-bold h-8 px-3.5 bg-green-500 hover:bg-green-600 text-zinc-950 disabled:opacity-50 transition"
             >
-              Confirmar e Consentir
+              {t("confirm_and_consent")}
             </Button>
           </div>
         </DialogContent>

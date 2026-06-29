@@ -15,7 +15,7 @@ interface ModelComparisonProps {
 }
 
 export default function ModelComparison({ domain }: ModelComparisonProps) {
-  const { modelsHistory, trainedModels, setModelActive, addLog, showPremiumToast } = useDomain();
+  const { modelsHistory, trainedModels, setModelActive, addLog, showPremiumToast , t } = useDomain();
   
   const history = useMemo(() => modelsHistory[domain] || [], [modelsHistory, domain]);
   const activeModel = trainedModels[domain];
@@ -78,7 +78,7 @@ export default function ModelComparison({ domain }: ModelComparisonProps) {
         setModelToRestore(null);
         
         const timestamp = new Date().toLocaleString();
-        showPremiumToast(`Rollback concluído: A versão ${modelToRestore.version || "v1"} foi restaurada com sucesso em ${timestamp}.`);
+        showPremiumToast(t("rollback_success", { version: modelToRestore.version || "v1", timestamp: timestamp }), "success");
       }, 2000);
     }
   };
@@ -108,14 +108,14 @@ export default function ModelComparison({ domain }: ModelComparisonProps) {
     link.click();
     document.body.removeChild(link);
     
-    addLog(`[Model Comparison] Relatório comparativo de ${selectedModels.length} modelos exportado com sucesso (CSV).`);
+    addLog(t("model_comparison_log", { count: selectedModels.length.toString() }));
   };
 
   const handleStartAbTest = () => {
     if (selectedModels.length !== 2) return;
     setAbTestActive(true);
-    showPremiumToast(`Teste A/B Iniciado (RF82)! 90% do tráfego para ${selectedModels[0].version || 'v1'}, 10% para ${selectedModels[1].version || 'v2'}.`, "success");
-    addLog(`[Model Comparison] Teste A/B (RF82) iniciado entre os modelos ${selectedModels[0].modelId} e ${selectedModels[1].modelId}.`);
+    showPremiumToast(t("ab_test_started_rf82", { v1: selectedModels[0].version || 'v1', v2: selectedModels[1].version || 'v2' }), "success");
+    addLog(t("ab_test_started_log", { id1: selectedModels[0].modelId, id2: selectedModels[1].modelId }));
   };
 
   // Derived for Comparison
@@ -151,10 +151,10 @@ export default function ModelComparison({ domain }: ModelComparisonProps) {
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-zinc-50 flex items-center gap-2">
             <History className="h-6 w-6 text-indigo-500" />
-            Histórico e Comparação
+            {t("history_and_comparison")}
           </h2>
           <p className="text-muted-foreground mt-1 text-sm">
-            Selecione modelos no histórico para analisar métricas lado a lado e ativar versões anteriores.
+            {t("history_and_comparison_desc")}
           </p>
         </div>
         <div className="flex gap-2">
@@ -166,7 +166,7 @@ export default function ModelComparison({ domain }: ModelComparisonProps) {
               className="gap-2 bg-purple-600 hover:bg-purple-700 text-white animate-in fade-in"
             >
               <GitCompare className="h-4 w-4" />
-              Teste A/B (RF82)
+              {t("ab_test_rf82_btn")}
             </Button>
           )}
           <Button 
@@ -177,7 +177,7 @@ export default function ModelComparison({ domain }: ModelComparisonProps) {
             className="gap-2"
           >
             <Download className="h-4 w-4" />
-            Exportar CSV
+            {t("export_csv")}
           </Button>
         </div>
       </div>
@@ -186,14 +186,14 @@ export default function ModelComparison({ domain }: ModelComparisonProps) {
         <div className="bg-purple-500/10 border border-purple-500/30 p-4 rounded-xl flex items-center justify-between animate-in fade-in slide-in-from-top-4">
           <div className="space-y-1">
             <h4 className="font-bold text-purple-700 dark:text-purple-400 flex items-center gap-2">
-              <GitCompare className="h-5 w-5" /> Teste A/B em Andamento (RF82)
+              <GitCompare className="h-5 w-5" /> {t("ab_test_in_progress")}
             </h4>
             <p className="text-sm text-muted-foreground">
-              O tráfego de inferência está sendo roteado automaticamente. Analise o dashboard de Performance para ver qual modelo converte melhor.
+              {t("ab_test_in_progress_desc")}
             </p>
           </div>
           <Button variant="outline" size="sm" onClick={() => setAbTestActive(false)} className="text-purple-600 border-purple-200 hover:bg-purple-50">
-            Encerrar Teste
+            {t("end_test")}
           </Button>
         </div>
       )}
@@ -203,14 +203,14 @@ export default function ModelComparison({ domain }: ModelComparisonProps) {
         <CardContent className="p-4 flex flex-wrap gap-4 items-end">
           <div className="space-y-1.5 flex-1 min-w-[200px]">
             <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-              <LayoutGrid className="h-3.5 w-3.5" /> Algoritmo
+              <LayoutGrid className="h-3.5 w-3.5" /> {t("algorithm")}
             </label>
             <select 
               value={algFilter} 
               onChange={(e) => setAlgFilter(e.target.value)}
               className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <option value="all">Todos os Algoritmos</option>
+              <option value="all">{t("all_algorithms")}</option>
               {algorithms.map(alg => (
                 <option key={alg} value={alg}>{alg}</option>
               ))}
@@ -219,23 +219,23 @@ export default function ModelComparison({ domain }: ModelComparisonProps) {
           
           <div className="space-y-1.5 flex-1 min-w-[200px]">
             <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-              <Calendar className="h-3.5 w-3.5" /> Período
+              <Calendar className="h-3.5 w-3.5" /> {t("period")}
             </label>
             <select 
               value={dateFilter} 
               onChange={(e) => setDateFilter(e.target.value)}
               className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <option value="all">Qualquer data</option>
-              <option value="7d">Últimos 7 dias</option>
-              <option value="30d">Últimos 30 dias</option>
+              <option value="all">{t("any_date")}</option>
+              <option value="7d">{t("last_7_days")}</option>
+              <option value="30d">{t("last_30_days")}</option>
             </select>
           </div>
 
           <Button 
             variant="ghost" 
             size="icon"
-            title="Limpar Filtros"
+            title={t("clear_filters")}
             onClick={() => { setAlgFilter("all"); setDateFilter("all"); }}
           >
             <FilterX className="h-4 w-4" />
@@ -248,7 +248,7 @@ export default function ModelComparison({ domain }: ModelComparisonProps) {
         <Card className="xl:col-span-1 border-border/60 shadow-md">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center justify-between">
-              Modelos Treinados
+              {t("trained_models")}
               <span className="text-xs bg-muted px-2 py-1 rounded-full text-muted-foreground">
                 {filteredHistory.length}
               </span>
@@ -257,7 +257,7 @@ export default function ModelComparison({ domain }: ModelComparisonProps) {
           <CardContent className="p-0 overflow-y-auto max-h-[600px]">
             {filteredHistory.length === 0 ? (
               <div className="p-8 text-center text-muted-foreground text-sm">
-                Nenhum modelo encontrado no histórico.
+                {t("no_models_history")}
               </div>
             ) : (
               <div className="divide-y divide-border">
@@ -291,7 +291,7 @@ export default function ModelComparison({ domain }: ModelComparisonProps) {
                               </span>
                               {isActive && (
                                 <span className="text-[10px] bg-emerald-500/20 text-emerald-600 px-1.5 py-0.5 rounded border border-emerald-500/30 uppercase font-bold flex items-center gap-1">
-                                  <CheckCircle className="h-3 w-3" /> Ativo
+                                  <CheckCircle className="h-3 w-3" /> {t("active")}
                                 </span>
                               )}
                             </div>
@@ -313,11 +313,11 @@ export default function ModelComparison({ domain }: ModelComparisonProps) {
                           {/* Verificação de Integridade */}
                           {model.hash && generateModelHash(model as Omit<TrainedModel, "hash">) === model.hash ? (
                             <span className="text-[10px] text-emerald-500 flex items-center gap-1 font-medium">
-                              <ShieldCheck className="h-3 w-3" /> Integridade OK
+                              <ShieldCheck className="h-3 w-3" /> {t("integrity_ok")}
                             </span>
                           ) : (
                             <span className="text-[10px] text-rose-500 flex items-center gap-1 font-bold">
-                              <ShieldAlert className="h-3 w-3" /> Corrompido
+                              <ShieldAlert className="h-3 w-3" /> {t("corrupted")}
                             </span>
                           )}
                         </div>
@@ -329,7 +329,7 @@ export default function ModelComparison({ domain }: ModelComparisonProps) {
                             className="h-7 text-xs px-3"
                             onClick={(e) => { e.stopPropagation(); handleActivate(model.modelId); }}
                           >
-                            Tornar Ativo
+                            {t("make_active")}
                           </Button>
                         )}
                       </div>
@@ -350,10 +350,10 @@ export default function ModelComparison({ domain }: ModelComparisonProps) {
                   <Activity className="h-6 w-6 text-indigo-500" />
                 </div>
                 <h3 className="text-lg font-medium text-slate-900 dark:text-zinc-100">
-                  Selecione modelos para comparar
+                  {t("select_models_compare")}
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  Selecione dois ou mais modelos na lista ao lado para visualizar a tabela comparativa de métricas e gráficos de desempenho.
+                  {t("select_models_compare_desc")}
                 </p>
               </div>
             </Card>
@@ -362,16 +362,16 @@ export default function ModelComparison({ domain }: ModelComparisonProps) {
               {/* TABELA COMPARATIVA */}
               <Card className="border-border/60 shadow-md">
                 <CardHeader className="pb-3 border-b border-border/50">
-                  <CardTitle className="text-lg">Tabela Comparativa de Métricas</CardTitle>
+                  <CardTitle className="text-lg">{t("metrics_comparison_table")}</CardTitle>
                   <CardDescription>
-                    O melhor valor em cada métrica está destacado em verde.
+                    {t("best_value_highlighted")}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-0 overflow-x-auto">
                   <table className="w-full text-sm text-left">
                     <thead className="bg-muted/50 text-muted-foreground text-xs uppercase font-semibold">
                       <tr>
-                        <th className="px-4 py-3 border-b">Métrica</th>
+                        <th className="px-4 py-3 border-b">{t("metric")}</th>
                         {selectedModels.map((m, i) => (
                           <th key={m.modelId} className="px-4 py-3 border-b border-l text-center">
                             <div className="flex flex-col items-center gap-1">
@@ -427,7 +427,7 @@ export default function ModelComparison({ domain }: ModelComparisonProps) {
               {/* GRÁFICO COMPARATIVO */}
               <Card className="border-border/60 shadow-md">
                 <CardHeader>
-                  <CardTitle className="text-lg">Desempenho Visual</CardTitle>
+                  <CardTitle className="text-lg">{t("visual_performance")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="h-[350px] w-full">
@@ -480,16 +480,16 @@ export default function ModelComparison({ domain }: ModelComparisonProps) {
           <div className="bg-background border border-border shadow-xl rounded-lg max-w-md w-full p-6 animate-in fade-in zoom-in-95 duration-200">
             <h3 className="text-lg font-bold flex items-center gap-2 text-rose-500 mb-2">
               <AlertTriangle className="h-5 w-5" />
-              Restaurar Versão Anterior
+              {t("restore_previous_version")}
             </h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Você está prestes a substituir o modelo ativo atual (<strong className="uppercase">{activeModel?.version || "Desconhecida"}</strong>) pela versão <strong className="text-foreground uppercase">{modelToRestore.version || "v1"}</strong> ({modelToRestore.algorithm}).
+              {t("restore_version_warning", { current: activeModel?.version || "Desconhecida", newVersion: modelToRestore.version || "v1", algorithm: modelToRestore.algorithm })}
             </p>
 
             {/* COMPARAÇÃO DE MÉTRICAS (CA02) */}
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div className="space-y-2 p-3 bg-muted/40 rounded-md border border-border/50">
-                <div className="text-xs font-semibold text-muted-foreground text-center mb-2">Versão Ativa ({activeModel?.version || "-"})</div>
+                <div className="text-xs font-semibold text-muted-foreground text-center mb-2">{t("active_version")} ({activeModel?.version || "-"})</div>
                 {activeModel && Object.entries(activeModel.metrics).filter(([,v]) => v !== undefined).slice(0, 3).map(([key, value]) => (
                   <div key={key} className="flex justify-between text-xs">
                     <span className="capitalize">{key}</span>
@@ -498,7 +498,7 @@ export default function ModelComparison({ domain }: ModelComparisonProps) {
                 ))}
               </div>
               <div className="space-y-2 p-3 bg-primary/5 rounded-md border border-primary/20">
-                <div className="text-xs font-semibold text-primary text-center mb-2">Nova Versão ({modelToRestore.version || "-"})</div>
+                <div className="text-xs font-semibold text-primary text-center mb-2">{t("new_version")} ({modelToRestore.version || "-"})</div>
                 {Object.entries(modelToRestore.metrics).filter(([,v]) => v !== undefined).slice(0, 3).map(([key, value]) => (
                   <div key={key} className="flex justify-between text-xs">
                     <span className="capitalize">{key}</span>
@@ -509,21 +509,21 @@ export default function ModelComparison({ domain }: ModelComparisonProps) {
             </div>
 
             <div className="bg-muted/50 border border-border rounded-md p-3 mb-6 text-xs text-muted-foreground">
-              <strong>Impacto da Operação:</strong> As próximas predições do domínio de {domain} utilizarão imediatamente os pesos matemáticos desta versão histórica. O modelo ativo atual não será excluído, sendo preservado no histórico para auditoria.
+              <strong>{t("operation_impact")}:</strong> {t("operation_impact_desc", { domain: domain })}
             </div>
             
             <div className="flex items-center justify-end gap-3">
               <Button variant="outline" onClick={() => setModelToRestore(null)} disabled={isRestoring}>
-                Cancelar
+                {t("cancel")}
               </Button>
               <Button variant="destructive" onClick={confirmRestore} disabled={isRestoring}>
                 {isRestoring ? (
                   <>
                     <Activity className="h-4 w-4 mr-2 animate-spin" />
-                    Revertendo pesos...
+                    {t("reverting_weights")}
                   </>
                 ) : (
-                  "Confirmar Restauração"
+                  t("confirm_restore")
                 )}
               </Button>
             </div>

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Download, UploadCloud, Loader2, Sparkles, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight, BarChart3, Trash2, ThumbsUp, ThumbsDown, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useDomain } from "@/lib/context/domain-context";
 
 export interface BatchRow {
   id: string;
@@ -60,6 +61,7 @@ export function BatchPrediction({
   title = "Predição em Lote",
   description = "Carregue um CSV para processar múltiplas entradas simultaneamente.",
 }: BatchPredictionProps) {
+  const { t , t } = useDomain();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [results, setResults] = useState<BatchRow[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -120,7 +122,7 @@ export function BatchPrediction({
         batchResults.push({
           id: String(i + 1),
           inputs: rows[i],
-          result: "Erro de processamento",
+          result: t("processing_error"),
           resultClass: "danger",
         });
       }
@@ -133,13 +135,13 @@ export function BatchPrediction({
 
     setResults(batchResults);
     setIsProcessing(false);
-  }, [processRow]);
+  }, [processRow, t]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.name.endsWith(".csv")) {
-      setError("Apenas arquivos .csv são aceitos.");
+      setError(t("only_csv_accepted"));
       return;
     }
     setFileName(file.name);
@@ -148,7 +150,7 @@ export function BatchPrediction({
       const text = ev.target?.result as string;
       const rows = parseCSV(text);
       if (rows.length === 0) {
-        setError("O arquivo CSV está vazio ou com formato inválido.");
+        setError(t("csv_empty_invalid"));
         return;
       }
       processRows(rows);
@@ -192,7 +194,7 @@ export function BatchPrediction({
 
   const handleExportCSV = () => {
     if (!results.length) return;
-    const headers = ["#", "Resultado", "Classe", ...columnNames];
+    const headers = ["#", t("result"), t("class_type"), ...columnNames];
     const rows = results.map((r, i) => [
       i + 1,
       r.result,
@@ -210,10 +212,10 @@ export function BatchPrediction({
   };
 
   const summaryItems = [
-    { key: "success", label: "Aprovados / OK", color: "emerald" },
-    { key: "warning", label: "Atenção / Revisão", color: "amber" },
-    { key: "danger", label: "Rejeitados / Críticos", color: "rose" },
-    { key: "info", label: "Análise Manual", color: "sky" },
+    { key: "success", label: t("approved_ok"), color: "emerald" },
+    { key: "warning", label: t("warning_review"), color: "amber" },
+    { key: "danger", label: t("rejected_critical"), color: "rose" },
+    { key: "info", label: t("manual_analysis"), color: "sky" },
   ];
 
   return (
@@ -232,11 +234,11 @@ export function BatchPrediction({
               <>
                 <Button variant="outline" size="sm" className="h-7 text-[10px] px-2" onClick={handleExportCSV}>
                   <Download className="h-3 w-3 mr-1" />
-                  Exportar CSV
+                  {t("export_csv")}
                 </Button>
                 <Button variant="ghost" size="sm" className="h-7 text-[10px] px-2 text-muted-foreground" onClick={handleReset}>
                   <Trash2 className="h-3 w-3 mr-1" />
-                  Limpar
+                  {t("clear")}
                 </Button>
               </>
             )}
@@ -249,7 +251,7 @@ export function BatchPrediction({
                 disabled={isProcessing}
               >
                 <Sparkles className="h-3 w-3 mr-1" />
-                Modo Demo
+                {t("load_demo")}
               </Button>
             )}
           </div>
@@ -266,13 +268,13 @@ export function BatchPrediction({
             >
               <UploadCloud className="h-8 w-8 text-muted-foreground/40 group-hover:text-muted-foreground/70 transition-colors" />
               <div className="text-center">
-                <p className="text-sm font-semibold text-foreground">Clique para carregar CSV de lote</p>
+                <p className="text-sm font-semibold text-foreground">{t("click_to_upload_csv")}</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Colunas esperadas: <span className="font-mono text-[10px]">{columnNames.join(", ")}</span>
+                  {t("columns_expected")}: <span className="font-mono text-[10px]">{columnNames.join(", ")}</span>
                 </p>
               </div>
               <Button size="sm" className={cn("text-[11px] h-8 px-4", ac.button)}>
-                Selecionar Arquivo
+                {t("select_file")}
               </Button>
             </div>
             <input
@@ -296,7 +298,7 @@ export function BatchPrediction({
           <div className="space-y-3 py-6">
             <div className="flex items-center justify-center gap-3">
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-              <span className="text-sm font-semibold text-foreground">Processando {fileName}...</span>
+              <span className="text-sm font-semibold text-foreground">{t("processing_file")} {fileName}...</span>
             </div>
             <div className="max-w-sm mx-auto space-y-1.5">
               <div className="h-2 rounded-full bg-muted/30 overflow-hidden">
@@ -305,7 +307,7 @@ export function BatchPrediction({
                   style={{ width: `${progress}%` }}
                 />
               </div>
-              <p className="text-center text-xs text-muted-foreground">{progress}% concluído</p>
+              <p className="text-center text-xs text-muted-foreground">{progress}% {t("completed")}</p>
             </div>
           </div>
         )}
@@ -317,7 +319,7 @@ export function BatchPrediction({
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-emerald-400" />
               <span className="text-xs font-bold text-foreground">{fileName}</span>
-              <span className="text-xs text-muted-foreground">— {results.length} registros processados</span>
+              <span className="text-xs text-muted-foreground">— {results.length} {t("records_processed")}</span>
             </div>
 
             {/* Summary cards */}
@@ -342,9 +344,9 @@ export function BatchPrediction({
             {/* Filter indicator */}
             {filterClass !== "all" && (
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span>Filtrando por: <strong className="text-foreground capitalize">{filterClass}</strong></span>
+                <span>{t("filtering_by")}: <strong className="text-foreground capitalize">{filterClass}</strong></span>
                 <Button variant="ghost" size="sm" className="h-5 text-[10px] px-1" onClick={() => setFilterClass("all")}>
-                  Limpar filtro
+                  {t("clear_filter")}
                 </Button>
               </div>
             )}
@@ -359,7 +361,7 @@ export function BatchPrediction({
                       {columnNames.slice(0, 3).map((col) => (
                         <th key={col} className="text-left px-3 py-2 font-bold text-muted-foreground capitalize">{col.replace(/_/g, " ")}</th>
                       ))}
-                      <th className="text-left px-3 py-2 font-bold text-muted-foreground">Resultado</th>
+                      <th className="text-left px-3 py-2 font-bold text-muted-foreground">{t("result")}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/20">
@@ -387,7 +389,7 @@ export function BatchPrediction({
             {totalPages > 1 && (
               <div className="flex items-center justify-between">
                 <p className="text-[11px] text-muted-foreground">
-                  Pág {page} de {totalPages} ({filteredResults.length} registros)
+                  {t("page_of", { current: page.toString(), total: totalPages.toString(), records: filteredResults.length.toString() })}
                 </p>
                 <div className="flex gap-1">
                   <Button variant="outline" size="sm" className="h-7 w-7 p-0" disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
@@ -404,18 +406,18 @@ export function BatchPrediction({
             <div className="mt-8 border border-border/60 rounded-xl p-4 bg-muted/10 animate-in fade-in slide-in-from-bottom-4">
               <h4 className="text-sm font-bold flex items-center gap-2 mb-2">
                 <MessageSquare className="h-4 w-4 text-indigo-500" />
-                Feedback do Especialista (RF81)
+                {t("expert_feedback_rf81")}
               </h4>
               <p className="text-[11px] text-muted-foreground mb-4">
-                Como você avalia a precisão deste lote? O sistema analisará o sentimento do seu comentário para ajustar o peso do modelo no ensemble.
+                {t("expert_feedback_desc")}
               </p>
               
               {feedbackStatus === "submitted" ? (
                 <div className={`p-3 rounded-lg border flex items-center gap-3 ${detectedSentiment === 'positive' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600' : detectedSentiment === 'negative' ? 'bg-rose-500/10 border-rose-500/30 text-rose-600' : 'bg-slate-500/10 border-slate-500/30 text-slate-600'}`}>
                   {detectedSentiment === 'positive' ? <ThumbsUp className="h-5 w-5" /> : detectedSentiment === 'negative' ? <ThumbsDown className="h-5 w-5" /> : <MessageSquare className="h-5 w-5" />}
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-wider">Sentimento Detectado: {detectedSentiment}</p>
-                    <p className="text-[10px] mt-0.5">Feedback salvo! Os pesos do modelo serão recalibrados no próximo retreinamento.</p>
+                    <p className="text-xs font-bold uppercase tracking-wider">{t("detected_sentiment")}: {detectedSentiment}</p>
+                    <p className="text-[10px] mt-0.5">{t("feedback_saved")}</p>
                   </div>
                 </div>
               ) : (
@@ -424,7 +426,7 @@ export function BatchPrediction({
                     <textarea 
                       value={feedbackText}
                       onChange={(e) => setFeedbackText(e.target.value)}
-                      placeholder="Ex: 'O modelo acertou muito bem os casos de risco, excelente resultado!'"
+                      placeholder={t("feedback_placeholder")}
                       className="w-full h-16 text-xs bg-background border border-input rounded-md px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                   </div>
@@ -434,7 +436,7 @@ export function BatchPrediction({
                     className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2"
                   >
                     {feedbackStatus === "analyzing" ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-                    Enviar Avaliação
+                    {t("send_evaluation")}
                   </Button>
                 </div>
               )}
