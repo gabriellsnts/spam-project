@@ -172,3 +172,87 @@ export function batchProcessCreditRisk(row: Record<string, string>) {
   };
 }
 
+// ----------------------------------------------------------------------
+// ADVANCED ANALYTICS MOCKS (RF60, RF74, RF75, RF85, RF86, RF90)
+// ----------------------------------------------------------------------
+
+export function getMockCrossValidationScores() {
+  // RF60
+  return [
+    { fold: "Fold 1", accuracy: 92.5, f1: 91.2 },
+    { fold: "Fold 2", accuracy: 93.1, f1: 92.0 },
+    { fold: "Fold 3", accuracy: 89.8, f1: 88.5 },
+    { fold: "Fold 4", accuracy: 94.2, f1: 93.1 },
+    { fold: "Fold 5", accuracy: 91.5, f1: 90.8 },
+  ];
+}
+
+export function getMockLiftAndGainsCurves() {
+  // RF74, RF75
+  const data = [];
+  let cumulativeGainsModel = 0;
+  
+  for (let i = 10; i <= 100; i += 10) {
+    // Model captures more targets early on
+    let gainIncrement = 0;
+    if (i <= 30) gainIncrement = 20;
+    else if (i <= 60) gainIncrement = 10;
+    else gainIncrement = 2.5;
+    
+    cumulativeGainsModel += gainIncrement;
+    const gainRandom = i; // random baseline is just % of sample
+    
+    data.push({
+      percentile: `${i}%`,
+      modelGains: Math.min(100, cumulativeGainsModel),
+      randomGains: gainRandom,
+      modelLift: (Math.min(100, cumulativeGainsModel) / gainRandom).toFixed(2),
+      randomLift: 1.0,
+    });
+  }
+  return data;
+}
+
+export function getMockShapValues(domain: string) {
+  // RF85
+  if (domain === "churn") {
+    return [
+      { feature: "Dias desde o último login", importance: 0.35, impact: "Positivo (Aumenta Risco)" },
+      { feature: "Tickets de Suporte", importance: 0.25, impact: "Positivo" },
+      { feature: "NPS Resposta", importance: 0.20, impact: "Negativo (Reduz Risco)" },
+      { feature: "Tempo de Contrato", importance: 0.12, impact: "Negativo" },
+      { feature: "Funcionalidades Premium", importance: 0.08, impact: "Negativo" },
+    ];
+  }
+  return [
+    { feature: "Score SPC/Serasa", importance: 0.40, impact: "Negativo (Reduz Risco)" },
+    { feature: "Valor Solicitado", importance: 0.25, impact: "Positivo (Aumenta Risco)" },
+    { feature: "Renda Mensal", importance: 0.15, impact: "Negativo" },
+    { feature: "Atrasos Anteriores", importance: 0.15, impact: "Positivo" },
+    { feature: "Idade", importance: 0.05, impact: "Neutro" },
+  ];
+}
+
+export function getMockDataDrift() {
+  // RF86
+  return [
+    { month: "Jan", psi: 0.02 },
+    { month: "Fev", psi: 0.03 },
+    { month: "Mar", psi: 0.05 },
+    { month: "Abr", psi: 0.04 },
+    { month: "Mai", psi: 0.09 },
+    { month: "Jun", psi: 0.14 }, // starting to drift
+  ];
+}
+
+export function getMockFairnessAnalysis() {
+  // RF90
+  return [
+    { group: "Norte/Nordeste", fpr: 4.2, fnr: 3.8 },
+    { group: "Sul/Sudeste", fpr: 4.0, fnr: 4.1 },
+    { group: "PMEs", fpr: 5.1, fnr: 4.5 },
+    { group: "Grandes Contas", fpr: 3.5, fnr: 3.0 },
+  ];
+}
+
+

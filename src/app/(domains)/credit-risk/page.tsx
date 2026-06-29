@@ -22,7 +22,8 @@ import { OverfittingDetector } from "@/components/shared/overfitting-detector";
 import { BatchPrediction } from "@/components/shared/batch-prediction";
 import { InteractiveConfusionMatrix } from "@/components/shared/interactive-confusion-matrix";
 import { batchProcessCreditRisk } from "@/lib/predictive-engine";
-
+import { ModelRegistry } from "@/components/shared/model-registry";
+import { AdvancedModelAnalytics } from "@/components/shared/advanced-model-analytics";
 type RiskLevel = "all" | "high" | "medium" | "low";
 
 interface ProposalData {
@@ -1054,8 +1055,15 @@ export default function CreditRiskPage() {
           <ComparisonView domain="credit-risk" />
         )}
 
+        {currentView === "analytics" && (
+          <AdvancedModelAnalytics />
+        )}
+
         {currentView === "model-history" && (
-          <ModelComparison domain="credit-risk" />
+          <div className="space-y-6">
+            <ModelRegistry />
+            <ModelComparison domain="credit-risk" />
+          </div>
         )}
 
         {predictionResult && (

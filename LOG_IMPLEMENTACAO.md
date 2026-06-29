@@ -459,3 +459,16 @@
 - Inclusão do botão 'Reexecutar Onboarding' nas Configurações de Perfil (CA05).
 ### 3. Impacto e Resultados Técnicos
 - Sistema de onboarding completo e tolerante a reloads, garantindo navegação linear que só avança ao realizar a ação requerida. Compilação e tipagem (	sc e eslint) atendem todos os requisitos do Protocolo de Ferro v3.0.
+
+---
+
+## ?? 2026-06-29 - Lote: Analytics Avançado e Model Registry (RF60, RF74, RF75, RF85, RF86, RF89, RF90) - Autor: Antigravity
+### 1. Contexto e Problemática
+- O sistema precisava de recursos visuais robustos para justificar, monitorar e auditar os modelos de Machine Learning (Viés, Explicabilidade, Desvio de Dados, Ciclo de Vida), atendendo a vários requisitos da disciplina.
+### 2. Solução Proposta e Fundamentação
+- **RF89 (Model Registry):** Criado \ModelRegistry\ para gerenciar versões, exibindo o status de cada modelo (Produção, Arquivado, Falho).
+- **RF60, RF74, RF75, RF85, RF86, RF90 (Analytics Avançado):** Criado o componente com abas \AdvancedModelAnalytics\ integrando gráficos (Recharts) e métricas mockadas via \predictive-engine.ts\. Adicionada nova visão 'analytics' na barra lateral.
+- **Integração:** Componentes injetados nas páginas de Churn e Credit Risk, as quais se beneficiam das curvas Lift e Gains (modelos de classificação).
+### 3. Impacto e Resultados Técnicos
+- O SPAM agora simula painéis avançados de MLOps no front-end, garantindo que usuários (como gestores e cientistas de dados) possam validar a qualidade e justiça (Fairness) do modelo sem precisar acessar ferramentas externas.
+

@@ -255,3 +255,12 @@ Dificuldade: O mapeamento exato da árvore do DOM de componentes já grandes e mis
 Correção aplicada: Foi utilizado um fluxo criterioso de inspecionar individualmente a UI, atribuindo a tag simples data-tutorial-target em áreas pré-existentes, tornando a âncora robusta e não invasiva.
 Melhoria de UX sugerida pela IA: Em vez de bloquear 100% da tela durante o tutorial, foi preservada a interatividade (pointer-events-auto) apenas no elemento alvo para que o usuário efetivamente _clique_ em vez de _assistir_, consolidando a memória motora e cognitiva do fluxo de uso.
 
+
+[LOTE] Analytics Avançado (RF60, RF74, RF75, RF85, RF86, RF89, RF90)
+
+Prompt usado: O usuário solicitou que fossem escolhidos 7 requisitos restantes para implementação, puxando da main e depois subindo para testes. Foi criado um plano de implementação abrangendo Model Registry e gráficos avançados de análise preditiva.
+Funcionou bem: A estruturação do plano foi bem recebida, a injeção nos módulos de Churn e Credit Risk fluiu perfeitamente aproveitando o Recharts já instalado no projeto.
+Dificuldade: Organizar as views para evitar a poluição visual, já que são 7 RFs muito focados em exibição de gráficos e tabelas.
+Correção aplicada: Decidi agrupar RF60, RF74, RF75, RF85, RF86, RF90 dentro de um único componente usando sistema de abas e aloquei o RF89 (Model Registry) junto à aba de Model History já existente.
+Melhoria de UX sugerida pela IA: Criação do menu global 'Analytics Avançado' no sidebar centralizando a avaliação complexa dos modelos, separando da visão tática do dia-a-dia.
+
