@@ -472,3 +472,13 @@
 ### 3. Impacto e Resultados Técnicos
 - O SPAM agora simula painéis avançados de MLOps no front-end, garantindo que usuários (como gestores e cientistas de dados) possam validar a qualidade e justiça (Fairness) do modelo sem precisar acessar ferramentas externas.
 
+
+## [RF51, RF61, RF62, RF72, RF78, RF68, RF77] Lote: Ajuste Fino de Modelos e Notificacoes
+- **RF51**: Configuração de webhooks (integração externa).
+- **RF61**: Formulários de calibração personalizados para os modelos.
+- **RF62**: Ajuste de hiperparâmetros (Interface para tuning simulado).
+- **RF72**: Configuração de regularização (L1/L2 tuning simulado).
+- **RF78**: Alertas por e-mail (Configurar notificações para anomalias ou drift).
+- **RF68**: Agendamento de Retreinamento.
+- **RF77**: Validação de Dados de Entrada.
+- **Impacto**: Foram criados os componentes TuningPanel, AlertsWebhookConfig e PipelineSettings e integrados na tela Profile.

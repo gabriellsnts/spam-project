@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   BarChart3,
   Sliders,
+  SlidersHorizontal,
   Settings,
   Sparkles,
   BookOpen,
@@ -382,6 +383,37 @@ export function Sidebar() {
                     <div className="text-xs font-bold leading-none">{t("theme_customization")}</div>
                     <div className="text-[9px] text-muted-foreground font-normal leading-none mt-1 group-hover:text-foreground/70 transition-colors">
                       {t("theme_customization_desc") || "Cores e branding corporativo"}
+                    </div>
+                  </div>
+                )}
+              </button>
+            )}
+
+            {/* Tuning e Alertas */}
+            {isAdmin && (
+              <button
+                onClick={() => {
+                  setActiveProfileSection("tuning");
+                  setActiveProfileSubSection("");
+                }}
+                className={cn(
+                  "w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 text-left relative overflow-hidden group",
+                  activeProfileSection === "tuning"
+                    ? "text-emerald-500 bg-emerald-500/10 border-emerald-500/30"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border-transparent",
+                  isCollapsed && "justify-center"
+                )}
+                title="Ajuste Fino & Notificações"
+              >
+                {activeProfileSection === "tuning" && (
+                  <div className="absolute left-0 top-3 bottom-3 w-1 bg-emerald-500 rounded-r-md" />
+                )}
+                <SlidersHorizontal className="h-5 w-5 shrink-0" />
+                {!isCollapsed && (
+                  <div className="space-y-0.5">
+                    <div className="text-xs font-bold leading-none">Tuning & Alertas</div>
+                    <div className="text-[9px] text-muted-foreground font-normal leading-none mt-1 group-hover:text-foreground/70 transition-colors">
+                      Modelos, Webhooks, Pipeline
                     </div>
                   </div>
                 )}

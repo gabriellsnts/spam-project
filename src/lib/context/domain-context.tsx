@@ -411,8 +411,8 @@ interface DomainContextProps {
   setLanguage: (lang: LanguageType) => void;
   t: (key: string, params?: Record<string, string>) => string;
   getDomainName: (type: DomainType) => string;
-  activeProfileSection: "preferences" | "admin" | "theme";
-  setActiveProfileSection: (section: "preferences" | "admin" | "theme") => void;
+  activeProfileSection: "preferences" | "admin" | "theme" | "tuning";
+  setActiveProfileSection: (section: "preferences" | "admin" | "theme" | "tuning") => void;
   activeProfileSubSection: "appearance" | "language" | "";
   setActiveProfileSubSection: (sub: "appearance" | "language" | "") => void;
 
@@ -727,7 +727,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
   const [activeCustomTheme, setActiveCustomTheme] = useState<CustomTheme | null>(null);
   const [customThemes, setCustomThemes] = useState<CustomTheme[]>([]);
   const [language, setLanguageState] = useState<LanguageType>("pt");
-  const [activeProfileSection, setActiveProfileSection] = useState<"preferences" | "admin" | "theme">("preferences");
+  const [activeProfileSection, setActiveProfileSection] = useState<"preferences" | "admin" | "theme" | "tuning">("preferences");
   const [activeProfileSubSection, setActiveProfileSubSection] = useState<"appearance" | "language" | "">("");
   const [alertThresholds, setAlertThresholds] = useState<Record<DomainType, number>>(DEFAULT_THRESHOLDS);
   const [alerts, setAlerts] = useState<Alert[]>([]);

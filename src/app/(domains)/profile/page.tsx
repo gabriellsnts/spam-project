@@ -6,6 +6,9 @@ import { useDomain, DomainType } from "@/lib/context/domain-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserManagement } from "@/components/shared/user-management";
 import { ThemeCustomizer } from "@/components/shared/theme-customizer";
+import { TuningPanel } from "@/components/shared/tuning-panel";
+import { AlertsWebhookConfig } from "@/components/shared/alerts-webhook-config";
+import { PipelineSettings } from "@/components/shared/pipeline-settings";
 import { Sun, Moon, Laptop, Mail, Settings, Play, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -475,6 +478,19 @@ export default function ProfilePage() {
       {activeProfileSection === "theme" && isAdmin && (
         <div className="max-w-4xl mx-auto animate-in fade-in duration-300">
           <ThemeCustomizer />
+        </div>
+      )}
+
+      {/* Conteúdo: Tuning, Alertas e Pipeline (RF51, RF61, RF62, RF72, RF78, RF68, RF77) */}
+      {activeProfileSection === "tuning" && isAdmin && (
+        <div className="max-w-4xl mx-auto animate-in fade-in duration-300 space-y-6">
+          <div className="mb-8">
+            <h2 className="text-xl font-bold mb-2">Ajuste Fino de Modelos e Notificações</h2>
+            <p className="text-sm text-muted-foreground">Configure os parâmetros avançados dos modelos simulados, notificações sistêmicas e políticas de qualidade de dados.</p>
+          </div>
+          <TuningPanel />
+          <PipelineSettings />
+          <AlertsWebhookConfig />
         </div>
       )}
     </div>

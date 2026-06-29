@@ -264,3 +264,11 @@ Dificuldade: Organizar as views para evitar a poluição visual, já que são 7 RFs 
 Correção aplicada: Decidi agrupar RF60, RF74, RF75, RF85, RF86, RF90 dentro de um único componente usando sistema de abas e aloquei o RF89 (Model Registry) junto à aba de Model History já existente.
 Melhoria de UX sugerida pela IA: Criação do menu global 'Analytics Avançado' no sidebar centralizando a avaliação complexa dos modelos, separando da visão tática do dia-a-dia.
 
+
+[RF51, RF61, RF62, RF72, RF78, RF68, RF77] Ajuste Fino de Modelos e Notificacoes
+
+Prompt usado: Implementar RF51, RF61, RF62, RF72, RF78, RF68, RF77.
+Funcionou bem: A IA criou com sucesso a interface de Tuning, Alertas e Pipeline com mock de dados integrados na UI.
+Dificuldade: Ocorreram erros de tipagem com o DomainContext e conflito de imports.
+Correção aplicada: Foi utilizado replace_file_content para remover os imports duplicados e ajustar currentDomain para activeDomain.
+Melhoria de UX sugerida pela IA: Os 7 requisitos foram consolidados de forma contextualizada na aba Settings de Administrador sob uma aba unica 'Tuning e Alertas'.
