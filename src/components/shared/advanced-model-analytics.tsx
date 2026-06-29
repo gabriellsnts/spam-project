@@ -192,7 +192,7 @@ export function AdvancedModelAnalytics() {
                   Alerta: Possível degradação em Junho
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground mb-4">Monitora o Population Stability Index (PSI). Valores > 0.1 indicam mudança de distribuição.</p>
+              <p className="text-xs text-muted-foreground mb-4">Monitora o Population Stability Index (PSI). Valores &gt; 0.1 indicam mudança de distribuição.</p>
               
               <div className="h-80 border rounded-xl p-4 bg-muted/20 relative">
                 <ResponsiveContainer width="100%" height="100%">
