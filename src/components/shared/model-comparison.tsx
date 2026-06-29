@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { useDomain, DomainType, TrainedModel } from "@/lib/context/domain-context";
+import { useDomain, DomainType, TrainedModel, generateModelHash } from "@/lib/context/domain-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer 
 } from "recharts";
-import { Download, History, CheckCircle, Activity, LayoutGrid, Calendar, FilterX } from "lucide-react";
+import { Download, History, CheckCircle, Activity, LayoutGrid, Calendar, FilterX, AlertTriangle, ShieldCheck, ShieldAlert, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ModelComparisonProps {
@@ -24,6 +24,7 @@ export default function ModelComparison({ domain }: ModelComparisonProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [algFilter, setAlgFilter] = useState<string>("all");
   const [dateFilter, setDateFilter] = useState<string>("all");
+  const [modelToRestore, setModelToRestore] = useState<TrainedModel | null>(null);
 
   // Options
   const algorithms = useMemo(() => {
@@ -60,8 +61,14 @@ export default function ModelComparison({ domain }: ModelComparisonProps) {
   };
 
   const handleActivate = (modelId: string) => {
-    if (confirm("Tem certeza que deseja definir esta versão como o modelo ativo? Isso substituirá o modelo em uso.")) {
-      setModelActive(domain, modelId);
+    const model = history.find(m => m.modelId === modelId);
+    if (model) setModelToRestore(model);
+  };
+
+  const confirmRestore = () => {
+    if (modelToRestore) {
+      setModelActive(domain, modelToRestore.modelId);
+      setModelToRestore(null);
     }
   };
 
@@ -233,22 +240,40 @@ export default function ModelComparison({ domain }: ModelComparisonProps) {
                           <div>
                             <div className="font-medium text-sm flex items-center gap-2">
                               {model.algorithm}
+                              <span className="text-[10px] bg-indigo-500/10 text-indigo-500 px-1.5 py-0.5 rounded border border-indigo-500/20 font-bold uppercase">
+                                {model.version || "v1"}
+                              </span>
                               {isActive && (
                                 <span className="text-[10px] bg-emerald-500/20 text-emerald-600 px-1.5 py-0.5 rounded border border-emerald-500/30 uppercase font-bold flex items-center gap-1">
                                   <CheckCircle className="h-3 w-3" /> Ativo
                                 </span>
                               )}
                             </div>
-                            <div className="text-xs text-muted-foreground mt-0.5 font-mono">
-                              {model.modelId.split("-")[2]} • v{model.datasetVersion || "1.0"}
+                            <div className="text-[11px] text-muted-foreground mt-1 flex items-center gap-1 truncate max-w-[200px]" title={model.datasetName}>
+                              <FileText className="h-3 w-3 flex-shrink-0" /> {model.datasetName || "base_historica.csv"} ({(model.datasetSize || 0).toFixed(1)} KB)
+                            </div>
+                            <div className="text-[10px] text-muted-foreground mt-0.5 font-mono">
+                              ID: {model.modelId.split("-")[2]} • Hash: {model.hash ? model.hash.substring(0, 8) : "N/A"}
                             </div>
                           </div>
                         </div>
                       </div>
                       
                       <div className="flex items-center justify-between pl-7">
-                        <div className="text-xs text-muted-foreground">
-                          {new Date(model.timestamp).toLocaleString()}
+                        <div className="flex flex-col gap-1">
+                          <div className="text-xs text-muted-foreground">
+                            {new Date(model.timestamp).toLocaleString()}
+                          </div>
+                          {/* Verificação de Integridade */}
+                          {model.hash && generateModelHash(model as Omit<TrainedModel, "hash">) === model.hash ? (
+                            <span className="text-[10px] text-emerald-500 flex items-center gap-1 font-medium">
+                              <ShieldCheck className="h-3 w-3" /> Integridade OK
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-rose-500 flex items-center gap-1 font-bold">
+                              <ShieldAlert className="h-3 w-3" /> Corrompido
+                            </span>
+                          )}
                         </div>
                         
                         {!isActive && (
@@ -388,7 +413,7 @@ export default function ModelComparison({ domain }: ModelComparisonProps) {
                           <Bar 
                             key={m.modelId} 
                             dataKey={m.modelId} 
-                            name={`${m.algorithm} (${m.modelId.split("-")[2]})`}
+                            name={`${m.algorithm} (${m.version || "v1"})`}
                             fill={COLORS[i % COLORS.length]} 
                             radius={[4, 4, 0, 0]} 
                           />
@@ -402,6 +427,33 @@ export default function ModelComparison({ domain }: ModelComparisonProps) {
           )}
         </div>
       </div>
+
+      {/* Modal de Restauração de Versão (CA04) */}
+      {modelToRestore && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-background border border-border shadow-xl rounded-lg max-w-md w-full p-6 animate-in fade-in zoom-in-95 duration-200">
+            <h3 className="text-lg font-bold flex items-center gap-2 text-rose-500 mb-2">
+              <AlertTriangle className="h-5 w-5" />
+              Restaurar Versão Anterior
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Você está prestes a substituir o modelo ativo atual pela versão <strong className="text-foreground uppercase">{modelToRestore.version || "v1"}</strong> ({modelToRestore.algorithm}).
+            </p>
+            <div className="bg-muted/50 border border-border rounded-md p-3 mb-6 text-xs text-muted-foreground">
+              <strong>Impacto da Operação:</strong> As próximas predições do domínio de {domain} utilizarão imediatamente os pesos matemáticos desta versão histórica. O modelo ativo atual não será excluído, sendo preservado no histórico para auditoria.
+            </div>
+            
+            <div className="flex items-center justify-end gap-3">
+              <Button variant="outline" onClick={() => setModelToRestore(null)}>
+                Cancelar
+              </Button>
+              <Button variant="destructive" onClick={confirmRestore}>
+                Confirmar Restauração
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

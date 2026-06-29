@@ -171,6 +171,10 @@ export interface User {
 export interface TrainedModel {
   modelId: string;
   domain: DomainType;
+  version: string;
+  datasetName: string;
+  datasetSize: number;
+  hash: string;
   algorithm: string;
   type: "Classification" | "Regression";
   metrics: {
@@ -201,6 +205,31 @@ export interface TrainedModel {
     real: number;
   }[];
 }
+
+export const generateModelHash = (model: Omit<TrainedModel, "hash">): string => {
+  const str = JSON.stringify({
+    modelId: model.modelId,
+    domain: model.domain,
+    version: model.version,
+    datasetName: model.datasetName,
+    datasetSize: model.datasetSize,
+    algorithm: model.algorithm,
+    type: model.type,
+    metrics: model.metrics,
+    hyperparameters: model.hyperparameters,
+    trainSize: model.trainSize,
+    testSize: model.testSize,
+    timestamp: model.timestamp
+  });
+  
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash).toString(16).padStart(8, '0');
+};
 
 export interface RetrainingCycle {
   modelId: string;
@@ -308,7 +337,7 @@ interface DomainContextProps {
   trainingFinishedAlert: boolean;
   simulatedFail: boolean;
   setSimulatedFail: (val: boolean) => void;
-  startTraining: (fileSize: number, rowCount: number, _rowsData?: string[][]) => void;
+  startTraining: (fileSize: number, rowCount: number, _rowsData?: string[][], datasetName?: string) => void;
   resetTraining: () => void;
   dismissFinishedAlert: () => void;
   toggleTrainingDetails: () => void;
@@ -1720,7 +1749,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     setTrainingFinishedAlert(false);
   }, []);
 
-  const startTraining = useCallback((fileSize: number, rowCount: number, _rowsData?: string[][]) => {
+  const startTraining = useCallback((fileSize: number, rowCount: number, _rowsData?: string[][], datasetName?: string) => {
     if (isTraining) return;
 
     // Use variable to satisfy no-unused-vars rule
@@ -1934,11 +1963,17 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
           residualsData = points;
         }
 
-        const newModel: TrainedModel = {
+        const historyLength = modelsHistory[domainKey]?.length || 0;
+        const newVersion = `v${historyLength + 1}`;
+
+        const baseModel = {
             modelId,
             domain: domainKey,
+            version: newVersion,
+            datasetName: datasetName || "dataset_analitico.csv",
+            datasetSize: fileSizeKB,
             algorithm: algStr,
-            type: isClassification ? "Classification" : "Regression",
+            type: isClassification ? "Classification" : "Regression" as "Classification" | "Regression",
             metrics: modelMetrics,
             hyperparameters: hyperparams,
             trainSize,
@@ -1947,7 +1982,13 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
             timestamp: Date.now(),
             confusionMatrix: confusionMatrixData,
             residuals: residualsData
-          };
+        };
+
+        const newModel: TrainedModel = {
+            ...baseModel,
+            type: baseModel.type,
+            hash: generateModelHash(baseModel as Omit<TrainedModel, "hash">)
+        };
 
         // CA05: Simule uma validação de integridade estrutural do bloco gerado antes do disparo do download.
         const isIntegrityValid = validateModelIntegrity(newModel);
@@ -2039,7 +2080,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         }
       }
     }, 1000);
-  }, [activeDomain, simulatedFail, addLog, isTraining, trainedModels, archiveRetrainingCycle, selectedAlgorithms, setTrainedModelsByAlgorithm, addLogWithProfile, userProfile]);
+  }, [activeDomain, simulatedFail, addLog, isTraining, trainedModels, archiveRetrainingCycle, selectedAlgorithms, setTrainedModelsByAlgorithm, addLogWithProfile, userProfile, modelsHistory]);
 
   const dismissFinishedAlert = useCallback(() => {
     setTrainingFinishedAlert(false);
@@ -2260,11 +2301,17 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         };
       }
 
-      const newModel: TrainedModel = {
+      const historyLength = modelsHistory[domain]?.length || 0;
+      const newVersion = `v${historyLength + 1}`;
+
+      const baseModel = {
         modelId,
         domain,
+        version: newVersion,
+        datasetName: "agendamento_automatico.csv",
+        datasetSize: 512,
         algorithm: algStr,
-        type: typeStr,
+        type: typeStr as "Classification" | "Regression",
         metrics: modelMetrics,
         hyperparameters: isClassification 
           ? { n_estimators: 100, max_depth: 8, random_state: 42 } 
@@ -2273,6 +2320,12 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         testSize,
         datasetVersion: `v${Math.floor(Math.random() * 5) + 1}.${Math.floor(Math.random() * 9)}`,
         timestamp: Date.now()
+      };
+
+      const newModel: TrainedModel = {
+        ...baseModel,
+        type: baseModel.type,
+        hash: generateModelHash(baseModel as Omit<TrainedModel, "hash">)
       };
 
       setPreviousTrainedModels(prev => ({
@@ -2849,9 +2902,9 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         }
       }));
       setSelectedAlgorithm(domain, modelToActivate.algorithm);
-      addLog(`[Model Selection] Modelo '${modelId}' ativado para '${DOMAINS[domain].name}'.`);
+      addLog(`[Auditoria - Versionamento] O usuário ${currentUser?.fullName || userProfile} restaurou a versão ${modelToActivate.version} (${modelToActivate.algorithm}) no domínio '${DOMAINS[domain].name}'. Substituição concluída.`);
     }
-  }, [modelsHistory, trainedModels, setSelectedAlgorithm, addLog]);
+  }, [modelsHistory, trainedModels, setSelectedAlgorithm, addLog, currentUser, userProfile]);
 
   return (
     <DomainContext.Provider

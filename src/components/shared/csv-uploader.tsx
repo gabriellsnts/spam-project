@@ -2699,7 +2699,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                       if (activeModel) {
                         setConfirmRetrainOpen(true);
                       } else {
-                        startTraining(fileDetails.sizeBytes, fileDetails.rows, allRows);
+                        startTraining(fileDetails.sizeBytes, fileDetails.rows, allRows, fileDetails.name);
                       }
                     }}
                     disabled={!canEdit}
@@ -3330,7 +3330,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                     onClick={() => {
                       resetTraining();
                       setTimeout(() => {
-                        startTraining(fileDetails.sizeBytes, fileDetails.rows, allRows);
+                        startTraining(fileDetails.sizeBytes, fileDetails.rows, allRows, fileDetails.name);
                       }, 100);
                     }}
                     className="text-[10px] font-bold h-8 px-3.5 bg-rose-600 hover:bg-rose-500 text-white"
@@ -3642,7 +3642,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
               onClick={() => {
                 setConfirmRetrainOpen(false);
                 if (fileDetails) {
-                  startTraining(fileDetails.sizeBytes, fileDetails.rows, allRows);
+                  startTraining(fileDetails.sizeBytes, fileDetails.rows, allRows, fileDetails.name);
                 }
               }}
               disabled={!canEdit}

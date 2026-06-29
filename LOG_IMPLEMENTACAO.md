@@ -407,3 +407,15 @@
 - Função `setModelActive` integrada para alternância do modelo em produção e botão de exportar relatório CSV comparativo.
 ### 3. Impacto e Resultados Técnicos
 - As equipes de auditoria ganham rastreabilidade total (modelHistory) sobre cada versão treinada, além de reatividade total das interfaces ao chavear de um modelo para outro. O sistema ficou perfeitamente tipado e testado.
+
+---
+
+## 📅 2026-06-28 — Implementação de Versionamento Automático e Rastreabilidade de Modelos (RF46) - Autor: luizsantos011
+### 1. Contexto e Problemática
+- Era necessário fornecer um controle de versionamento rigoroso e rastreabilidade para os modelos treinados. O sistema exigia atribuição sequencial de versões (`v1`, `v2`, etc.), além da gravação de informações do dataset de origem e garantia de integridade estrutural através de hash para mitigar perdas ou corrupções em ambiente de produção (Rollback Seguro).
+### 2. Solução Proposta e Fundamentação
+- Extensão da interface `TrainedModel` para acomodar os novos campos estruturais (`version`, `datasetName`, `datasetSize`, e `hash`).
+- Criação e integração de uma função de hash (`generateModelHash`) para calcular e validar as impressões digitais geradas a cada treinamento. 
+- Adaptação na interface `model-comparison.tsx` para sinalização visual rigorosa (badges de integridade "Integridade OK"/"Corrompido") e adição de um novo modal dinâmico que requisita confirmação do usuário exibindo detalhadamente os impactos de se restaurar uma versão prévia, associado a um Log de Auditoria estrito (registrando data, usuário, domínio e versão afetada).
+### 3. Impacto e Resultados Técnicos
+- Conformidade total com o "Protocolo de Ferro v2.0". Validação limpa pelo TypeScript, build estático gerado com sucesso e total transparência operacional. Usuários ganham completa previsibilidade ao efetuarem rollback, prevenindo instabilidades na tomada de decisão preditiva baseada em versões defasadas ou corrompidas.
