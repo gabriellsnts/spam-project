@@ -119,7 +119,7 @@ export function AdvancedModelAnalytics() {
                       <Tooltip />
                       <Legend wrapperStyle={{ fontSize: '10px' }} />
                       <Line type="monotone" dataKey="modelGains" name="Ganhos Modelo (%)" stroke="#10b981" strokeWidth={3} dot={false} />
-                      <Line type="dashed" dataKey="randomGains" name="Ganhos Aleatórios (%)" stroke="#94a3b8" strokeDasharray="5 5" dot={false} />
+                      <Line type="monotone" dataKey="randomGains" name="Ganhos Aleatórios (%)" stroke="#94a3b8" strokeDasharray="5 5" dot={false} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
