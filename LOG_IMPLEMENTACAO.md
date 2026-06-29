@@ -419,3 +419,15 @@
 - AdaptaÃ§Ã£o na interface `model-comparison.tsx` para sinalizaÃ§Ã£o visual rigorosa (badges de integridade "Integridade OK"/"Corrompido") e adiÃ§Ã£o de um novo modal dinÃ¢mico que requisita confirmaÃ§Ã£o do usuÃ¡rio exibindo detalhadamente os impactos de se restaurar uma versÃ£o prÃ©via, associado a um Log de Auditoria estrito (registrando data, usuÃ¡rio, domÃ­nio e versÃ£o afetada).
 ### 3. Impacto e Resultados TÃ©cnicos
 - Conformidade total com o "Protocolo de Ferro v2.0". ValidaÃ§Ã£o limpa pelo TypeScript, build estÃ¡tico gerado com sucesso e total transparÃªncia operacional. UsuÃ¡rios ganham completa previsibilidade ao efetuarem rollback, prevenindo instabilidades na tomada de decisÃ£o preditiva baseada em versÃµes defasadas ou corrompidas.
+
+---
+
+## ?? 2026-06-28 — Implementação de Rollback de Modelo para Versão Anterior (RF47) - Autor: luizsantos011
+### 1. Contexto e Problemática
+- Quando os engenheiros de machine learning deparavam-se com degradação de desempenho no modelo recém-treinado, não possuíam visibilidade imediata ou mecanismo sistêmico rastreável para restaurar (rollback) a predição para uma versão historicamente estável. Havia dependência de retreinamento manual com dados antigos, o que paralisava o pipeline analítico.
+### 2. Solução Proposta e Fundamentação
+- Refatoração do Modal de Restauração em model-comparison.tsx para apresentar as métricas de performance da versão ativa versus a versão de destino lado a lado, dando total clareza matemática da substituição (CA02).
+- Adição de bloqueio visual interativo via simulação de carregamento (timeout de 2 segundos) finalizado com alerta toast pontuando a hora e data do evento para acompanhamento operacional (CA03).
+- Ampliação da estrutura de log no domain-context.tsx registrando expressamente o vetor direcional das versões substitutas, garantindo rastreabilidade perene na Auditoria do Sistema (CA06).
+### 3. Impacto e Resultados Técnicos
+- Conformidade total com o "Protocolo de Ferro v2.0". Agilidade imediata na reversão analítica (Rollback Seguro), evitando latência por retreinamento em ambientes degradados. Interface altamente informativa proporcionando tomada de decisão confiável e tipagem 100% livre de errors nos builds de produção da arquitetura client-side.

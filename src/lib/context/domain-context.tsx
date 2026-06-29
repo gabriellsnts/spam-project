@@ -2892,6 +2892,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     const modelToActivate = history.find(m => m.modelId === modelId);
     
     if (modelToActivate) {
+      const activeVersion = trainedModels[domain]?.version || "Desconhecida";
       setPreviousTrainedModels(prev => ({ ...prev, [domain]: trainedModels[domain] }));
       setTrainedModels(prev => ({ ...prev, [domain]: modelToActivate }));
       setTrainedModelsByAlgorithm(prev => ({
@@ -2902,7 +2903,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         }
       }));
       setSelectedAlgorithm(domain, modelToActivate.algorithm);
-      addLog(`[Auditoria - Versionamento] O usuário ${currentUser?.fullName || userProfile} restaurou a versão ${modelToActivate.version} (${modelToActivate.algorithm}) no domínio '${DOMAINS[domain].name}'. Substituição concluída.`);
+      addLog(`[Auditoria - Versionamento] O usuário ${currentUser?.fullName || userProfile} realizou rollback no domínio '${DOMAINS[domain].name}'. Versão substituída (anterior): ${activeVersion} -> Versão restaurada (ativa): ${modelToActivate.version} (${modelToActivate.algorithm}). Substituição concluída.`);
     }
   }, [modelsHistory, trainedModels, setSelectedAlgorithm, addLog, currentUser, userProfile]);
 

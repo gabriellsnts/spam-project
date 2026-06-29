@@ -15,7 +15,7 @@ interface ModelComparisonProps {
 }
 
 export default function ModelComparison({ domain }: ModelComparisonProps) {
-  const { modelsHistory, trainedModels, setModelActive, addLog } = useDomain();
+  const { modelsHistory, trainedModels, setModelActive, addLog, showPremiumToast } = useDomain();
   
   const history = useMemo(() => modelsHistory[domain] || [], [modelsHistory, domain]);
   const activeModel = trainedModels[domain];
@@ -25,6 +25,7 @@ export default function ModelComparison({ domain }: ModelComparisonProps) {
   const [algFilter, setAlgFilter] = useState<string>("all");
   const [dateFilter, setDateFilter] = useState<string>("all");
   const [modelToRestore, setModelToRestore] = useState<TrainedModel | null>(null);
+  const [isRestoring, setIsRestoring] = useState<boolean>(false);
 
   // Options
   const algorithms = useMemo(() => {
@@ -67,8 +68,17 @@ export default function ModelComparison({ domain }: ModelComparisonProps) {
 
   const confirmRestore = () => {
     if (modelToRestore) {
-      setModelActive(domain, modelToRestore.modelId);
-      setModelToRestore(null);
+      setIsRestoring(true);
+      
+      // CA03 - Tempo simulado do rollback e feedback
+      setTimeout(() => {
+        setModelActive(domain, modelToRestore.modelId);
+        setIsRestoring(false);
+        setModelToRestore(null);
+        
+        const timestamp = new Date().toLocaleString();
+        showPremiumToast(`Rollback concluído: A versão ${modelToRestore.version || "v1"} foi restaurada com sucesso em ${timestamp}.`);
+      }, 2000);
     }
   };
 
@@ -437,18 +447,48 @@ export default function ModelComparison({ domain }: ModelComparisonProps) {
               Restaurar Versão Anterior
             </h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Você está prestes a substituir o modelo ativo atual pela versão <strong className="text-foreground uppercase">{modelToRestore.version || "v1"}</strong> ({modelToRestore.algorithm}).
+              Você está prestes a substituir o modelo ativo atual (<strong className="uppercase">{activeModel?.version || "Desconhecida"}</strong>) pela versão <strong className="text-foreground uppercase">{modelToRestore.version || "v1"}</strong> ({modelToRestore.algorithm}).
             </p>
+
+            {/* COMPARAÇÃO DE MÉTRICAS (CA02) */}
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="space-y-2 p-3 bg-muted/40 rounded-md border border-border/50">
+                <div className="text-xs font-semibold text-muted-foreground text-center mb-2">Versão Ativa ({activeModel?.version || "-"})</div>
+                {activeModel && Object.entries(activeModel.metrics).filter(([,v]) => v !== undefined).slice(0, 3).map(([key, value]) => (
+                  <div key={key} className="flex justify-between text-xs">
+                    <span className="capitalize">{key}</span>
+                    <span className="font-mono">{Number(value).toFixed(4)}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-2 p-3 bg-primary/5 rounded-md border border-primary/20">
+                <div className="text-xs font-semibold text-primary text-center mb-2">Nova Versão ({modelToRestore.version || "-"})</div>
+                {Object.entries(modelToRestore.metrics).filter(([,v]) => v !== undefined).slice(0, 3).map(([key, value]) => (
+                  <div key={key} className="flex justify-between text-xs">
+                    <span className="capitalize">{key}</span>
+                    <span className="font-mono text-primary font-medium">{Number(value).toFixed(4)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <div className="bg-muted/50 border border-border rounded-md p-3 mb-6 text-xs text-muted-foreground">
               <strong>Impacto da Operação:</strong> As próximas predições do domínio de {domain} utilizarão imediatamente os pesos matemáticos desta versão histórica. O modelo ativo atual não será excluído, sendo preservado no histórico para auditoria.
             </div>
             
             <div className="flex items-center justify-end gap-3">
-              <Button variant="outline" onClick={() => setModelToRestore(null)}>
+              <Button variant="outline" onClick={() => setModelToRestore(null)} disabled={isRestoring}>
                 Cancelar
               </Button>
-              <Button variant="destructive" onClick={confirmRestore}>
-                Confirmar Restauração
+              <Button variant="destructive" onClick={confirmRestore} disabled={isRestoring}>
+                {isRestoring ? (
+                  <>
+                    <Activity className="h-4 w-4 mr-2 animate-spin" />
+                    Revertendo pesos...
+                  </>
+                ) : (
+                  "Confirmar Restauração"
+                )}
               </Button>
             </div>
           </div>
