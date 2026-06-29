@@ -17,6 +17,11 @@ import { ExportDropdown } from "@/components/shared/export-dropdown";
 import { ShareAnalysisDialog } from "@/components/shared/share-analysis-dialog";
 import { ModelCertificateDialog } from "@/components/shared/model-certificate-dialog";
 import { GlossaryTooltip } from "@/components/shared/glossary-tooltip";
+import { CorrelationMatrix } from "@/components/shared/correlation-matrix";
+import { OverfittingDetector } from "@/components/shared/overfitting-detector";
+import { BatchPrediction } from "@/components/shared/batch-prediction";
+import { InteractiveConfusionMatrix } from "@/components/shared/interactive-confusion-matrix";
+import { batchProcessCreditRisk } from "@/lib/predictive-engine";
 
 type RiskLevel = "all" | "high" | "medium" | "low";
 
@@ -1001,8 +1006,35 @@ export default function CreditRiskPage() {
                 </Card>
 
                 <FeatureImportanceChart data={mockFeatures} title={t("active_algorithm_metrics")} />
+                <OverfittingDetector model={activeModel} domainAccent="emerald" />
+                <InteractiveConfusionMatrix model={activeModel} domainAccent="emerald" />
               </>
             )}
+
+            <CorrelationMatrix allRows={[]} headers={[]} activeDomain="credit-risk" />
+
+            <BatchPrediction
+              domain="credit-risk"
+              domainAccent="emerald"
+              columnNames={["proposta_id", "cliente", "valor", "score"]}
+              processRow={(row: Record<string, string>) => {
+                const res = batchProcessCreditRisk(row);
+                return {
+                  id: row.proposta_id ?? String(Math.random()),
+                  inputs: row,
+                  result: res.result,
+                  resultClass: res.resultClass === "text-emerald-500 bg-emerald-500/10 border border-emerald-500/20" ? "success" 
+                    : res.resultClass === "text-rose-500 bg-rose-500/10 border border-rose-500/20" ? "danger" 
+                    : "warning",
+                  confidence: Math.round(res.score),
+                };
+              }}
+              demoRows={[
+                { proposta_id: "PROP-001", cliente: "Indústrias Alfa", valor: "120000", score: "820" },
+                { proposta_id: "PROP-002", cliente: "Comércio Beta", valor: "45000", score: "610" },
+                { proposta_id: "PROP-003", cliente: "Serviços Gamma", valor: "250000", score: "490" },
+              ]}
+            />
 
             <CSVUploader />
             <SchedulingCard domain="credit-risk" />

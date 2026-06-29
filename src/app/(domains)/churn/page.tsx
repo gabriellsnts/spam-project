@@ -7,10 +7,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { CSVUploader, ConfusionMatrixView } from "@/components/shared/csv-uploader";
 import { FeatureImportanceChart } from "@/components/shared/feature-importance-chart";
-import { AlertThresholdSettings } from "@/components/shared/alert-threshold-settings";
 import { ComparisonView } from "@/components/shared/comparison-view";
-import ModelComparison from "@/components/shared/model-comparison";
 import { SchedulingCard } from "@/components/shared/scheduling-card";
+import ModelComparison from "@/components/shared/model-comparison";
+import { CorrelationMatrix } from "@/components/shared/correlation-matrix";
+import { OverfittingDetector } from "@/components/shared/overfitting-detector";
+import { BatchPrediction } from "@/components/shared/batch-prediction";
+import { InteractiveConfusionMatrix } from "@/components/shared/interactive-confusion-matrix";
+import { batchProcessChurnRisk } from "@/lib/predictive-engine";
+import { AlertThresholdSettings } from "@/components/shared/alert-threshold-settings";
 
 type RiskLevel = "all" | "high" | "medium" | "low";
 
@@ -535,8 +540,35 @@ export default function ChurnPage() {
                 </Card>
                 
                 <FeatureImportanceChart data={mockFeatures} title={t("predictor_importance_churn")} />
+                <OverfittingDetector model={activeModel} domainAccent="violet" />
+                <InteractiveConfusionMatrix model={activeModel} domainAccent="violet" />
               </>
             )}
+
+            <CorrelationMatrix allRows={[]} headers={[]} activeDomain="churn" />
+
+            <BatchPrediction
+              domain="churn"
+              domainAccent="violet"
+              columnNames={["cliente_id", "nome", "ltv"]}
+              processRow={(row: Record<string, string>) => {
+                const res = batchProcessChurnRisk(row);
+                return {
+                  id: row.cliente_id ?? String(Math.random()),
+                  inputs: row,
+                  result: res.result,
+                  resultClass: res.resultClass === "text-emerald-500 bg-emerald-500/10 border border-emerald-500/20" ? "success" 
+                    : res.resultClass === "text-rose-500 bg-rose-500/10 border border-rose-500/20" ? "danger" 
+                    : "warning",
+                  confidence: Math.round(res.score),
+                };
+              }}
+              demoRows={[
+                { cliente_id: "C001", nome: "Construtora Alpha", ltv: "R$ 280.000" },
+                { cliente_id: "C002", nome: "Metalurgia Beta", ltv: "R$ 112.000" },
+                { cliente_id: "C003", nome: "Tech Gamma", ltv: "R$ 55.000" },
+              ]}
+            />
 
             <CSVUploader />
             <SchedulingCard domain="churn" />

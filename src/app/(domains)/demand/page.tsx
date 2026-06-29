@@ -12,6 +12,8 @@ import { AlertThresholdSettings } from "@/components/shared/alert-threshold-sett
 import { ComparisonView } from "@/components/shared/comparison-view";
 import ModelComparison from "@/components/shared/model-comparison";
 import { SchedulingCard } from "@/components/shared/scheduling-card";
+import { CorrelationMatrix } from "@/components/shared/correlation-matrix";
+import { OverfittingDetector } from "@/components/shared/overfitting-detector";
 
 export default function DemandPage() {
   const { addLog, isTraining, trainedModels, alertThresholds, addAlert, currentView, t } = useDomain();
@@ -519,8 +521,11 @@ export default function DemandPage() {
               </Card>
 
               <FeatureImportanceChart data={mockFeatures} title={t("predictor_importance_demand") || "Preditores de Demanda"} />
+              <OverfittingDetector model={activeModel} domainAccent="sky" />
             </>
           )}
+
+          <CorrelationMatrix allRows={[]} headers={[]} activeDomain="demand" />
 
           <CSVUploader />
           <SchedulingCard domain="demand" />

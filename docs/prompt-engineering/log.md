@@ -239,3 +239,10 @@ Funcionou bem: O desenvolvimento do componente `model-comparison.tsx` e a arquit
 Dificuldade: Resolver erros de formatação de tooltips no Recharts (a tipagem do formatter para lidar com ReactNode/any versus string/number) sem recorrer a escape hatches agressivos e remover dependências inexistentes (Select, Checkbox de shadcn quando não instalados).
 Correção aplicada: Criação da função de formatação tooltipFormatter fora do bloco de renderização do JSX para aplicação correta de `eslint-disable-next-line` (ignorando TS2322) mantendo o linting do build seguro. E substituição dos componentes do Shadcn faltantes por inputs nativos customizados via Tailwind, assegurando UX premium idêntica.
 Melhoria de UX sugerida pela IA: Criação de badge verde de 'ATIVO' em tempo real dentro da listagem de modelos selecionáveis, orientando visualmente o usuário sobre qual versão está atualmente controlando as métricas do painel, mesmo dentro da visão de histórico.
+
+[RF56, RF59, RF63, RF70, RF73]
+- Funcionalidade: Reaplicacao dos requisitos pos-conflito.
+- Prompt usado: Resolucao de conflitos com a main.
+- Funcionou bem: Checkout dos arquivos novos da commit anterior e multi_replace cuidadoso.
+- Dificuldade: A branch main avancou com os RFs 43-53 o que gerou conflito com componentes previamente desenvolvidos.
+- Correcao aplicada: Insercao manual com multi_replace_file_content nas paginas ao inves de git rebase.
