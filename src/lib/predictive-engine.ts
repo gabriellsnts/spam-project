@@ -131,3 +131,44 @@ export async function getPrediction(domain: string, params: Record<string, numbe
   return { status: "success", predicted: true, domain, params };
 }
 
+// ----------------------------------------------------------------------
+// BATCH PREDICTION UTILS (RF63)
+// ----------------------------------------------------------------------
+
+export function batchProcessChurnRisk(row: Record<string, string>) {
+  const ltvNum = parseFloat(row.ltv?.replace(/\D/g, "") || "0");
+  const rand = Math.random();
+  const score = rand * 100;
+  let result = "Retido";
+  let resultClass = "text-emerald-500 bg-emerald-500/10 border border-emerald-500/20";
+  
+  if (ltvNum < 50000 || score > 80) {
+    result = "Alto Risco de Churn";
+    resultClass = "text-rose-500 bg-rose-500/10 border border-rose-500/20";
+  } else if (score > 40) {
+    result = "Atenção (Risco Médio)";
+    resultClass = "text-amber-500 bg-amber-500/10 border border-amber-500/20";
+  }
+
+  return { result, resultClass, score };
+}
+
+export function batchProcessCreditRisk(row: Record<string, string>) {
+  const scoreInput = parseInt(row.score || "500", 10);
+  const valInput = parseFloat(row.valor?.replace(/\D/g, "") || "0");
+  const base = predictCreditRisk(valInput, scoreInput);
+  
+  let resultClass = "text-amber-500 bg-amber-500/10 border border-amber-500/20";
+  if (base.acao === "Aprovar") {
+    resultClass = "text-emerald-500 bg-emerald-500/10 border border-emerald-500/20";
+  } else if (base.acao === "Rejeitar") {
+    resultClass = "text-rose-500 bg-rose-500/10 border border-rose-500/20";
+  }
+
+  return {
+    result: base.acao,
+    resultClass,
+    score: base.probabilidadeRetorno
+  };
+}
+
