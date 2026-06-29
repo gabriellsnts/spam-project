@@ -255,6 +255,14 @@ export interface SchedulingConfig {
   lastRun?: number;
 }
 
+export interface TutorialState {
+  isActive: boolean;
+  currentStep: number;
+  isPaused: boolean;
+  isCompleted: boolean;
+  totalSteps: number;
+}
+
 export interface SimulatedEmail {
   id: string;
   recipient: string;
@@ -433,6 +441,14 @@ interface DomainContextProps {
   restoreBackup: (id: string) => void;
   deleteBackup: (id: string) => void;
   updateBackupConfig: (config: BackupConfig) => void;
+
+  // RF57 Tutorial Interativo
+  tutorialState: TutorialState;
+  startTutorial: () => void;
+  pauseTutorial: () => void;
+  resumeTutorial: () => void;
+  endTutorial: () => void;
+  advanceTutorialStep: (expectedStep: number) => void;
 }
 
 const DomainContext = createContext<DomainContextProps | undefined>(undefined);
@@ -745,6 +761,15 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
   // Backup States (RF48)
   const [systemBackups, setSystemBackups] = useState<SystemBackup[]>([]);
   const [backupConfig, setBackupConfig] = useState<BackupConfig>({ maxBackups: 5, frequency: "daily" });
+
+  // Tutorial States (RF57)
+  const [tutorialState, setTutorialState] = useState<TutorialState>({
+    isActive: false,
+    currentStep: 0,
+    isPaused: false,
+    isCompleted: false,
+    totalSteps: 5 // Default total steps
+  });
 
   const emailBufferRef = useRef<Record<string, {
     alerts: {
@@ -3110,6 +3135,71 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // RF57: Tutorial Methods
+  const startTutorial = useCallback(() => {
+    setTutorialState(prev => ({
+      ...prev,
+      isActive: true,
+      currentStep: 1,
+      isPaused: false,
+      isCompleted: false
+    }));
+    addLog("[Tutorial] Usuário iniciou o tutorial interativo.");
+  }, [addLog]);
+
+  const pauseTutorial = useCallback(() => {
+    setTutorialState(prev => {
+      addLog(`[Tutorial] Usuário pausou o tutorial na etapa ${prev.currentStep}.`);
+      return { ...prev, isPaused: true };
+    });
+  }, [addLog]);
+
+  const resumeTutorial = useCallback(() => {
+    setTutorialState(prev => {
+      addLog(`[Tutorial] Usuário retomou o tutorial na etapa ${prev.currentStep}.`);
+      return { ...prev, isPaused: false };
+    });
+  }, [addLog]);
+
+  const endTutorial = useCallback(() => {
+    setTutorialState(prev => {
+      addLog(`[Tutorial] Tutorial encerrado. Etapas concluídas: ${prev.currentStep - 1}/${prev.totalSteps}.`);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("spam-tutorial-completed", "true");
+      }
+      return { ...prev, isActive: false, isCompleted: true, currentStep: 0 };
+    });
+  }, [addLog]);
+
+  const advanceTutorialStep = useCallback((expectedStep: number) => {
+    setTutorialState(prev => {
+      if (!prev.isActive || prev.isPaused) return prev;
+      if (prev.currentStep === expectedStep) {
+        const nextStep = prev.currentStep + 1;
+        if (nextStep > prev.totalSteps) {
+          addLog("[Tutorial] Usuário concluiu todas as etapas do tutorial com sucesso.");
+          if (typeof window !== "undefined") {
+            localStorage.setItem("spam-tutorial-completed", "true");
+          }
+          return { ...prev, currentStep: nextStep, isActive: false, isCompleted: true };
+        }
+        return { ...prev, currentStep: nextStep };
+      }
+      return prev;
+    });
+  }, [addLog]);
+
+  // RF57: Auto-start on first login (CA01)
+  useEffect(() => {
+    if (currentUser && typeof window !== "undefined") {
+      const hasCompleted = localStorage.getItem("spam-tutorial-completed");
+      if (!hasCompleted && !tutorialState.isActive && !tutorialState.isCompleted) {
+        startTutorial();
+      }
+    }
+  }, [currentUser, tutorialState.isActive, tutorialState.isCompleted, startTutorial]);
+
+
   return (
     <DomainContext.Provider
       value={{
@@ -3228,6 +3318,12 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         restoreBackup,
         deleteBackup,
         updateBackupConfig,
+        tutorialState,
+        startTutorial,
+        pauseTutorial,
+        resumeTutorial,
+        endTutorial,
+        advanceTutorialStep,
       }}
     >
       {children}
