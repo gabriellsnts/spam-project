@@ -182,6 +182,12 @@ export function Sidebar() {
       name: t("model_history") || "Histórico de Modelos",
       desc: t("model_history_desc") || "Compare e gerencie versões de modelos",
       icon: HistoryIcon
+    },
+    {
+      id: "analytics",
+      name: "Analytics Avançado",
+      desc: "Lift, Gains, SHAP, Drift, Fairness (RF60, RF74, RF75, RF85, RF86, RF90)",
+      icon: BarChart3
     }
   ];
 

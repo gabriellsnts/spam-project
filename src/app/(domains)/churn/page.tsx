@@ -16,6 +16,8 @@ import { BatchPrediction } from "@/components/shared/batch-prediction";
 import { InteractiveConfusionMatrix } from "@/components/shared/interactive-confusion-matrix";
 import { batchProcessChurnRisk } from "@/lib/predictive-engine";
 import { AlertThresholdSettings } from "@/components/shared/alert-threshold-settings";
+import { ModelRegistry } from "@/components/shared/model-registry";
+import { AdvancedModelAnalytics } from "@/components/shared/advanced-model-analytics";
 
 type RiskLevel = "all" | "high" | "medium" | "low";
 
@@ -579,8 +581,15 @@ export default function ChurnPage() {
           <ComparisonView domain="churn" />
         )}
 
+        {currentView === "analytics" && (
+          <AdvancedModelAnalytics />
+        )}
+
         {currentView === "model-history" && (
-          <ModelComparison domain="churn" />
+          <div className="space-y-6">
+            <ModelRegistry />
+            <ModelComparison domain="churn" />
+          </div>
         )}
       </div>
   );
