@@ -246,3 +246,11 @@ Melhoria de UX sugerida pela IA: CriaÃ§Ã£o de badge verde de 'ATIVO' em tempo re
 - Funcionou bem: Checkout dos arquivos novos da commit anterior e multi_replace cuidadoso.
 - Dificuldade: A branch main avancou com os RFs 43-53 o que gerou conflito com componentes previamente desenvolvidos.
 - Correcao aplicada: Insercao manual com multi_replace_file_content nas paginas ao inves de git rebase.
+
+[LOTE] Analytics Avançado (RF60, RF74, RF75, RF85, RF86, RF89, RF90)
+
+Prompt usado: O usuário solicitou que fossem escolhidos 7 requisitos restantes para implementação, puxando da main e depois subindo para testes. Foi criado um plano de implementação abrangendo Model Registry e gráficos avançados de análise preditiva.
+Funcionou bem: A estruturação do plano foi bem recebida, a injeção nos módulos de Churn e Credit Risk fluiu perfeitamente aproveitando o Recharts já instalado no projeto.
+Dificuldade: Organizar as views para evitar a poluição visual, já que são 7 RFs muito focados em exibição de gráficos e tabelas.
+Correção aplicada: Decidi agrupar RF60, RF74, RF75, RF85, RF86, RF90 dentro de um único componente usando sistema de abas e aloquei o RF89 (Model Registry) junto à aba de Model History já existente.
+Melhoria de UX sugerida pela IA: Criação do menu global 'Analytics Avançado' no sidebar centralizando a avaliação complexa dos modelos, separando da visão tática do dia-a-dia.
