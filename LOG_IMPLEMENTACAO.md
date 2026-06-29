@@ -446,3 +446,16 @@
 - Criação e integração do agendador interno (Loop Background) responsável pela geração recorrente (automática) baseada na configuração estipulada pelo Super Admin, impedindo a interrupção da segurança de dados.
 ### 3. Impacto e Resultados Técnicos
 - Conformidade total com o "Protocolo de Ferro v2.0", aprovação unânime no 	sc e eslint sem nenhuma delegação de tipos incertos (ny). Os administradores agora detêm controle total de governança de dados no lado do cliente, operando restaurações absolutas apenas se os snapshots estiverem intactos.
+
+---
+
+## ?? 2026-06-29 - Implementação de Tutorial Interativo para Novo Usuário (RF57)
+### 1. Contexto e Problemática
+- Novos usuários não tinham um guia estruturado para entender os passos fundamentais de carregamento de dados, treinamento e predição, o que aumentava a curva de aprendizado.
+### 2. Solução Proposta e Fundamentação
+- Criada a funcionalidade TutorialState no DomainContext para orquestrar etapas do tutorial, persistindo status no localStorage.
+- Desenvolvido o componente UI InteractiveTutorial que renderiza overlays focando elementos vitais através do atributo data-tutorial-target com realce (recorte escurecido na página).
+- Target injects em componentes chave: Sidebar (Navegação de Módulos), CSVUploader (Importação e Treinamento) e botão de Simulação (Geração de Previsões).
+- Inclusão do botão 'Reexecutar Onboarding' nas Configurações de Perfil (CA05).
+### 3. Impacto e Resultados Técnicos
+- Sistema de onboarding completo e tolerante a reloads, garantindo navegação linear que só avança ao realizar a ação requerida. Compilação e tipagem (	sc e eslint) atendem todos os requisitos do Protocolo de Ferro v3.0.

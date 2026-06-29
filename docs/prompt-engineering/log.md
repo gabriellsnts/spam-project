@@ -246,3 +246,12 @@ Melhoria de UX sugerida pela IA: CriaÃ§Ã£o de badge verde de 'ATIVO' em tempo re
 - Funcionou bem: Checkout dos arquivos novos da commit anterior e multi_replace cuidadoso.
 - Dificuldade: A branch main avancou com os RFs 43-53 o que gerou conflito com componentes previamente desenvolvidos.
 - Correcao aplicada: Insercao manual com multi_replace_file_content nas paginas ao inves de git rebase.
+
+[RF57] Fornecer Tutorial Interativo para Novo Usuário
+
+Prompt usado: Implementar um onboarding interativo para guiar o usuário pelos passos críticos: Navegar para o domínio, Importar CSV, Treinar Modelo e Fazer Previsão, com realce visual nas áreas e avanço de etapa automático baseado na ação do usuário.
+Funcionou bem: A lógica de orquestração do Contexto (TutorialState), controle de avanço manual e injeção do componente de Overlay (InteractiveTutorial) ocorreu sem atritos estruturais, mantendo o App limpo.
+Dificuldade: O mapeamento exato da árvore do DOM de componentes já grandes e mistos como csv-uploader.tsx e identificação do componente contendo o formulário de Simulação sem quebrar comportamentos.
+Correção aplicada: Foi utilizado um fluxo criterioso de inspecionar individualmente a UI, atribuindo a tag simples data-tutorial-target em áreas pré-existentes, tornando a âncora robusta e não invasiva.
+Melhoria de UX sugerida pela IA: Em vez de bloquear 100% da tela durante o tutorial, foi preservada a interatividade (pointer-events-auto) apenas no elemento alvo para que o usuário efetivamente _clique_ em vez de _assistir_, consolidando a memória motora e cognitiva do fluxo de uso.
+
