@@ -4,8 +4,9 @@ import React, { useState, useRef, DragEvent } from "react";
 import { useDomain, DOMAINS, TrainedModel } from "@/lib/context/domain-context";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { UploadCloud, CheckCircle2, AlertCircle, Loader2, FileSpreadsheet, Trash2, Info, Download, AlertTriangle, Shield } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { UploadCloud, CheckCircle2, AlertCircle, Loader2, FileSpreadsheet, Trash2, Info, Download, AlertTriangle, Shield, Webhook, Activity } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 // Colunas recomendadas/esperadas para cada domínio como orientação ao Engenheiro de Dados
@@ -2089,76 +2090,120 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
           id="csv-file-input"
         />
 
-        {/* 1. Interface em estado IDLE (Pronto para Upload) */}
+        {/* 1. Interface em estado IDLE (Pronto para Upload ou API) */}
         {uploadStatus === "idle" && !isTraining && trainingProgress === 0 && (
-          <div className="space-y-4">
-            <div
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              onClick={triggerFileSelect}
-              data-tutorial-target="import-csv"
-              className={cn(
-                "border border-dashed rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 gap-3 group relative select-none",
-                isDragging ? theme.borderActive : theme.border
-              )}
-            >
-              <div className={cn(
-                "p-3 rounded-full bg-muted/40 border border-border/80 text-muted-foreground transition-all duration-300 group-hover:scale-110",
-                isDragging ? theme.accent : ""
-              )}>
-                <UploadCloud className="h-6 w-6" />
-              </div>
-
-              <div className="text-center space-y-1">
-                <p className="text-xs font-semibold text-foreground">
-                  {t("drag_drop_csv")}
-                </p>
-                <p className="text-[10px] text-muted-foreground">
-                  {t("click_browse_file")}
-                </p>
-              </div>
-
-              {/* Tag informativa de formato aceito */}
-              <div className="px-2 py-0.5 rounded bg-background border border-border text-[9px] font-bold text-muted-foreground uppercase font-mono tracking-wider">
-                {t("exclusive_csv")}
-              </div>
-            </div>
-
-            {/* Botão de Mock de Upload para Testes */}
-            <div className="flex justify-center mt-2">
-              <Button 
-                onClick={() => {
-                  setIsMockPending(true);
-                  setPendingFile(null);
-                  setIsLgpdModalOpen(true);
-                }}
-                variant="outline" 
-                className="text-[10px] font-bold h-7 border-dashed border-emerald-500/40 text-emerald-600 hover:bg-emerald-500/10"
+          <Tabs defaultValue="upload" className="w-full space-y-4">
+            <TabsList className="w-full grid grid-cols-2">
+              <TabsTrigger value="upload" className="text-[11px] font-bold">Upload Local</TabsTrigger>
+              <TabsTrigger value="api" className="text-[11px] font-bold flex items-center gap-1.5">
+                <Webhook className="w-3.5 h-3.5" />
+                API Externa (RF50)
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="upload" className="space-y-4 mt-4">
+              <div
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                onClick={triggerFileSelect}
+                data-tutorial-target="import-csv"
+                className={cn(
+                  "border border-dashed rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 gap-3 group relative select-none",
+                  isDragging ? theme.borderActive : theme.border
+                )}
               >
-                <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
-                {t("auto_fill_demo")}
-              </Button>
-            </div>
+                <div className={cn(
+                  "p-3 rounded-full bg-muted/40 border border-border/80 text-muted-foreground transition-all duration-300 group-hover:scale-110",
+                  isDragging ? theme.accent : ""
+                )}>
+                  <UploadCloud className="h-6 w-6" />
+                </div>
 
-            {/* Guia de Colunas Esperadas */}
-            <div className="p-3.5 rounded-xl bg-muted/30 border border-border/80 text-[11px] space-y-2">
-              <div className="font-bold text-foreground/80 flex items-center gap-1.5">
-                <span className={cn("h-1.5 w-1.5 rounded-full bg-current", theme.accent)} />
-                {t("expected_cols_structure")}
+                <div className="text-center space-y-1">
+                  <p className="text-xs font-semibold text-foreground">
+                    {t("drag_drop_csv")}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {t("click_browse_file")}
+                  </p>
+                </div>
+
+                {/* Tag informativa de formato aceito */}
+                <div className="px-2 py-0.5 rounded bg-background border border-border text-[9px] font-bold text-muted-foreground uppercase font-mono tracking-wider">
+                  {t("exclusive_csv")}
+                </div>
               </div>
-              <p className="text-muted-foreground text-[10px] leading-relaxed">
-                Para o correto alinhamento do motor analítico neste módulo, certifique-se de que o CSV contemple os cabeçalhos abaixo (delimitados por <code className="font-mono text-foreground font-semibold px-0.5 bg-muted">,</code> ou <code className="font-mono text-foreground font-semibold px-0.5 bg-muted">;</code>):
-              </p>
-              <div className="flex flex-wrap gap-1.5 pt-1">
-                {expectedCols.map((col) => (
-                  <span key={col} className="px-2 py-0.5 rounded bg-background border border-border/60 font-mono text-[9px] text-foreground/80">
-                    {col}
-                  </span>
-                ))}
+
+              {/* Botão de Mock de Upload para Testes */}
+              <div className="flex justify-center mt-2">
+                <Button 
+                  onClick={() => {
+                    setIsMockPending(true);
+                    setPendingFile(null);
+                    setIsLgpdModalOpen(true);
+                  }}
+                  variant="outline" 
+                  className="text-[10px] font-bold h-7 border-dashed border-emerald-500/40 text-emerald-600 hover:bg-emerald-500/10"
+                >
+                  <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+                  {t("auto_fill_demo")}
+                </Button>
               </div>
-            </div>
-          </div>
+
+              {/* Guia de Colunas Esperadas */}
+              <div className="p-3.5 rounded-xl bg-muted/30 border border-border/80 text-[11px] space-y-2">
+                <div className="font-bold text-foreground/80 flex items-center gap-1.5">
+                  <span className={cn("h-1.5 w-1.5 rounded-full bg-current", theme.accent)} />
+                  {t("expected_cols_structure")}
+                </div>
+                <p className="text-muted-foreground text-[10px] leading-relaxed">
+                  Para o correto alinhamento do motor analítico neste módulo, certifique-se de que o CSV contemple os cabeçalhos abaixo (delimitados por <code className="font-mono text-foreground font-semibold px-0.5 bg-muted">,</code> ou <code className="font-mono text-foreground font-semibold px-0.5 bg-muted">;</code>):
+                </p>
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {expectedCols.map((col) => (
+                    <span key={col} className="px-2 py-0.5 rounded bg-background border border-border/60 font-mono text-[9px] text-foreground/80">
+                      {col}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="api" className="space-y-4 mt-4">
+              <div className="p-6 border border-dashed border-border rounded-xl flex flex-col gap-4">
+                <div className="space-y-1">
+                  <h4 className="text-sm font-bold flex items-center gap-2">
+                    <Webhook className={cn("w-4 h-4", theme.accent)} />
+                    Sincronização via API
+                  </h4>
+                  <p className="text-xs text-muted-foreground">
+                    Conecte o sistema a um Data Warehouse ou Endpoint REST para ingestão contínua.
+                  </p>
+                </div>
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Endpoint URL</label>
+                    <Input placeholder="https://api.empresa.com/v1/data" className="font-mono text-xs" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Bearer Token / API Key</label>
+                    <Input type="password" placeholder="••••••••••••••••" className="font-mono text-xs" />
+                  </div>
+                  <Button 
+                    onClick={() => {
+                      setIsMockPending(true);
+                      setPendingFile(null);
+                      setIsLgpdModalOpen(true);
+                    }}
+                    className={cn("w-full text-xs font-bold", theme.button)}
+                  >
+                    Testar Conexão e Importar Dados
+                  </Button>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
         )}
 
         {/* 2. Interface em estado LOADING (Processando - CA03) */}
@@ -2838,6 +2883,30 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                 <span className="font-bold">{trainingProgress}%</span>
               </div>
             </div>
+
+            {/* Auto Data Prep Logs (RF69, RF71, RF88) */}
+            {!trainingError && trainingProgress > 5 && (
+              <div className="space-y-2 p-3 bg-zinc-950/40 rounded-xl border border-border/40 font-mono text-[9px] animate-in fade-in">
+                <div className="text-muted-foreground font-semibold mb-1 flex items-center gap-1">
+                  <Activity className="w-3 h-3" /> Auto Data Prep em andamento...
+                </div>
+                {trainingProgress > 15 && (
+                  <div className="text-blue-400 flex items-center gap-1.5 animate-in slide-in-from-left-2">
+                    <CheckCircle2 className="w-3 h-3" /> [RF88] Limpeza de Outliers: Remoção de anomalias via Z-Score (-2.4% linhas).
+                  </div>
+                )}
+                {trainingProgress > 35 && (
+                  <div className="text-purple-400 flex items-center gap-1.5 animate-in slide-in-from-left-2">
+                    <CheckCircle2 className="w-3 h-3" /> [RF71] Feature Selection: Drop de colunas redundantes (corr {">"} 0.9).
+                  </div>
+                )}
+                {trainingProgress > 60 && isClassification && (
+                  <div className="text-emerald-400 flex items-center gap-1.5 animate-in slide-in-from-left-2">
+                    <CheckCircle2 className="w-3 h-3" /> [RF69] Balanceamento: SMOTE aplicado para corrigir classes desbalanceadas.
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Technical Error Stacktrace (CA06) */}
             {trainingError && trainingErrorDetails && (

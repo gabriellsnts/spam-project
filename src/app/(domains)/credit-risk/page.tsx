@@ -11,6 +11,7 @@ import { FeatureImportanceChart } from "@/components/shared/feature-importance-c
 import { Input } from "@/components/ui/input";
 import { AlertThresholdSettings } from "@/components/shared/alert-threshold-settings";
 import { ComparisonView } from "@/components/shared/comparison-view";
+import { DataLineageView } from "@/components/shared/data-lineage-view";
 import ModelComparison from "@/components/shared/model-comparison";
 import { SchedulingCard } from "@/components/shared/scheduling-card";
 import { ExportDropdown } from "@/components/shared/export-dropdown";
@@ -1047,6 +1048,9 @@ export default function CreditRiskPage() {
             />
 
             <CSVUploader />
+            <div className="mt-6 mb-6">
+              <DataLineageView />
+            </div>
             <SchedulingCard domain="credit-risk" />
           </div>
         )}

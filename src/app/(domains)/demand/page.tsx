@@ -11,6 +11,7 @@ import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveCo
 import { AlertThresholdSettings } from "@/components/shared/alert-threshold-settings";
 import { ComparisonView } from "@/components/shared/comparison-view";
 import ModelComparison from "@/components/shared/model-comparison";
+import { DataLineageView } from "@/components/shared/data-lineage-view";
 import { SchedulingCard } from "@/components/shared/scheduling-card";
 import { CorrelationMatrix } from "@/components/shared/correlation-matrix";
 import { OverfittingDetector } from "@/components/shared/overfitting-detector";
@@ -528,6 +529,9 @@ export default function DemandPage() {
           <CorrelationMatrix allRows={[]} headers={[]} activeDomain="demand" />
 
           <CSVUploader />
+          <div className="mt-6 mb-6">
+            <DataLineageView />
+          </div>
           <SchedulingCard domain="demand" />
         </div>
       )}

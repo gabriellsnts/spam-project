@@ -272,3 +272,12 @@ Funcionou bem: A IA criou com sucesso a interface de Tuning, Alertas e Pipeline 
 Dificuldade: Ocorreram erros de tipagem com o DomainContext e conflito de imports.
 Correção aplicada: Foi utilizado replace_file_content para remover os imports duplicados e ajustar currentDomain para activeDomain.
 Melhoria de UX sugerida pela IA: Os 7 requisitos foram consolidados de forma contextualizada na aba Settings de Administrador sob uma aba unica 'Tuning e Alertas'.
+
+[RF50, RF66, RF67, RF69, RF71, RF88] Lote 1/2: Dados, Importação e Pipeline
+
+Prompt usado: Criação do lote 1/2 focado em dados contendo Integração de API (RF50), Rastreabilidade e Versionamento de Dados (RF66, RF67) e Logs Visuais do Data Prep Automático (RF69, RF71, RF88).
+Funcionou bem: Implementação rápida utilizando abas do shadcn para API externa. Sucesso ao interligar os RFs de Data Prep como logs animados no Upload.
+Dificuldade: Achar o escopo correto dentro de \csv-uploader.tsx\ sem comprometer a estabilidade (o arquivo é massivo, +3800 linhas).
+Correção aplicada: Isolados os imports via PowerShell para encontrar trechos, uso estratégico de \Tabs\ e injeção do componente auxiliar \DataLineageView\ nos componentes das páginas por domínio.
+Melhoria de UX sugerida pela IA: \DataLineageView\ incluído logo abaixo do Upload/Descritivas para criar uma narrativa de dados unificada, e logs dinâmicos durante o progresso de treinamento na UI para os auto-ML passos, trazendo transparência para o cientista de dados.
+

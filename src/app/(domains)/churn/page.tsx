@@ -11,6 +11,7 @@ import { ComparisonView } from "@/components/shared/comparison-view";
 import { SchedulingCard } from "@/components/shared/scheduling-card";
 import ModelComparison from "@/components/shared/model-comparison";
 import { CorrelationMatrix } from "@/components/shared/correlation-matrix";
+import { DataLineageView } from "@/components/shared/data-lineage-view";
 import { OverfittingDetector } from "@/components/shared/overfitting-detector";
 import { BatchPrediction } from "@/components/shared/batch-prediction";
 import { InteractiveConfusionMatrix } from "@/components/shared/interactive-confusion-matrix";
@@ -573,6 +574,9 @@ export default function ChurnPage() {
             />
 
             <CSVUploader />
+            <div className="mt-6 mb-6">
+              <DataLineageView />
+            </div>
             <SchedulingCard domain="churn" />
           </div>
         )}

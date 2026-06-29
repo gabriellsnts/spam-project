@@ -26,6 +26,7 @@ import { SchedulingCard } from "@/components/shared/scheduling-card";
 import { CorrelationMatrix } from "@/components/shared/correlation-matrix";
 import { OverfittingDetector } from "@/components/shared/overfitting-detector";
 import WhatIfSimulator from "@/components/shared/what-if-simulator";
+import { DataLineageView } from "@/components/shared/data-lineage-view";
 
 export default function MaintenancePage() {
   const { addLog, trainedModels, alertThresholds, currentView, t, language } = useDomain();
@@ -567,6 +568,10 @@ export default function MaintenancePage() {
               activeDomain="maintenance"
             />
           )}
+
+          <div className="mt-6 mb-6">
+            <DataLineageView />
+          </div>
 
           <SchedulingCard domain="maintenance" />
         </div>

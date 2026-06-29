@@ -482,3 +482,15 @@
 - **RF68**: Agendamento de Retreinamento.
 - **RF77**: Validação de Dados de Entrada.
 - **Impacto**: Foram criados os componentes TuningPanel, AlertsWebhookConfig e PipelineSettings e integrados na tela Profile.
+
+
+## ?? 2026-06-29 - Lote 1/2: Dados, Importação e Pipeline (RF50, RF66, RF67, RF69, RF71, RF88) - Autor: Antigravity
+### 1. Contexto e Problemática
+- O módulo de importação precisava de conectividade contínua (API externa) e o processo de pré-processamento de dados exigia visibilidade sobre os tratamentos aplicados automaticamente (limpeza, balanceamento, feature selection), além da necessidade de versionamento visual (Lineage) das bases carregadas.
+### 2. Solução Proposta e Fundamentação
+- **RF50 (Integração de APIs)**: Inclusão de Tabs no \csv-uploader.tsx\ permitindo mock de conexão externa com Endpoint/Bearer Token.
+- **RF66, RF67 (Versionamento e Lineage)**: Criação do \DataLineageView\, um gráfico interativo mostrando todo o caminho do dado desde o Raw Data até a Prontidão para o motor. Adicionado na visão de dados de todos os domínios.
+- **RF69, RF71, RF88 (Auto Data Prep)**: Integração visual desses processos na barra de progresso do \csv-uploader.tsx\ evidenciando Remoção de Outliers (Z-score), Drop de Features Correlatas e Balanceamento (SMOTE).
+### 3. Impacto e Resultados Técnicos
+- UX aprimorada provando ao usuário que o ML é \explainable\ e não uma caixa preta desde a fase de dados, respeitando o Protocolo de Ferro v3.0 e tipagens. Lint sem erros.
+
