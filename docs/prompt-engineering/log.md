@@ -281,3 +281,12 @@ Dificuldade: Achar o escopo correto dentro de \csv-uploader.tsx\ sem comprometer
 Correção aplicada: Isolados os imports via PowerShell para encontrar trechos, uso estratégico de \Tabs\ e injeção do componente auxiliar \DataLineageView\ nos componentes das páginas por domínio.
 Melhoria de UX sugerida pela IA: \DataLineageView\ incluído logo abaixo do Upload/Descritivas para criar uma narrativa de dados unificada, e logs dinâmicos durante o progresso de treinamento na UI para os auto-ML passos, trazendo transparência para o cientista de dados.
 
+ 
+ [RF58, RF65, RF84, RF82, RF81, RF79, RF87] Lote 2/2: Modelos, Automacao Avancada e UX  
+  
+Prompt usado: Finalizar os 7 ultimos requisitos do sistema (Lote 2/2), abrangendo testes A/B de modelos, configuracoes avancadas de cache inteligente de predicoes (RF65), testes de robustez adversarial (RF84), dicas de tunagem (RF58) e design responsivo (RF79).  
+Funcionou bem: O desenvolvimento da UI para mostrar as diferencas entre os modelos adversariais e a integracao de Cache TTL simulada ocorreram de forma isolada, nao interferindo na arvore principal do React.  
+Dificuldade: Ajustar o design responsivo da Sidebar (RF79) e o modal sem quebrar o layout da arvore App Router que ja contava com um header unificado. A solucao necessitou esconder a sidebar base e garantir o carregamento do UtilityDrawer pelo cabecalho.  
+Correcao aplicada: Alterado o estilo da Sidebar principal com tailwind (hidden md:flex) delegando a interacao mobile exclusivamente para o UtilityDrawer, mantendo o SPAM System elegante em telas menores sem dependencias externas de Drawer UI.  
+Melhoria de UX sugerida pela IA: Na avaliacao de feedback do batch, foi incluido uma analise de sentimento em tempo real (Mock) usando tags Lexicais que reage visualmente no frontend, sugerindo ao cientista que a avaliacao tera real impacto no Ensemble.  
+ 

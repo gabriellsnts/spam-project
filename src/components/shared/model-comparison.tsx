@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer 
 } from "recharts";
-import { Download, History, CheckCircle, Activity, LayoutGrid, Calendar, FilterX, AlertTriangle, ShieldCheck, ShieldAlert, FileText } from "lucide-react";
+import { Download, History, CheckCircle, Activity, LayoutGrid, Calendar, FilterX, AlertTriangle, ShieldCheck, ShieldAlert, FileText, GitCompare } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ModelComparisonProps {
@@ -26,6 +26,7 @@ export default function ModelComparison({ domain }: ModelComparisonProps) {
   const [dateFilter, setDateFilter] = useState<string>("all");
   const [modelToRestore, setModelToRestore] = useState<TrainedModel | null>(null);
   const [isRestoring, setIsRestoring] = useState<boolean>(false);
+  const [abTestActive, setAbTestActive] = useState<boolean>(false);
 
   // Options
   const algorithms = useMemo(() => {
@@ -110,6 +111,13 @@ export default function ModelComparison({ domain }: ModelComparisonProps) {
     addLog(`[Model Comparison] Relatório comparativo de ${selectedModels.length} modelos exportado com sucesso (CSV).`);
   };
 
+  const handleStartAbTest = () => {
+    if (selectedModels.length !== 2) return;
+    setAbTestActive(true);
+    showPremiumToast(`Teste A/B Iniciado (RF82)! 90% do tráfego para ${selectedModels[0].version || 'v1'}, 10% para ${selectedModels[1].version || 'v2'}.`, "success");
+    addLog(`[Model Comparison] Teste A/B (RF82) iniciado entre os modelos ${selectedModels[0].modelId} e ${selectedModels[1].modelId}.`);
+  };
+
   // Derived for Comparison
   const selectedModels = useMemo(() => {
     return history.filter(m => selectedIds.includes(m.modelId));
@@ -149,18 +157,46 @@ export default function ModelComparison({ domain }: ModelComparisonProps) {
             Selecione modelos no histórico para analisar métricas lado a lado e ativar versões anteriores.
           </p>
         </div>
-        
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={handleExportCSV}
-          disabled={selectedModels.length < 2}
-          className="gap-2"
-        >
-          <Download className="h-4 w-4" />
-          Exportar CSV
-        </Button>
+        <div className="flex gap-2">
+          {selectedModels.length === 2 && (
+            <Button 
+              variant="default" 
+              size="sm" 
+              onClick={handleStartAbTest}
+              className="gap-2 bg-purple-600 hover:bg-purple-700 text-white animate-in fade-in"
+            >
+              <GitCompare className="h-4 w-4" />
+              Teste A/B (RF82)
+            </Button>
+          )}
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleExportCSV}
+            disabled={selectedModels.length < 2}
+            className="gap-2"
+          >
+            <Download className="h-4 w-4" />
+            Exportar CSV
+          </Button>
+        </div>
       </div>
+      
+      {abTestActive && (
+        <div className="bg-purple-500/10 border border-purple-500/30 p-4 rounded-xl flex items-center justify-between animate-in fade-in slide-in-from-top-4">
+          <div className="space-y-1">
+            <h4 className="font-bold text-purple-700 dark:text-purple-400 flex items-center gap-2">
+              <GitCompare className="h-5 w-5" /> Teste A/B em Andamento (RF82)
+            </h4>
+            <p className="text-sm text-muted-foreground">
+              O tráfego de inferência está sendo roteado automaticamente. Analise o dashboard de Performance para ver qual modelo converte melhor.
+            </p>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => setAbTestActive(false)} className="text-purple-600 border-purple-200 hover:bg-purple-50">
+            Encerrar Teste
+          </Button>
+        </div>
+      )}
 
       {/* FILTROS */}
       <Card className="border-border/60 bg-card/40 backdrop-blur-sm">

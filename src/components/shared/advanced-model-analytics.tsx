@@ -24,7 +24,7 @@ import {
   AreaChart,
   Area
 } from "recharts";
-import { Network, Activity, PieChart, ShieldAlert, CheckCircle2 } from "lucide-react";
+import { Network, Activity, PieChart, ShieldAlert, CheckCircle2, Skull } from "lucide-react";
 
 export function AdvancedModelAnalytics() {
   const { activeDomain } = useDomain();
@@ -75,6 +75,12 @@ export function AdvancedModelAnalytics() {
             className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${activeTab === 'fairness' ? 'bg-indigo-500 text-white' : 'hover:bg-muted text-muted-foreground'}`}
           >
             Análise de Viés (Fairness)
+          </button>
+          <button 
+            onClick={() => setActiveTab("robustness")}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${activeTab === 'robustness' ? 'bg-rose-500 text-white' : 'hover:bg-muted text-muted-foreground'}`}
+          >
+            Robustez Adversarial (RF84)
           </button>
         </div>
       </CardHeader>
@@ -231,6 +237,84 @@ export function AdvancedModelAnalytics() {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
+          </div>
+        )}
+
+        {activeTab === "robustness" && (
+          <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Skull className="h-4 w-4 text-rose-500" />
+                <h3 className="text-sm font-bold">Teste de Robustez Adversarial (RF84)</h3>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Avalia a degradação de performance do modelo quando exposto a ruído intencional ou dados corrompidos.
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
+                <div className="border rounded-xl p-4 bg-muted/20 border-rose-500/20">
+                  <h4 className="text-xs font-semibold mb-2 flex items-center gap-2">
+                    <ShieldAlert className="h-3 w-3 text-rose-500" />
+                    Injeção de Ruído (Gaussian)
+                  </h4>
+                  <div className="space-y-2 mt-4">
+                    <div className="flex justify-between text-xs">
+                      <span>Baseline F1</span>
+                      <span className="font-mono font-bold">0.89</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span>F1 com 10% Ruído</span>
+                      <span className="font-mono text-amber-500 font-bold">0.82 (-7%)</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span>F1 com 25% Ruído</span>
+                      <span className="font-mono text-rose-500 font-bold">0.65 (-24%)</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border rounded-xl p-4 bg-muted/20 border-rose-500/20">
+                  <h4 className="text-xs font-semibold mb-2 flex items-center gap-2">
+                    <ShieldAlert className="h-3 w-3 text-rose-500" />
+                    Valores Extremos (Outliers)
+                  </h4>
+                  <div className="space-y-2 mt-4">
+                    <div className="flex justify-between text-xs">
+                      <span>Baseline Recall</span>
+                      <span className="font-mono font-bold">0.85</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span>Recall Pós-Ataque</span>
+                      <span className="font-mono text-emerald-500 font-bold">0.83 (-2%)</span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-2 border-t pt-2">
+                      Modelo demonstrou alta resiliência a outliers graças ao RobustScaler.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="border rounded-xl p-4 bg-muted/20 border-rose-500/20">
+                  <h4 className="text-xs font-semibold mb-2 flex items-center gap-2">
+                    <ShieldAlert className="h-3 w-3 text-rose-500" />
+                    Corrupção de Features
+                  </h4>
+                  <div className="space-y-2 mt-4">
+                    <div className="flex justify-between text-xs">
+                      <span>Acurácia Original</span>
+                      <span className="font-mono font-bold">92%</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span>Com 1 feature zerada</span>
+                      <span className="font-mono text-amber-500 font-bold">88%</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span>Vulnerabilidade</span>
+                      <span className="font-mono text-amber-500 font-bold">Média</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 

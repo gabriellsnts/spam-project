@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useRef, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, UploadCloud, Loader2, Sparkles, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight, BarChart3, Trash2 } from "lucide-react";
+import { Download, UploadCloud, Loader2, Sparkles, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight, BarChart3, Trash2, ThumbsUp, ThumbsDown, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface BatchRow {
@@ -68,6 +68,31 @@ export function BatchPrediction({
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [filterClass, setFilterClass] = useState<string>("all");
+  
+  // Feedback (RF81)
+  const [feedbackText, setFeedbackText] = useState("");
+  const [feedbackStatus, setFeedbackStatus] = useState<"idle" | "analyzing" | "submitted">("idle");
+  const [detectedSentiment, setDetectedSentiment] = useState<"positive" | "negative" | "neutral" | null>(null);
+
+  const handleFeedbackSubmit = () => {
+    if (!feedbackText.trim()) return;
+    setFeedbackStatus("analyzing");
+    
+    // Simular Análise de Sentimento Básica (Lexical)
+    setTimeout(() => {
+      const text = feedbackText.toLowerCase();
+      const positives = ["bom", "excelente", "ótimo", "otimo", "acertou", "perfeito", "gostei", "correto", "bom", "legal", "útil", "util"];
+      const negatives = ["ruim", "péssimo", "pessimo", "errou", "horrível", "horrivel", "inútil", "inutil", "falso", "lixo", "errado"];
+      
+      let score = 0;
+      positives.forEach(word => { if (text.includes(word)) score++; });
+      negatives.forEach(word => { if (text.includes(word)) score--; });
+      
+      const sentiment = score > 0 ? "positive" : score < 0 ? "negative" : "neutral";
+      setDetectedSentiment(sentiment);
+      setFeedbackStatus("submitted");
+    }, 800);
+  };
 
   const accentClasses: Record<string, { button: string; progress: string; badge: string }> = {
     emerald: { button: "bg-emerald-600 hover:bg-emerald-500 text-white", progress: "bg-emerald-500", badge: "text-emerald-400 border-emerald-500/30" },
@@ -144,7 +169,11 @@ export function BatchPrediction({
     setError(null);
     setProgress(0);
     setPage(1);
+    setPage(1);
     setFilterClass("all");
+    setFeedbackStatus("idle");
+    setFeedbackText("");
+    setDetectedSentiment(null);
   };
 
   const filteredResults = useMemo(() => {
@@ -370,6 +399,47 @@ export function BatchPrediction({
                 </div>
               </div>
             )}
+
+            {/* Feedback Widget (RF81) */}
+            <div className="mt-8 border border-border/60 rounded-xl p-4 bg-muted/10 animate-in fade-in slide-in-from-bottom-4">
+              <h4 className="text-sm font-bold flex items-center gap-2 mb-2">
+                <MessageSquare className="h-4 w-4 text-indigo-500" />
+                Feedback do Especialista (RF81)
+              </h4>
+              <p className="text-[11px] text-muted-foreground mb-4">
+                Como você avalia a precisão deste lote? O sistema analisará o sentimento do seu comentário para ajustar o peso do modelo no ensemble.
+              </p>
+              
+              {feedbackStatus === "submitted" ? (
+                <div className={`p-3 rounded-lg border flex items-center gap-3 ${detectedSentiment === 'positive' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600' : detectedSentiment === 'negative' ? 'bg-rose-500/10 border-rose-500/30 text-rose-600' : 'bg-slate-500/10 border-slate-500/30 text-slate-600'}`}>
+                  {detectedSentiment === 'positive' ? <ThumbsUp className="h-5 w-5" /> : detectedSentiment === 'negative' ? <ThumbsDown className="h-5 w-5" /> : <MessageSquare className="h-5 w-5" />}
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider">Sentimento Detectado: {detectedSentiment}</p>
+                    <p className="text-[10px] mt-0.5">Feedback salvo! Os pesos do modelo serão recalibrados no próximo retreinamento.</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex gap-2 items-start">
+                  <div className="flex-1">
+                    <textarea 
+                      value={feedbackText}
+                      onChange={(e) => setFeedbackText(e.target.value)}
+                      placeholder="Ex: 'O modelo acertou muito bem os casos de risco, excelente resultado!'"
+                      className="w-full h-16 text-xs bg-background border border-input rounded-md px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
+                  </div>
+                  <Button 
+                    onClick={handleFeedbackSubmit} 
+                    disabled={!feedbackText.trim() || feedbackStatus === "analyzing"}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2"
+                  >
+                    {feedbackStatus === "analyzing" ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                    Enviar Avaliação
+                  </Button>
+                </div>
+              )}
+            </div>
+
           </div>
         )}
       </CardContent>

@@ -8,8 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { SlidersHorizontal, Scale, Minimize2, Check, RefreshCw } from "lucide-react";
+import { SlidersHorizontal, Scale, Minimize2, Check, RefreshCw, Wand2, Layers, Network, Info } from "lucide-react";
 import { useDomain } from "@/lib/context/domain-context";
+import { Switch } from "@/components/ui/switch";
 
 export function TuningPanel() {
   const { activeDomain, showPremiumToast } = useDomain();
@@ -26,6 +27,27 @@ export function TuningPanel() {
     l1Ratio: [10],
     cValue: 1.0,
   });
+  
+  // Ensemble State (RF87)
+  const [ensembleEnabled, setEnsembleEnabled] = useState(false);
+  const [ensembleModels, setEnsembleModels] = useState({
+    rf: true,
+    xgb: false,
+    lr: true,
+    nn: false
+  });
+
+  const handleAutoTune = () => {
+    // RF58 - Auto-Tuner
+    setHyperParams({
+      learningRate: 0.005,
+      maxDepth: 12,
+      nEstimators: 250,
+    });
+    setCalibrationThreshold([45]);
+    setRegularization({ l1Ratio: [30], cValue: 0.5 });
+    showPremiumToast("Auto-Tune (RF58) aplicado! Hiperparâmetros otimizados via Grid Search simulado.", "success");
+  };
 
   const handleSave = () => {
     setIsSaving(true);
@@ -55,7 +77,7 @@ export function TuningPanel() {
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="calibration" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6">
+          <TabsList className="grid w-full grid-cols-4 mb-6">
             <TabsTrigger value="calibration" className="flex items-center gap-2">
               <Scale className="h-4 w-4" />
               <span className="hidden sm:inline">Calibração (RF61)</span>
@@ -67,6 +89,10 @@ export function TuningPanel() {
             <TabsTrigger value="regularization" className="flex items-center gap-2">
               <Minimize2 className="h-4 w-4" />
               <span className="hidden sm:inline">Regularização (RF72)</span>
+            </TabsTrigger>
+            <TabsTrigger value="ensemble" className="flex items-center gap-2">
+              <Layers className="h-4 w-4" />
+              <span className="hidden sm:inline">Ensemble (RF87)</span>
             </TabsTrigger>
           </TabsList>
 
@@ -199,21 +225,90 @@ export function TuningPanel() {
               </div>
             </div>
           </TabsContent>
+
+          {/* Aba de Ensemble (RF87) */}
+          <TabsContent value="ensemble" className="space-y-6 animate-in fade-in duration-300 pt-2">
+            <div className="flex items-center justify-between p-4 border rounded-xl bg-muted/20">
+              <div className="space-y-0.5">
+                <Label className="text-base font-bold flex items-center gap-2">
+                  <Network className="h-4 w-4 text-emerald-500" />
+                  Ativar Ensemble Learning
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Combina as predições de múltiplos modelos (Stacking/Voting) para reduzir a variância e aumentar a robustez geral.
+                </p>
+              </div>
+              <Switch checked={ensembleEnabled} onCheckedChange={setEnsembleEnabled} />
+            </div>
+
+            {ensembleEnabled && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Random Forest */}
+                  <div className={`p-3 border rounded-lg flex items-center justify-between transition-colors ${ensembleModels.rf ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-background'}`}>
+                    <div className="space-y-1">
+                      <Label className="font-semibold text-xs">Random Forest</Label>
+                      <p className="text-[9px] text-muted-foreground">Modelo Base Principal</p>
+                    </div>
+                    <Switch checked={ensembleModels.rf} onCheckedChange={(v) => setEnsembleModels({...ensembleModels, rf: v})} />
+                  </div>
+                  {/* XGBoost */}
+                  <div className={`p-3 border rounded-lg flex items-center justify-between transition-colors ${ensembleModels.xgb ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-background'}`}>
+                    <div className="space-y-1">
+                      <Label className="font-semibold text-xs">XGBoost</Label>
+                      <p className="text-[9px] text-muted-foreground">Gradient Boosting</p>
+                    </div>
+                    <Switch checked={ensembleModels.xgb} onCheckedChange={(v) => setEnsembleModels({...ensembleModels, xgb: v})} />
+                  </div>
+                  {/* Regressão Logística */}
+                  <div className={`p-3 border rounded-lg flex items-center justify-between transition-colors ${ensembleModels.lr ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-background'}`}>
+                    <div className="space-y-1">
+                      <Label className="font-semibold text-xs">Regressão Logística</Label>
+                      <p className="text-[9px] text-muted-foreground">Modelo Linear Clássico</p>
+                    </div>
+                    <Switch checked={ensembleModels.lr} onCheckedChange={(v) => setEnsembleModels({...ensembleModels, lr: v})} />
+                  </div>
+                  {/* Redes Neurais */}
+                  <div className={`p-3 border rounded-lg flex items-center justify-between transition-colors ${ensembleModels.nn ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-background'}`}>
+                    <div className="space-y-1">
+                      <Label className="font-semibold text-xs">Deep Neural Network</Label>
+                      <p className="text-[9px] text-muted-foreground">MLP 3 Layers</p>
+                    </div>
+                    <Switch checked={ensembleModels.nn} onCheckedChange={(v) => setEnsembleModels({...ensembleModels, nn: v})} />
+                  </div>
+                </div>
+
+                <div className="text-[10px] text-blue-500 bg-blue-500/10 p-2.5 rounded-lg flex items-start gap-2 border border-blue-500/20">
+                  <Info className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                  <p>
+                    A utilização de um ensemble aumenta o custo computacional de inferência em aproximadamente 
+                    <strong> {(Object.values(ensembleModels).filter(Boolean).length * 1.2).toFixed(1)}x</strong>.
+                  </p>
+                </div>
+              </div>
+            )}
+          </TabsContent>
         </Tabs>
       </CardContent>
-      <CardFooter className="flex justify-end gap-2 border-t pt-4">
-        <Button variant="outline" className="gap-2">
-          <RefreshCw className="h-4 w-4" />
-          Restaurar Padrões
+      <CardFooter className="flex flex-col sm:flex-row justify-between gap-3 border-t pt-4">
+        <Button onClick={handleAutoTune} variant="secondary" className="gap-2 bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 border-blue-500/20 border font-bold">
+          <Wand2 className="h-4 w-4" />
+          Auto-Tuner (RF58)
         </Button>
-        <Button onClick={handleSave} disabled={isSaving} className="gap-2 min-w-[120px]">
-          {isSaving ? (
-            <RefreshCw className="h-4 w-4 animate-spin" />
-          ) : (
-            <Check className="h-4 w-4" />
-          )}
-          {isSaving ? "Aplicando..." : "Aplicar Ajustes"}
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" className="gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Restaurar
+          </Button>
+          <Button onClick={handleSave} disabled={isSaving} className="gap-2 min-w-[120px]">
+            {isSaving ? (
+              <RefreshCw className="h-4 w-4 animate-spin" />
+            ) : (
+              <Check className="h-4 w-4" />
+            )}
+            {isSaving ? "Aplicando..." : "Aplicar Ajustes"}
+          </Button>
+        </div>
       </CardFooter>
     </Card>
   );

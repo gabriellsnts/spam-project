@@ -197,7 +197,7 @@ export function Sidebar() {
     return (
       <div
         className={cn(
-          "sticky top-16 h-[calc(100vh-4rem)] border-r border-border bg-card/30 backdrop-blur-md flex flex-col justify-between transition-all duration-300 select-none z-20 shrink-0",
+          "sticky top-16 h-[calc(100vh-4rem)] border-r border-border bg-card/30 backdrop-blur-md hidden md:flex flex-col justify-between transition-all duration-300 select-none z-20 shrink-0",
           isCollapsed ? "w-16" : "w-64"
         )}
       >
@@ -461,7 +461,7 @@ export function Sidebar() {
   return (
     <div
       className={cn(
-        "sticky top-16 h-[calc(100vh-4rem)] border-r border-border bg-card/30 backdrop-blur-md flex flex-col justify-between transition-all duration-300 select-none z-20 shrink-0",
+        "sticky top-16 h-[calc(100vh-4rem)] border-r border-border bg-card/30 backdrop-blur-md hidden md:flex flex-col justify-between transition-all duration-300 select-none z-20 shrink-0",
         isCollapsed ? "w-16" : "w-64"
       )}
     >

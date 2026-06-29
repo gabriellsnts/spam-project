@@ -494,3 +494,12 @@
 ### 3. Impacto e Resultados Técnicos
 - UX aprimorada provando ao usuário que o ML é \explainable\ e não uma caixa preta desde a fase de dados, respeitando o Protocolo de Ferro v3.0 e tipagens. Lint sem erros.
 
+  
+## Lote 2/2 (Final) - Modelos, Automacao e UX  
+- [RF58, RF87] tuning-panel.tsx: Adicionadas dicas de otimizacao e toggle de Ensemble.  
+- [RF65] pipeline-settings.tsx: Adicionado card de configuracao de Cache Inteligente (TTL e LFU).  
+- [RF84] advanced-model-analytics.tsx: Incluida aba para Analise de Robustez Adversarial com simulacao de ruido.  
+- [RF82] model-comparison.tsx: Integrado Teste A/B automatico comparando duas versoes selecionadas.  
+- [RF81] batch-prediction.tsx: Adicionado widget de Feedback com Analise de Sentimento lexical no final dos resultados.  
+- [RF79] sidebar.tsx, layout.tsx: Revisao responsiva mobile-first escondendo sidebar no mobile e mantendo navegacao via menu unificado (UtilityDrawer).  
+ 

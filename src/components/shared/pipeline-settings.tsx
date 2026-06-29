@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Clock, CheckCircle2, ShieldCheck, DatabaseZap } from "lucide-react";
+import { Clock, CheckCircle2, ShieldCheck, DatabaseZap, Zap, Server } from "lucide-react";
 import { useDomain } from "@/lib/context/domain-context";
 
 export function PipelineSettings() {
@@ -18,6 +18,10 @@ export function PipelineSettings() {
   const [autoRetrain, setAutoRetrain] = useState(true);
   const [strictValidation, setStrictValidation] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Cache Settings (RF65)
+  const [cacheEnabled, setCacheEnabled] = useState(false);
+  const [cacheTTL, setCacheTTL] = useState("3600");
 
   const handleSave = () => {
     setIsSaving(true);
@@ -126,6 +130,54 @@ export function PipelineSettings() {
                   Se uma coluna tiver mais que esse % de nulos, abortar o pipeline.
                 </span>
               </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Cache Inteligente (RF65) */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl flex items-center gap-2">
+            <Zap className="h-5 w-5 text-amber-500" />
+            Cache Inteligente de Previsões (RF65)
+          </CardTitle>
+          <CardDescription>
+            Configurações para cache de inferência (Redis simulado), reduzindo latência de consultas repetidas.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex items-center justify-between space-x-2 border p-4 rounded-lg bg-amber-500/5">
+            <div className="flex flex-col space-y-1">
+              <Label className="text-base font-semibold flex items-center gap-2">
+                <Server className="h-4 w-4 text-amber-500" />
+                Habilitar Cache de Inferência
+              </Label>
+              <span className="text-sm text-muted-foreground">
+                Se habilitado, requisições com dados de entrada idênticos retornarão o resultado pré-calculado.
+              </span>
+            </div>
+            <Switch checked={cacheEnabled} onCheckedChange={setCacheEnabled} />
+          </div>
+
+          <div className={`space-y-4 transition-opacity ${cacheEnabled ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
+            <div className="space-y-2">
+              <Label>Time-To-Live (TTL) do Cache</Label>
+              <Select value={cacheTTL} onValueChange={setCacheTTL}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="300">5 minutos (300s)</SelectItem>
+                  <SelectItem value="3600">1 Hora (3600s)</SelectItem>
+                  <SelectItem value="86400">1 Dia (86400s)</SelectItem>
+                  <SelectItem value="604800">1 Semana (604800s)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-lg border">
+              <strong>Estratégia de Evicção:</strong> LFU (Least Frequently Used). O cache é armazenado globalmente e indexado pelo hash gerado a partir do JSON de entrada da requisição.
             </div>
           </div>
         </CardContent>
