@@ -3137,6 +3137,9 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
 
   // RF57: Tutorial Methods
   const startTutorial = useCallback(() => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("spam-tutorial-completed");
+    }
     setTutorialState(prev => ({
       ...prev,
       isActive: true,
