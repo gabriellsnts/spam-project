@@ -243,7 +243,7 @@ export default function HelpPage() {
                 );
               })}
               {filtered.length === 0 && searchQuery && (
-                <div className="px-5 py-4 text-xs text-muted-foreground">Nenhuma resposta encontrada para "{searchQuery}".</div>
+                <div className="px-5 py-4 text-xs text-muted-foreground">Nenhuma resposta encontrada para &quot;{searchQuery}&quot;.</div>
               )}
             </CardContent>
           </Card>

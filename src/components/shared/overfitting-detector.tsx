@@ -25,15 +25,6 @@ interface DiagnosisResult {
   gap: number;
 }
 
-// Simulate train metric slightly above test (heuristic deterministic)
-function simulateTrainMetric(testVal: number, isRegression: boolean): number {
-  if (isRegression) {
-    // Train metric slightly better (lower RMSE/MAE, higher R2)
-    return Math.min(1, testVal * 1.08 + 0.04);
-  }
-  return Math.min(1, testVal * 1.06 + 0.03);
-}
-
 const DEMO_OVERFITTING: TrainedModel = {
   modelId: "DEMO-OVERFIT",
   domain: "churn",
@@ -69,7 +60,6 @@ const DEMO_UNDERFITTING: TrainedModel = {
 };
 
 function analyze(model: TrainedModel): DiagnosisResult {
-  const isRegression = model.type === "Regression";
   const isClassification = model.type === "Classification";
 
   let testAcc: number;
@@ -162,7 +152,7 @@ function analyze(model: TrainedModel): DiagnosisResult {
   return { diagnosis, title, description, severity, recommendations, trainAccuracy: trainAcc, testAccuracy: testAcc, gap: gapPct };
 }
 
-export function OverfittingDetector({ model, domainAccent = "violet" }: OverfittingDetectorProps) {
+export function OverfittingDetector({ model }: OverfittingDetectorProps) {
   const [showDetails, setShowDetails] = useState(false);
   const [demoMode, setDemoMode] = useState<"none" | "overfitting" | "underfitting">("none");
 

@@ -70,7 +70,6 @@ export function InteractiveConfusionMatrix({ model, domainAccent = "violet" }: I
   const [selectedCell, setSelectedCell] = useState<CellInfo | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isNormalized, setIsNormalized] = useState(false);
-  const svgRef = useRef<SVGSVGElement>(null);
 
   const total = matrix.tp + matrix.tn + matrix.fp + matrix.fn;
   const pct = (val: number) => total > 0 ? ((val / total) * 100).toFixed(1) : "0.0";

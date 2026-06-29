@@ -2442,7 +2442,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
       addLogWithProfile("Sistema", `[Email Sent] Relatório de sucesso de agendamento enviado para ${emailConfig.email || "gestor@empresa.com"}.`);
       showPremiumToast(`Agendamento de ${DOMAINS[domain].name} executado com sucesso!`, "success");
     }
-  }, [selectedAlgorithms, simulatedFail, emailConfig.email, trainedModels, addLogWithProfile]);
+  }, [selectedAlgorithms, simulatedFail, emailConfig.email, trainedModels, addLogWithProfile, modelsHistory]);
 
   const saveSchedule = useCallback((domain: DomainType, config: Omit<SchedulingConfig, "domain">) => {
     const fullConfig: SchedulingConfig = {
