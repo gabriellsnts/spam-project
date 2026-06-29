@@ -6,6 +6,7 @@ import { LoadingOverlay } from "@/components/shared/loading-overlay";
 import { ConfirmSwitchDialog } from "@/components/shared/confirm-switch-dialog";
 import { AuthGuard } from "@/components/shared/auth-guard";
 import { EmailNotificationsRenderer } from "@/components/shared/email-notifications-renderer";
+import { InteractiveTutorial } from "@/components/shared/interactive-tutorial";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -29,6 +30,7 @@ export default function RootLayout({
           <LoadingOverlay />
           <ConfirmSwitchDialog />
           <EmailNotificationsRenderer />
+          <InteractiveTutorial />
         </DomainProvider>
       </body>
     </html>
