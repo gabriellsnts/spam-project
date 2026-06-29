@@ -480,6 +480,7 @@ export function Sidebar() {
                 <button
                   key={item.id}
                   onClick={() => setCurrentView(item.id)}
+                  data-tutorial-target={item.id === "simulation" ? "prediction-tab" : undefined}
                   className={cn(
                     "w-full flex items-start gap-3 p-3 rounded-xl border transition-all duration-200 text-left relative overflow-hidden group",
                     getViewColorClass(item.id)

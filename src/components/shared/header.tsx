@@ -277,6 +277,7 @@ export function Header() {
             onClick={() => setActiveUtilityPanel(activeUtilityPanel === "menu" ? null : "menu")}
             className="h-9 w-9 text-zinc-400 hover:text-foreground hover:bg-zinc-900 border border-transparent hover:border-zinc-800 transition"
             title={t("main_menu")}
+            data-tutorial-target={activeUtilityPanel !== "menu" && activeDomain !== "credit-risk" ? "sidebar-credit-risk" : undefined}
           >
             <Menu className="h-5 w-5" />
           </Button>

@@ -2097,6 +2097,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
               onClick={triggerFileSelect}
+              data-tutorial-target="import-csv"
               className={cn(
                 "border border-dashed rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 gap-3 group relative select-none",
                 isDragging ? theme.borderActive : theme.border
@@ -2161,7 +2162,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
         )}
 
         {/* 2. Interface em estado LOADING (Processando - CA03) */}
-        {uploadStatus === "loading" && !isTraining && (
+        {uploadStatus === "loading" && !isTraining && trainingProgress === 0 && (
           <div className="border border-border/80 rounded-xl p-8 flex flex-col items-center justify-center gap-4 bg-muted/10 animate-in fade-in duration-300">
             <Loader2 className={cn("h-8 w-8 animate-spin", theme.accent)} />
             
@@ -2705,6 +2706,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                     disabled={!canEdit}
                     className={cn("text-[10px] font-bold h-8 px-3.5", theme.button, !canEdit && "opacity-50 cursor-not-allowed")}
                     title={canEdit ? "" : "Somente Administradores podem iniciar o treinamento."}
+                    data-tutorial-target="train-model"
                   >
                     {t("start_model_training")}
                   </Button>

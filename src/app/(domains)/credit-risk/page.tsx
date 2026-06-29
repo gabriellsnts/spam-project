@@ -45,6 +45,14 @@ export default function CreditRiskPage() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
+  const { tutorialState, advanceTutorialStep } = useDomain();
+
+  React.useEffect(() => {
+    if (tutorialState?.isActive && tutorialState?.currentStep === 1) {
+      advanceTutorialStep(1);
+    }
+  }, [tutorialState?.isActive, tutorialState?.currentStep, advanceTutorialStep]);
+
   const threshold = alertThresholds["credit-risk"] !== undefined ? alertThresholds["credit-risk"] : 60;
 
   // Form schemas and fields for credit-risk manual input (CA01)
@@ -541,6 +549,7 @@ export default function CreditRiskPage() {
                           type="submit"
                           disabled={isPredicting}
                           className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2 flex items-center gap-1.5"
+                          data-tutorial-target="generate-prediction"
                         >
                           {isPredicting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                           {t("evaluate_proposal")}

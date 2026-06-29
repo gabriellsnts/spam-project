@@ -538,6 +538,7 @@ export function UtilityDrawer() {
                         handleClose();
                       }}
                       className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors group"
+                      data-tutorial-target={domainType === "credit-risk" ? "sidebar-credit-risk" : undefined}
                     >
                       <div className="flex items-center gap-3">
                         <div className="p-1.5 rounded-md bg-muted group-hover:bg-muted/80 transition-colors">
