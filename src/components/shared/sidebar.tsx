@@ -12,7 +12,8 @@ import {
   Sparkles,
   BookOpen,
   HelpCircle,
-  History as HistoryIcon
+  History as HistoryIcon,
+  DatabaseBackup
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -379,6 +380,29 @@ export function Sidebar() {
                   </div>
                 )}
               </button>
+            )}
+
+            {/* Backups do Sistema (RF48) */}
+            {isAdmin && (
+              <Link
+                href="/admin/backups"
+                className={cn(
+                  "w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 text-left relative overflow-hidden group",
+                  "text-muted-foreground hover:text-foreground hover:bg-muted/40 border-transparent",
+                  isCollapsed && "justify-center"
+                )}
+                title="Backups do Sistema"
+              >
+                <DatabaseBackup className="h-5 w-5 shrink-0" />
+                {!isCollapsed && (
+                  <div className="space-y-0.5">
+                    <div className="text-xs font-bold leading-none">Backups do Sistema</div>
+                    <div className="text-[9px] text-muted-foreground font-normal leading-none mt-1 group-hover:text-foreground/70 transition-colors">
+                      Gerenciar snapshots e restauração
+                    </div>
+                  </div>
+                )}
+              </Link>
             )}
           </nav>
         </div>

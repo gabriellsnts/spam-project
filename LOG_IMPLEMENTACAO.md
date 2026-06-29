@@ -434,3 +434,15 @@
 ### RF56, RF59, RF63, RF70, RF73 (Reaplicacao pos-conflito)
 - Reaplicados os componentes: BatchPrediction, OverfittingDetector, CorrelationMatrix, InteractiveConfusionMatrix, e Central de Ajuda na nova versao da main que contem RF43-RF53.
 - Resolvidos conflitos estruturais nas paginas de dominio.
+
+---
+
+## ?? 2026-06-29 - Implementação de Backups Automáticos e Painel de Retenção (RF48) - Autor: luizsantos011
+### 1. Contexto e Problemática
+- O sistema acumulava estados vitais como modelos treinados, métricas, configurações de alerta e históricos no localStorage sem nenhum mecanismo de proteção estruturada ou versão recuperável em caso de falhas ou edições indesejadas na infraestrutura (Ex: remoção acidental de políticas de retenção).
+### 2. Solução Proposta e Fundamentação
+- Adição da mecânica de snapshot serializado dentro de domain-context.tsx, armazenando as configurações completas e integrando um validador criptográfico sha256 para cada versão.
+- Criação de uma interface de administração (UI: /admin/backups) com foco em Gestão de Políticas (frequência, limites) e listagem dos snapshots, detalhando tamanho, data, hash, status de integridade.
+- Criação e integração do agendador interno (Loop Background) responsável pela geração recorrente (automática) baseada na configuração estipulada pelo Super Admin, impedindo a interrupção da segurança de dados.
+### 3. Impacto e Resultados Técnicos
+- Conformidade total com o "Protocolo de Ferro v2.0", aprovação unânime no 	sc e eslint sem nenhuma delegação de tipos incertos (ny). Os administradores agora detêm controle total de governança de dados no lado do cliente, operando restaurações absolutas apenas se os snapshots estiverem intactos.

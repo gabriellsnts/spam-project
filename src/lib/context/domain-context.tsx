@@ -279,6 +279,21 @@ export interface SimulatedEmail {
   errorDescription?: string;
 }
 
+export interface SystemBackup {
+  id: string;
+  timestamp: number;
+  type: "auto" | "manual";
+  content: string; // JSON string of all persisted state
+  hash: string;
+  sizeBytes: number;
+  integrityStatus: "valid" | "invalid" | "unknown";
+}
+
+export interface BackupConfig {
+  maxBackups: number;
+  frequency: "none" | "daily" | "weekly" | "monthly";
+}
+
 export type GlossaryCategory = "Geral" | "Machine Learning" | "Métricas" | "Logística" | "Previsão";
 
 export interface GlossaryTerm {
@@ -410,6 +425,14 @@ interface DomainContextProps {
   saveSchedule: (domain: DomainType, config: Omit<SchedulingConfig, "domain">) => void;
   deleteSchedule: (domain: DomainType) => void;
   runScheduledTrigger: (domain: DomainType) => void;
+
+  // RF48 Backups Automáticos
+  systemBackups: SystemBackup[];
+  backupConfig: BackupConfig;
+  createBackup: (type: "auto" | "manual") => void;
+  restoreBackup: (id: string) => void;
+  deleteBackup: (id: string) => void;
+  updateBackupConfig: (config: BackupConfig) => void;
 }
 
 const DomainContext = createContext<DomainContextProps | undefined>(undefined);
@@ -718,6 +741,11 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     churn: null,
     "credit-risk": null
   });
+
+  // Backup States (RF48)
+  const [systemBackups, setSystemBackups] = useState<SystemBackup[]>([]);
+  const [backupConfig, setBackupConfig] = useState<BackupConfig>({ maxBackups: 5, frequency: "daily" });
+
   const emailBufferRef = useRef<Record<string, {
     alerts: {
       item: string;
@@ -2907,6 +2935,181 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     }
   }, [modelsHistory, trainedModels, setSelectedAlgorithm, addLog, currentUser, userProfile]);
 
+  // ==========================================
+  // RF48 - GERENCIAMENTO DE BACKUPS AUTOMÁTICOS
+  // ==========================================
+  
+  const createBackup = useCallback(async (type: "auto" | "manual") => {
+    // Collect all data to backup
+    const snapshot = {
+      users: DEFAULT_USERS, // Safe default mock
+      logs: logs,
+      privacyText: privacyNoticeText,
+      selectedAlgs: selectedAlgorithms,
+      trainedModels: trainedModels,
+      trainedModelsByAlg: trainedModelsByAlgorithm,
+      modelsHistory: modelsHistory,
+      thresholds: alertThresholds,
+      emailConfig: emailConfig,
+      glossary: glossary,
+      trash: trashItems,
+      alerts: alerts,
+      predictionHistory: predictionHistory,
+      schedules: schedules
+    };
+
+    const content = JSON.stringify(snapshot);
+    const sizeBytes = new Blob([content]).size;
+    const timestamp = Date.now();
+    const id = `bkp_${timestamp}_${Math.random().toString(36).substring(2, 9)}`;
+    const hash = await sha256(content);
+
+    const newBackup: SystemBackup = {
+      id,
+      timestamp,
+      type,
+      content,
+      hash,
+      sizeBytes,
+      integrityStatus: "valid" 
+    };
+
+    setSystemBackups(prev => {
+      let updated = [newBackup, ...prev];
+      if (updated.length > backupConfig.maxBackups) {
+        addLog(`[Backup Automático] Limite de retenção atingido (${backupConfig.maxBackups}). Excluindo backup mais antigo.`);
+        updated = updated.slice(0, backupConfig.maxBackups);
+      }
+      localStorage.setItem("spam-system-backups", JSON.stringify(updated));
+      return updated;
+    });
+
+    addLog(`[Auditoria - Backup] Backup ${type === 'auto' ? 'automático' : 'manual'} gerado com sucesso. Hash: ${hash.substring(0, 8)}...`);
+    showPremiumToast(`Backup ${type === 'auto' ? 'Automático' : 'Manual'} gerado com sucesso!`, "success");
+    
+  }, [logs, privacyNoticeText, selectedAlgorithms, trainedModels, trainedModelsByAlgorithm, modelsHistory, alertThresholds, emailConfig, glossary, trashItems, alerts, predictionHistory, schedules, backupConfig.maxBackups, addLog]);
+
+  const restoreBackup = useCallback(async (id: string) => {
+    const backup = systemBackups.find(b => b.id === id);
+    if (!backup) return;
+    
+    try {
+      const currentHash = await sha256(backup.content);
+      if (currentHash !== backup.hash) {
+        showPremiumToast("A integridade do backup falhou! O conteúdo foi alterado.", "error");
+        addLog(`[Alerta de Segurança] Tentativa de restauração falhou por hash corrompido no backup ${id}.`);
+        return;
+      }
+
+      const snapshot = JSON.parse(backup.content);
+      
+      // Override states
+      setLogs(snapshot.logs || []);
+      setPrivacyNoticeText(snapshot.privacyText || "");
+      setSelectedAlgorithmsState(snapshot.selectedAlgs || { maintenance: "Random Forest", demand: "Prophet", churn: "XGBoost", "credit-risk": "Regressão Logística" });
+      setTrainedModels(snapshot.trainedModels || {});
+      setTrainedModelsByAlgorithm(snapshot.trainedModelsByAlg || {});
+      setModelsHistory(snapshot.modelsHistory || {});
+      setAlertThresholds(snapshot.thresholds || DEFAULT_THRESHOLDS);
+      setEmailConfig(snapshot.emailConfig || { email: "", enabledDomains: { maintenance: true, demand: true, churn: true, "credit-risk": true } });
+      setGlossary(snapshot.glossary || []);
+      setTrashItems(snapshot.trash || []);
+      setAlerts(snapshot.alerts || []);
+      setPredictionHistory(snapshot.predictionHistory || []);
+      setSchedules(snapshot.schedules || { maintenance: null, demand: null, churn: null, "credit-risk": null });
+
+      // Save everything to localStorage
+      localStorage.setItem("spam-audit-logs", JSON.stringify(snapshot.logs));
+      localStorage.setItem("spam-privacy-notice-text", snapshot.privacyText);
+      localStorage.setItem("spam-selected-algorithms", JSON.stringify(snapshot.selectedAlgs));
+      localStorage.setItem("spam-trained-models", JSON.stringify(snapshot.trainedModels));
+      localStorage.setItem("spam-trained-models-by-algorithm", JSON.stringify(snapshot.trainedModelsByAlg));
+      localStorage.setItem("spam-models-history", JSON.stringify(snapshot.modelsHistory));
+      localStorage.setItem("spam-alert-thresholds", JSON.stringify(snapshot.thresholds));
+      localStorage.setItem("spam-email-notifications", JSON.stringify(snapshot.emailConfig));
+      localStorage.setItem("spam-glossary", JSON.stringify(snapshot.glossary));
+      localStorage.setItem("spam-trash", JSON.stringify(snapshot.trash));
+      localStorage.setItem("spam-alerts", JSON.stringify(snapshot.alerts));
+      localStorage.setItem("spam-prediction-history", JSON.stringify(snapshot.predictionHistory));
+      
+      addLog(`[Auditoria - Restauração] O sistema foi restaurado para o estado do backup do dia ${new Date(backup.timestamp).toLocaleString()}.`);
+      showPremiumToast("Sistema restaurado com sucesso!", "success");
+      
+    } catch (_e) {
+      console.error(_e);
+      showPremiumToast("Erro fatal ao restaurar o backup.", "error");
+    }
+  }, [systemBackups, addLog, setLogs, setPrivacyNoticeText, setSelectedAlgorithmsState, setTrainedModels, setTrainedModelsByAlgorithm, setModelsHistory, setAlertThresholds, setEmailConfig, setGlossary, setTrashItems, setAlerts, setPredictionHistory, setSchedules]);
+
+  const deleteBackup = useCallback((id: string) => {
+    setSystemBackups(prev => {
+      const updated = prev.filter(b => b.id !== id);
+      localStorage.setItem("spam-system-backups", JSON.stringify(updated));
+      return updated;
+    });
+    addLog(`[Auditoria - Backup] Backup ${id} removido manualmente.`);
+    showPremiumToast("Backup excluído permanentemente.", "success");
+  }, [addLog]);
+
+  const updateBackupConfig = useCallback((config: BackupConfig) => {
+    setBackupConfig(config);
+    localStorage.setItem("spam-backup-config", JSON.stringify(config));
+    addLog(`[Auditoria - Configuração] Política de backup atualizada: reter ${config.maxBackups} arquivos, frequência ${config.frequency}.`);
+    showPremiumToast("Configurações de backup salvas.", "success");
+  }, [addLog]);
+
+  // Verificação periódica para auto backups (CA01)
+  useEffect(() => {
+    if (backupConfig.frequency === "none") return;
+    
+    const checkInterval = setInterval(() => {
+      setSystemBackups(currentBackups => {
+        const lastAuto = currentBackups.find(b => b.type === "auto");
+        const now = Date.now();
+        
+        let shouldBackup = false;
+        if (!lastAuto) {
+          shouldBackup = true;
+        } else {
+          const timeDiff = now - lastAuto.timestamp;
+          const DAY = 24 * 60 * 60 * 1000;
+          if (backupConfig.frequency === "daily" && timeDiff > DAY) shouldBackup = true;
+          if (backupConfig.frequency === "weekly" && timeDiff > 7 * DAY) shouldBackup = true;
+          if (backupConfig.frequency === "monthly" && timeDiff > 30 * DAY) shouldBackup = true;
+        }
+        
+        if (shouldBackup) {
+          createBackup("auto");
+        }
+        return currentBackups;
+      });
+    }, 60000);
+    
+    return () => clearInterval(checkInterval);
+  }, [backupConfig.frequency, createBackup]);
+
+  // Load backups on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedBackups = localStorage.getItem("spam-system-backups");
+      if (savedBackups) {
+        try {
+          const parsed = JSON.parse(savedBackups);
+          setSystemBackups(parsed);
+        } catch {
+          console.error("Corrupted backups");
+        }
+      }
+      
+      const savedConfig = localStorage.getItem("spam-backup-config");
+      if (savedConfig) {
+        try {
+          setBackupConfig(JSON.parse(savedConfig));
+        } catch {}
+      }
+    }
+  }, []);
+
   return (
     <DomainContext.Provider
       value={{
@@ -3018,6 +3221,13 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         saveSchedule,
         deleteSchedule,
         runScheduledTrigger,
+
+        systemBackups,
+        backupConfig,
+        createBackup,
+        restoreBackup,
+        deleteBackup,
+        updateBackupConfig,
       }}
     >
       {children}
