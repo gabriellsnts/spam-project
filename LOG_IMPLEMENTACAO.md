@@ -577,3 +577,7 @@ pm run build\ para garantir que os hooks inseridos est�o bem formatados e em uso
 ### Correção de Interface (Tradução)
 - Adicionadas chaves de tradução ausentes ('model_history' e 'model_history_desc') para exibir corretamente 'Histórico do Modelo' em PT-BR na sidebar.
 
+
+### Correção de Interface (Formatação de Métricas)
+- Removido o uso inadequado de chaves de tradução (ex: 'ui_84_0_120') que causavam formatação incorreta em métricas hardcoded nas páginas de domínios e sidebar.
+
