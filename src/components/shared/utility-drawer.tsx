@@ -48,6 +48,35 @@ export function UtilityDrawer() {
 
   const [isSimulatingLoad, setIsSimulatingLoad] = useState(false);
 
+  const translateEntity = (entity: string) => {
+    if (!entity) return "";
+    
+    const map: Record<string, string> = {
+      "Simulação": "logs.actions.simulation",
+      "Treinamento": "logs.actions.training",
+      "Bobina de Aço Galvanizado": "alerts.entities.galvanized_steel_coil",
+      "Login efetuado com sucesso para o usuário 'admin'.": "logs.actions.login_success_admin",
+      "Login efetuado com sucesso para o usuário 'gestor'.": "logs.actions.login_success_gestor",
+      "Tentativa de login malsucedida para o usuário 'gestor'. Resultado: Credenciais inválidas (Tentativa 1/5).": "logs.actions.login_fail_gestor",
+      "Histórico de logs de auditoria limpo manualmente.": "logs.actions.history_cleared",
+      "Cadastro do novo usuário gestor 'João Silva' realizado com sucesso.": "logs.actions.new_user_joao",
+      "Bobina de Aço Galvanizado (P01)": "alerts.entities.galvanized_steel_coil_p01",
+      "[Alert Configuration] Limiar de alerta do domínio 'Manutenção de Equipamentos' alterado para 35%.": "logs.actions.alert_config_maintenance",
+      "[Alert Triggered] Novo alerta preditivo (Alto) no domínio 'Retenção de Clientes': Indústrias Metalúrgicas Alfa (C104) - Valor: 87%.": "logs.actions.alert_triggered_churn",
+      "[Alert Recognized] Alerta no domínio 'Previsão de Demanda' (Cabos Elétricos de Cobre) marcado como reconhecido.": "logs.actions.alert_recognized_demand",
+      "[Model Training Success] Treinamento do modelo para o módulo 'Previsão de Demanda' concluído com sucesso. ID: SPAM-MODEL-REG-DMD3094, Algoritmo: Prophet Time-Series Regressor.": "logs.actions.training_success_demand",
+      "[Model Training Error] Falha de volume de dados no módulo 'Risco de Crédito': apenas 8 registros fornecidos (mínimo de 10 exigido).": "logs.actions.training_error_credit"
+    };
+
+    const key = map[entity] || entity;
+    const translated = t(key);
+    
+    if (translated === key && !map[entity]) {
+      return entity;
+    }
+    return translated;
+  };
+
   useEffect(() => {
     if (activeUtilityPanel && activeUtilityPanel !== "menu") {
       setIsSimulatingLoad(true);
@@ -739,7 +768,7 @@ export function UtilityDrawer() {
                           </div>
                           
                           <h4 className="text-xs font-bold text-foreground leading-snug mt-1 truncate">
-                            {alert.item}
+                            {translateEntity(alert.item)}
                           </h4>
                         </div>
 
@@ -1188,7 +1217,7 @@ export function UtilityDrawer() {
                             <td className="p-3 text-muted-foreground font-mono whitespace-nowrap">{timeStr}</td>
                             <td className="p-3 text-foreground font-semibold truncate max-w-[100px]" title={log.username}>{log.username}</td>
                             <td className="p-3 text-muted-foreground font-medium truncate max-w-[95px]" title={log.accessProfile}>{log.accessProfile}</td>
-                            <td className="p-3 text-foreground/80 font-medium max-w-[200px] truncate group-hover:text-foreground transition-colors" title={log.action}>{log.action}</td>
+                            <td className="p-3 text-foreground/80 font-medium max-w-[200px] truncate group-hover:text-foreground transition-colors" title={translateEntity(log.action)}>{translateEntity(log.action)}</td>
                           </tr>
                         );
                       })}
@@ -1247,7 +1276,7 @@ export function UtilityDrawer() {
                     <div className="bg-muted/40 border border-border/15 rounded-xl p-3.5 space-y-2">
                       <span className="text-muted-foreground font-semibold block">{t('action_desc_label')}</span>
                       <p className="text-foreground leading-relaxed font-bold bg-background p-3 rounded-lg border border-border/20 break-words whitespace-pre-wrap font-mono text-[10px]">
-                        {selectedLog.action}
+                        {translateEntity(selectedLog.action)}
                       </p>
                     </div>
                   </div>
