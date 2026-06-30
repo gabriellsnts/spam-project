@@ -456,7 +456,7 @@ export function UtilityDrawer() {
               </div>
               <div className="flex flex-col min-w-0 flex-1">
                 <span className="text-sm font-bold text-foreground truncate group-hover:text-emerald-400 transition-colors">
-                  {currentUser?.fullName || "Administrador do Sistema"}
+                  {currentUser?.fullName || t("system_administrator")}
                 </span>
                 <span className="text-xs text-muted-foreground font-mono truncate">
                   @{currentUser?.username || "admin"}
@@ -468,7 +468,7 @@ export function UtilityDrawer() {
                     ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_8px_rgba(16,185,129,0.1)]"
                     : "bg-blue-500/10 text-blue-400 border-blue-500/20 shadow-[0_0_8px_rgba(59,130,246,0.1)]"
                 )}>
-                  {currentUser?.accessProfile || "Super Admin"}
+                  {currentUser?.accessProfile || t("super_admin")}
                 </span>
               </div>
               <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all duration-200" />
@@ -478,7 +478,7 @@ export function UtilityDrawer() {
             <div className="flex-1 overflow-y-auto py-6 space-y-6 select-none scrollbar-thin px-2">
               <div className="space-y-1">
                 <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-3 px-2">
-                  {language === "en" ? "System" : language === "es" ? "Sistema" : "Sistema"}
+                  {t("system_label")}
                 </h3>
                 <button
                   onClick={() => setActiveUtilityPanel("alerts")}
@@ -537,7 +537,7 @@ export function UtilityDrawer() {
 
               <div className="space-y-1">
                 <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-3 px-2">
-                  {language === "en" ? "Domain Modules" : language === "es" ? "Módulos de Dominio" : "Módulos de Domínio"}
+                  {t("domain_modules_label")}
                 </h3>
                 {(Object.keys(DOMAINS) as DomainType[]).map((domainType) => {
                   return (
@@ -719,7 +719,7 @@ export function UtilityDrawer() {
                               )}
                             >
                               {isHigh 
-                                ? (language === "en" ? "Critical (High)" : language === "es" ? "Crítico (Alto)" : "Crítico (Alto)") 
+                                ? t('critical_high') 
                                 : (language === "en" ? "Warning (Med)" : language === "es" ? "Atención (Medio)" : "Atenção (Médio)")}
                             </span>
 
@@ -733,7 +733,7 @@ export function UtilityDrawer() {
                               )}
                             >
                               {alert.recognized 
-                                ? (language === "en" ? "Acknowledged" : language === "es" ? "Reconocido" : "Reconhecido") 
+                                ? t('acknowledged_status') 
                                 : (t('pending_status'))}
                             </span>
                           </div>
@@ -788,7 +788,7 @@ export function UtilityDrawer() {
                             ) : (
                               <span className="text-[9px] text-muted-foreground/60 font-bold flex items-center gap-0.5 select-none py-0.5 px-1.5 bg-background/20 border border-border/20 rounded">
                                 <Check className="h-3 w-3 text-emerald-500/70" />
-                                {language === "en" ? "Acknowledged" : language === "es" ? "Reconocido" : "Reconhecido"}
+                                {t('acknowledged_status')}
                               </span>
                             )
                           ) : (
@@ -796,7 +796,7 @@ export function UtilityDrawer() {
                             alert.recognized ? (
                               <span className="text-[9px] text-muted-foreground font-bold flex items-center gap-0.5 select-none py-0.5 px-1.5 bg-background/20 border border-border/20 rounded">
                                 <Check className="h-3 w-3 text-emerald-500/70" />
-                                {language === "en" ? "Acknowledged" : language === "es" ? "Reconocido" : "Reconhecido"}
+                                {t('acknowledged_status')}
                               </span>
                             ) : (
                               <span className="text-[9px] text-amber-500/80 font-bold flex items-center gap-0.5 select-none py-0.5 px-1.5 bg-background/20 border border-border/20 rounded">
@@ -814,7 +814,7 @@ export function UtilityDrawer() {
                               handleClose();
                             }}
                             className="h-6 w-6 p-0 text-zinc-500 hover:text-primary hover:bg-primary/5 transition"
-                            title={language === "en" ? `Go to dashboard of ${getDomainName(alert.domain)}` : language === "es" ? `Ir al panel de ${getDomainName(alert.domain)}` : `Ir para o painel de ${getDomainName(alert.domain)}`}
+                            title={t("go_to_dashboard").replace("{domain}", getDomainName(alert.domain) || "")}
                           >
                             <ExternalLink className="h-3.5 w-3.5" />
                           </Button>
@@ -830,8 +830,8 @@ export function UtilityDrawer() {
             <div className="pt-4 border-t border-border/20 bg-transparent flex items-center justify-between shrink-0">
               <span className="text-xs text-muted-foreground font-mono">
                 {filter === "all" 
-                  ? (language === "en" ? `Alerts displayed: ${displayedAlerts.length}` : language === "es" ? `Alertas mostradas: ${displayedAlerts.length}` : `Alertas exibidos: ${displayedAlerts.length}`) 
-                  : (language === "en" ? `Active alerts: ${unrecognizedAlerts.length}` : language === "es" ? `Alertas activas: ${unrecognizedAlerts.length}` : `Alertas ativos: ${unrecognizedAlerts.length}`)}
+                  ? t('alerts_displayed').replace('{count}', displayedAlerts.length.toString()) 
+                  : t('active_alerts_count_drawer').replace('{count}', unrecognizedAlerts.length.toString())}
               </span>
               {alerts.length > 0 && (
                 <Button
@@ -991,7 +991,7 @@ export function UtilityDrawer() {
                               handleClose();
                             }}
                             className="h-6 w-6 p-0 text-muted-foreground hover:text-primary hover:bg-primary/5 transition"
-                            title={language === "en" ? `Go to dashboard of ${getDomainName(pred.domain)}` : language === "es" ? `Ir al panel de ${getDomainName(pred.domain)}` : `Ir para o painel de ${getDomainName(pred.domain)}`}
+                            title={t("go_to_dashboard").replace("{domain}", getDomainName(pred.domain) || "")}
                           >
                             <ExternalLink className="h-3.5 w-3.5" />
                           </Button>

@@ -58,15 +58,15 @@ export function Sidebar() {
 
     switch (activeDomain) {
       case "maintenance":
-        return "text-amber-500 bg-amber-500/10 border-amber-500/30";
+        return "text-amber-500 bg-amber-500/10 border-l-2 border-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.3)]";
       case "demand":
-        return "text-sky-500 bg-sky-500/10 border-sky-500/30";
+        return "text-sky-500 bg-sky-500/10 border-l-2 border-sky-500 shadow-[0_0_12px_rgba(14,165,233,0.3)]";
       case "churn":
-        return "text-violet-500 bg-violet-500/10 border-violet-500/30";
+        return "text-violet-500 bg-violet-500/10 border-l-2 border-violet-500 shadow-[0_0_12px_rgba(139,92,246,0.3)]";
       case "credit-risk":
-        return "text-emerald-500 bg-emerald-500/10 border-emerald-500/30";
+        return "text-emerald-500 bg-emerald-500/10 border-l-2 border-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.3)]";
       default:
-        return "text-green-500 bg-green-500/10 border-green-500/30";
+        return "text-green-500 bg-green-500/10 border-l-2 border-green-500 shadow-[0_0_12px_rgba(34,197,94,0.3)]";
     }
   };
 
@@ -204,7 +204,7 @@ export function Sidebar() {
         {/* Collapse Toggle Button */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="absolute -right-3 top-6 z-30 h-6 w-6 rounded-full border border-border bg-background flex items-center justify-center cursor-pointer shadow-md hover:bg-muted text-muted-foreground hover:text-foreground transition-all duration-200"
+          className="absolute -right-3 top-6 z-30 h-6 w-6 rounded-full border border-border bg-background flex items-center justify-center cursor-pointer shadow-md hover:bg-muted text-muted-foreground hover:text-foreground transition-all duration-300 hover:translate-x-1"
           title={isCollapsed ? t("expand_menu") : t("collapse_menu")}
         >
           {isCollapsed ? (
@@ -272,7 +272,7 @@ export function Sidebar() {
                 className={cn(
                   "w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 text-left relative overflow-hidden group hover:translate-x-1 hover:shadow-sm",
                   activeProfileSection === "preferences"
-                    ? "text-emerald-500 bg-emerald-500/10 border-emerald-500/30"
+                    ? "text-emerald-500 bg-emerald-500/10 border-l-2 border-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.3)]"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border-transparent",
                   isCollapsed && "justify-center"
                 )}
@@ -337,7 +337,7 @@ export function Sidebar() {
                 className={cn(
                   "w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 text-left relative overflow-hidden group hover:translate-x-1 hover:shadow-sm",
                   activeProfileSection === "admin"
-                    ? "text-emerald-500 bg-emerald-500/10 border-emerald-500/30"
+                    ? "text-emerald-500 bg-emerald-500/10 border-l-2 border-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.3)]"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border-transparent",
                   isCollapsed && "justify-center"
                 )}
@@ -368,7 +368,7 @@ export function Sidebar() {
                 className={cn(
                   "w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 text-left relative overflow-hidden group hover:translate-x-1 hover:shadow-sm",
                   activeProfileSection === "theme"
-                    ? "text-emerald-500 bg-emerald-500/10 border-emerald-500/30"
+                    ? "text-emerald-500 bg-emerald-500/10 border-l-2 border-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.3)]"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border-transparent",
                   isCollapsed && "justify-center"
                 )}
@@ -399,7 +399,7 @@ export function Sidebar() {
                 className={cn(
                   "w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 text-left relative overflow-hidden group hover:translate-x-1 hover:shadow-sm",
                   activeProfileSection === "tuning"
-                    ? "text-emerald-500 bg-emerald-500/10 border-emerald-500/30"
+                    ? "text-emerald-500 bg-emerald-500/10 border-l-2 border-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.3)]"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border-transparent",
                   isCollapsed && "justify-center"
                 )}
@@ -468,7 +468,7 @@ export function Sidebar() {
       {/* Collapse Toggle Button */}
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute -right-3 top-6 z-30 h-6 w-6 rounded-full border border-border bg-background flex items-center justify-center cursor-pointer shadow-md hover:bg-muted text-muted-foreground hover:text-foreground transition-all duration-200"
+        className="absolute -right-3 top-6 z-30 h-6 w-6 rounded-full border border-border bg-background flex items-center justify-center cursor-pointer shadow-md hover:bg-muted text-muted-foreground hover:text-foreground transition-all duration-300 hover:translate-x-1"
         title={isCollapsed ? t("expand_menu") : t("collapse_menu")}
       >
         {isCollapsed ? (
@@ -498,7 +498,7 @@ export function Sidebar() {
                     key={item.id}
                     onClick={() => setCurrentView(item.id)}
                     className={cn(
-                      "w-full flex items-center justify-center p-2.5 rounded-xl border transition-all duration-200 relative group",
+                      "w-full flex items-center justify-center p-2.5 rounded-xl border transition-all duration-300 hover:translate-x-1 relative group",
                       getViewColorClass(item.id)
                     )}
                     title={item.name}
@@ -520,12 +520,12 @@ export function Sidebar() {
                   onClick={() => setCurrentView(item.id)}
                   data-tutorial-target={item.id === "simulation" ? "prediction-tab" : undefined}
                   className={cn(
-                    "w-full flex items-start gap-3 p-3 rounded-xl border transition-all duration-200 text-left relative overflow-hidden group",
+                    "w-full flex items-start gap-3 p-3 rounded-xl border transition-all duration-300 hover:translate-x-1 text-left relative overflow-hidden group",
                     getViewColorClass(item.id)
                   )}
                 >
                   <div className={cn(
-                    "absolute left-0 top-3 bottom-3 w-1 rounded-r-md transition-all duration-200",
+                    "absolute left-0 top-3 bottom-3 w-1 rounded-r-md transition-all duration-300 hover:translate-x-1",
                     getActiveDotClass(item.id)
                   )} />
 
@@ -560,7 +560,7 @@ export function Sidebar() {
             <Link 
               href="/docs/glossary"
               className={cn(
-                "w-full flex items-center p-2.5 rounded-xl border border-transparent transition-all duration-200 group text-muted-foreground hover:text-foreground hover:bg-muted/40",
+                "w-full flex items-center p-2.5 rounded-xl border border-transparent transition-all duration-300 hover:translate-x-1 group text-muted-foreground hover:text-foreground hover:bg-muted/40",
                 isCollapsed ? "justify-center" : "gap-3 px-3"
               )}
               title="Glossário"
@@ -574,7 +574,7 @@ export function Sidebar() {
             <Link 
               href="/docs/help"
               className={cn(
-                "w-full flex items-center p-2.5 rounded-xl border border-transparent transition-all duration-200 group text-muted-foreground hover:text-foreground hover:bg-muted/40",
+                "w-full flex items-center p-2.5 rounded-xl border border-transparent transition-all duration-300 hover:translate-x-1 group text-muted-foreground hover:text-foreground hover:bg-muted/40",
                 isCollapsed ? "justify-center" : "gap-3 px-3"
               )}
               title="Central de Ajuda"
