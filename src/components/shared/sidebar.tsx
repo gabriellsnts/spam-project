@@ -31,9 +31,7 @@ export function Sidebar() {
     t, 
     currentUser,
     activeProfileSection,
-    setActiveProfileSection,
-    activeProfileSubSection,
-    setActiveProfileSubSection
+    setActiveProfileSection
   } = useDomain();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -243,7 +241,6 @@ export function Sidebar() {
               <button
                 onClick={() => {
                   setActiveProfileSection("preferences");
-                  setActiveProfileSubSection("");
                 }}
                 className={cn(
                   "w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 text-left relative overflow-hidden group hover:translate-x-1 hover:shadow-sm",
@@ -268,39 +265,6 @@ export function Sidebar() {
                 )}
               </button>
 
-              {/* Subtópicos de Preferências */}
-              {!isCollapsed && activeProfileSection === "preferences" && (
-                <div className="pl-6 pt-0.5 space-y-1 animate-in slide-in-from-top-1.5 duration-200 border-l border-zinc-200/50 dark:border-zinc-800/40 ml-5 mt-1">
-                  <button
-                    onClick={() => setActiveProfileSubSection("appearance")}
-                    className={cn(
-                      "w-full text-left text-[10.5px] py-1.5 px-2.5 rounded-lg transition-colors block font-medium relative",
-                      activeProfileSubSection === "appearance"
-                        ? "text-emerald-500 bg-emerald-500/5 font-bold"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/15"
-                    )}
-                  >
-                    {activeProfileSubSection === "appearance" && (
-                      <span className="absolute left-0 top-[9px] w-1 h-1 rounded-full bg-emerald-500" />
-                    )}
-                    {t("dashboard_appearance")}
-                  </button>
-                  <button
-                    onClick={() => setActiveProfileSubSection("language")}
-                    className={cn(
-                      "w-full text-left text-[10.5px] py-1.5 px-2.5 rounded-lg transition-colors block font-medium relative",
-                      activeProfileSubSection === "language"
-                        ? "text-emerald-500 bg-emerald-500/5 font-bold"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/15"
-                    )}
-                  >
-                    {activeProfileSubSection === "language" && (
-                      <span className="absolute left-0 top-[9px] w-1 h-1 rounded-full bg-emerald-500" />
-                    )}
-                    {t("language_selection")}
-                  </button>
-                </div>
-              )}
             </div>
 
             {/* Gestão Administrativa */}
@@ -308,7 +272,6 @@ export function Sidebar() {
               <button
                 onClick={() => {
                   setActiveProfileSection("admin");
-                  setActiveProfileSubSection("");
                 }}
                 className={cn(
                   "w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 text-left relative overflow-hidden group hover:translate-x-1 hover:shadow-sm",
@@ -339,7 +302,6 @@ export function Sidebar() {
               <button
                 onClick={() => {
                   setActiveProfileSection("theme");
-                  setActiveProfileSubSection("");
                 }}
                 className={cn(
                   "w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 text-left relative overflow-hidden group hover:translate-x-1 hover:shadow-sm",
@@ -370,7 +332,6 @@ export function Sidebar() {
               <button
                 onClick={() => {
                   setActiveProfileSection("tuning");
-                  setActiveProfileSubSection("");
                 }}
                 className={cn(
                   "w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 text-left relative overflow-hidden group hover:translate-x-1 hover:shadow-sm",
