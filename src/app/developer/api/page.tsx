@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useDomain } from "@/lib/context/domain-context";
 
 export default function DeveloperApiPage() {
-  const { addLog } = useDomain();
+  const { t, addLog } = useDomain();
   
   // CA01 & CA03: Key state and rotation
   const [apiKey, setApiKey] = useState("sk-test-8f92j3n4b5v6c7x8z9m0");
@@ -109,11 +109,9 @@ axios.post(url, data, {
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
             <Code2 className="h-8 w-8 text-orange-500" />
-            API & Integrações
-          </h1>
+            {t("ui_api_integra_es_497")}</h1>
           <p className="text-muted-foreground mt-1">
-            Integre os modelos preditivos diretamente em seus sistemas através da nossa REST API.
-          </p>
+            {t("ui_integre_os_modelos_preditivos_926")}</p>
         </div>
       </div>
 
@@ -124,11 +122,9 @@ axios.post(url, data, {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <Key className="h-5 w-5 text-orange-500" />
-              Chave de Acesso (API Key)
-            </CardTitle>
+              {t("ui_chave_de_acesso_api_225")}</CardTitle>
             <CardDescription>
-              Sua chave secreta para autenticar requisições. Não compartilhe publicamente.
-            </CardDescription>
+              {t("ui_sua_chave_secreta_para_222")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-2 max-w-2xl">
@@ -149,7 +145,7 @@ axios.post(url, data, {
               <Button 
                 variant="outline" 
                 onClick={handleCopyKey}
-                title="Copiar Chave"
+                title={t("ui_copiar_chave_830")}
                 className="shrink-0 gap-2 w-28"
               >
                 {copiedKey ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
@@ -173,29 +169,27 @@ axios.post(url, data, {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-sm">
               <BookOpen className="h-4 w-4 text-sky-500" />
-              Documentação
-            </CardTitle>
+              {t("ui_documenta_o_176")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 text-xs text-muted-foreground">
             <div className="p-3 bg-sky-500/10 border border-sky-500/20 rounded-md">
-              <strong className="text-sky-500 block mb-1">Base URL</strong>
-              <code className="text-foreground">https://api.spam.project/v1</code>
+              <strong className="text-sky-500 block mb-1">{t("ui_base_url_411")}</strong>
+              <code className="text-foreground">{t("ui_https_api_spam_project_379")}</code>
             </div>
             
             <div className="space-y-2">
-              <h4 className="font-semibold text-foreground">Rate Limits (Mockados)</h4>
+              <h4 className="font-semibold text-foreground">{t("ui_rate_limits_mockados_706")}</h4>
               <ul className="list-disc pl-4 space-y-1">
-                <li>100 requisições por minuto.</li>
-                <li>Picos de até 300 requisições (Burst).</li>
-                <li>Ultrapassar o limite retornará erro <code>429 Too Many Requests</code>.</li>
+                <li>{t("ui_100_requisi_es_por_215")}</li>
+                <li>{t("ui_picos_de_at_300_932")}</li>
+                <li>{t("ui_ultrapassar_o_limite_retornar_284")}<code>{t("ui_429_too_many_requests_451")}</code>.</li>
               </ul>
             </div>
 
             <div className="space-y-2 mt-4 pt-4 border-t border-border/30">
               <h4 className="font-semibold text-foreground flex items-center gap-1.5">
-                <AlertCircle className="h-3.5 w-3.5 text-amber-500" /> Formato de Resposta
-              </h4>
-              <p>Todas as respostas bem sucedidas retornarão <code>200 OK</code> com payload em JSON:</p>
+                <AlertCircle className="h-3.5 w-3.5 text-amber-500" /> {t("ui_formato_de_resposta_534")}</h4>
+              <p>{t("ui_todas_as_respostas_bem_591")}<code>{t("ui_200_ok_760")}</code> {t("ui_com_payload_em_json_650")}</p>
               <pre className="p-2 bg-black/50 rounded border border-border/50 text-[10px] text-emerald-400 font-mono mt-2 overflow-x-auto">
 {`{
   "success": true,
@@ -215,10 +209,9 @@ axios.post(url, data, {
           <CardHeader className="pb-2 border-b border-border/30">
             <CardTitle className="flex items-center gap-2 text-lg">
               <Terminal className="h-5 w-5 text-emerald-500" />
-              Exemplos de Integração
-            </CardTitle>
+              {t("ui_exemplos_de_integra_o_182")}</CardTitle>
             <CardDescription>
-              Faça predições enviando um POST para o endpoint <code>/predict</code>
+              {t("ui_fa_a_predi_es_318")}<code>/predict</code>
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-4">
@@ -229,20 +222,17 @@ axios.post(url, data, {
                     onClick={() => setActiveTab("curl")} 
                     className={`px-3 py-1.5 text-sm font-medium rounded-sm transition-colors ${activeTab === "curl" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
                   >
-                    cURL
-                  </button>
+                    {t("ui_curl_227")}</button>
                   <button 
                     onClick={() => setActiveTab("python")} 
                     className={`px-3 py-1.5 text-sm font-medium rounded-sm transition-colors ${activeTab === "python" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
                   >
-                    Python
-                  </button>
+                    {t("ui_python_663")}</button>
                   <button 
                     onClick={() => setActiveTab("node")} 
                     className={`px-3 py-1.5 text-sm font-medium rounded-sm transition-colors ${activeTab === "node" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
                   >
-                    Node.js
-                  </button>
+                    {t("ui_node_js_4")}</button>
                 </div>
               </div>
 

@@ -9,6 +9,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
+
 interface ModelCertificateProps {
   modelId: string;
   algorithm: string;
@@ -57,7 +58,7 @@ export function ModelCertificateDialog({
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2 border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10">
           <Award className="h-4 w-4" />
-          <span className="hidden sm:inline">Certificado de Qualidade</span>
+          <span className="hidden sm:inline">{t("ui_certificado_de_qualidade_244")}</span>
         </Button>
       </DialogTrigger>
       
@@ -83,8 +84,8 @@ export function ModelCertificateDialog({
             <div className="h-16 w-16 bg-zinc-900 rounded-full flex items-center justify-center mb-4 shadow-lg border-4 border-white">
               <ShieldCheck className="h-8 w-8 text-emerald-400" />
             </div>
-            <h2 className="text-3xl md:text-4xl font-serif text-zinc-900 tracking-wider">CERTIFICADO DE QUALIDADE</h2>
-            <p className="text-zinc-500 uppercase tracking-widest text-xs mt-2 font-semibold">Plataforma Preditiva Antigravity</p>
+            <h2 className="text-3xl md:text-4xl font-serif text-zinc-900 tracking-wider">{t("ui_certificado_de_qualidade_296")}</h2>
+            <p className="text-zinc-500 uppercase tracking-widest text-xs mt-2 font-semibold">{t("ui_plataforma_preditiva_antigravity_398")}</p>
           </div>
 
           <div className="w-24 h-px bg-zinc-300 mb-8 z-10"></div>
@@ -92,28 +93,25 @@ export function ModelCertificateDialog({
           {/* Certificate Body */}
           <div className="z-10 text-zinc-700 max-w-lg space-y-4 font-serif leading-relaxed">
             <p className="text-lg">
-              Certificamos que o modelo preditivo identificado como
-            </p>
+              {t("ui_certificamos_que_o_modelo_894")}</p>
             <p className="text-2xl font-bold text-zinc-900 font-mono bg-zinc-100 py-2 px-4 rounded-md inline-block border border-zinc-200 shadow-sm">
               {modelId}
             </p>
             <p className="text-lg">
-              utilizando o algoritmo <strong className="text-zinc-900">{algorithm}</strong>, 
-              foi treinado, validado rigorosamente em cross-validation e aprovado para operação contínua.
-            </p>
+              {t("ui_utilizando_o_algoritmo_502")}<strong className="text-zinc-900">{algorithm}</strong>{t("ui_foi_treinado_validado_rigorosamente_779")}</p>
           </div>
 
           {/* Metrics (CA04) */}
           <div className="grid grid-cols-2 gap-6 w-full max-w-sm mt-8 z-10">
             <div className="bg-zinc-50 border border-zinc-200 p-4 rounded-lg flex flex-col items-center shadow-sm">
-              <span className="text-[10px] uppercase font-bold text-zinc-400 mb-1 tracking-wider">Acurácia</span>
+              <span className="text-[10px] uppercase font-bold text-zinc-400 mb-1 tracking-wider">{t("ui_acur_cia_296")}</span>
               <div className="flex items-center gap-1">
                 <CheckCircle2 className="h-4 w-4 text-emerald-500" />
                 <span className="text-xl font-bold text-zinc-800">{(accuracy * 100).toFixed(2)}%</span>
               </div>
             </div>
             <div className="bg-zinc-50 border border-zinc-200 p-4 rounded-lg flex flex-col items-center shadow-sm">
-              <span className="text-[10px] uppercase font-bold text-zinc-400 mb-1 tracking-wider">F1-Score</span>
+              <span className="text-[10px] uppercase font-bold text-zinc-400 mb-1 tracking-wider">{t("ui_f1_score_475")}</span>
               <div className="flex items-center gap-1">
                 <CheckCircle2 className="h-4 w-4 text-emerald-500" />
                 <span className="text-xl font-bold text-zinc-800">{(f1Score * 100).toFixed(2)}%</span>
@@ -128,25 +126,25 @@ export function ModelCertificateDialog({
                 {new Date(validationDate).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}
               </span>
               <div className="w-32 h-px bg-zinc-400"></div>
-              <span className="text-[10px] text-zinc-500 mt-1 uppercase tracking-wider font-semibold">Data de Validação</span>
+              <span className="text-[10px] text-zinc-500 mt-1 uppercase tracking-wider font-semibold">{t("ui_data_de_valida_o_303")}</span>
             </div>
             
             {/* Seal */}
             <div className="h-20 w-20 rounded-full border-2 border-emerald-500 flex flex-col items-center justify-center opacity-90 rotate-12 bg-white shadow-sm">
               <Award className="h-6 w-6 text-emerald-600 mb-0.5" />
-              <span className="text-[8px] font-bold text-emerald-700 uppercase tracking-tighter">Verified</span>
+              <span className="text-[8px] font-bold text-emerald-700 uppercase tracking-tighter">{t("ui_verified_90")}</span>
             </div>
 
             <div className="flex flex-col items-center">
-              <span className="font-script text-2xl text-zinc-800 mb-[-5px]" style={{ fontFamily: 'cursive' }}>Antigravity Engine</span>
+              <span className="font-script text-2xl text-zinc-800 mb-[-5px]" style={{ fontFamily: 'cursive' }}>{t("ui_antigravity_engine_356")}</span>
               <div className="w-32 h-px bg-zinc-400"></div>
-              <span className="text-[10px] text-zinc-500 mt-1 uppercase tracking-wider font-semibold">Auditor Automático</span>
+              <span className="text-[10px] text-zinc-500 mt-1 uppercase tracking-wider font-semibold">{t("ui_auditor_autom_tico_390")}</span>
             </div>
           </div>
 
           {/* Hash Watermark (CA03) */}
           <div className="absolute bottom-2 left-4 text-[9px] font-mono text-zinc-400 z-10">
-            Hash: {certHash}
+            {t("ui_hash_109")}{certHash}
           </div>
         </div>
         
@@ -154,8 +152,7 @@ export function ModelCertificateDialog({
         <div className="absolute bottom-4 right-4 z-20 print:hidden">
            <Button onClick={handlePrint} size="sm" className="bg-zinc-900 hover:bg-zinc-800 text-white gap-2 shadow-lg rounded-full px-4">
               <Printer className="h-4 w-4" />
-              Imprimir PDF
-           </Button>
+              {t("ui_imprimir_pdf_496")}</Button>
         </div>
       </DialogContent>
     </Dialog>

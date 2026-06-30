@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 export function DataLineageView() {
-  const { activeDomain } = useDomain();
+  const { t, activeDomain } = useDomain();
 
   const lineageNodes = [
     {
@@ -58,15 +58,13 @@ export function DataLineageView() {
           <div>
             <CardTitle className="text-xl flex items-center gap-2">
               <GitCommit className="w-5 h-5 text-emerald-500" />
-              Lineage & Versionamento de Dados (RF66, RF67)
-            </CardTitle>
+              {t("ui_lineage_versionamento_de_dados_379")}</CardTitle>
             <CardDescription>
-              Rastreabilidade completa de ponta a ponta. Pipeline automatizado para o modelo de {activeDomain || "todos"}.
+              {t("ui_rastreabilidade_completa_de_ponta_587")}{activeDomain || "todos"}.
             </CardDescription>
           </div>
           <Badge variant="secondary" className="font-mono">
-            HEAD: v2.0-ready
-          </Badge>
+            {t("ui_head_v2_0_ready_675")}</Badge>
         </div>
       </CardHeader>
       <CardContent>

@@ -18,7 +18,7 @@ interface ModelVersion {
 }
 
 export function ModelRegistry() {
-  const { activeDomain, trainedModels } = useDomain();
+  const { t, activeDomain, trainedModels } = useDomain();
   const currentModel = activeDomain ? trainedModels[activeDomain] : null;
 
   // Mocking historical versions based on the active domain
@@ -84,13 +84,13 @@ export function ModelRegistry() {
   const getStatusBadge = (status: ModelVersion["status"]) => {
     switch (status) {
       case "production":
-        return <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"><CheckCircle2 className="h-3 w-3" /> Produção</span>;
+        return <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"><CheckCircle2 className="h-3 w-3" /> {t("ui_produ_o_930")}</span>;
       case "testing":
-        return <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20"><PlayCircle className="h-3 w-3" /> Em Teste (A/B)</span>;
+        return <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20"><PlayCircle className="h-3 w-3" /> {t("ui_em_teste_a_b_681")}</span>;
       case "failed":
-        return <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-600 border border-rose-500/20"><AlertCircle className="h-3 w-3" /> Falhou (Drift)</span>;
+        return <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-600 border border-rose-500/20"><AlertCircle className="h-3 w-3" /> {t("ui_falhou_drift_844")}</span>;
       default:
-        return <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-zinc-500/10 text-zinc-500 border border-zinc-500/20"><Archive className="h-3 w-3" /> Arquivado</span>;
+        return <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-zinc-500/10 text-zinc-500 border border-zinc-500/20"><Archive className="h-3 w-3" /> {t("ui_arquivado_635")}</span>;
     }
   };
 
@@ -101,16 +101,13 @@ export function ModelRegistry() {
           <div>
             <CardTitle className="text-lg flex items-center gap-2">
               <History className="h-5 w-5 text-emerald-500" />
-              Model Registry (Ciclo de Vida)
-            </CardTitle>
+              {t("ui_model_registry_ciclo_de_634")}</CardTitle>
             <CardDescription className="text-xs mt-1">
-              Gerencie todas as versões de modelos treinados para este domínio (RF89).
-            </CardDescription>
+              {t("ui_gerencie_todas_as_vers_699")}</CardDescription>
           </div>
           <Button variant="outline" size="sm" className="h-8 text-xs font-semibold">
             <Download className="h-4 w-4 mr-2" />
-            Exportar Logs
-          </Button>
+            {t("ui_exportar_logs_513")}</Button>
         </div>
       </CardHeader>
       <CardContent>
@@ -118,12 +115,12 @@ export function ModelRegistry() {
           <table className="w-full text-sm text-left">
             <thead className="bg-muted/50 text-xs uppercase text-muted-foreground font-semibold border-b border-border">
               <tr>
-                <th className="px-4 py-3">Versão / Tag</th>
-                <th className="px-4 py-3">Algoritmo</th>
-                <th className="px-4 py-3">Acurácia / F1</th>
-                <th className="px-4 py-3">Data / Autor</th>
-                <th className="px-4 py-3 text-right">Status</th>
-                <th className="px-4 py-3 text-right">Ações</th>
+                <th className="px-4 py-3">{t("ui_vers_o_tag_724")}</th>
+                <th className="px-4 py-3">{t("ui_algoritmo_563")}</th>
+                <th className="px-4 py-3">{t("ui_acur_cia_f1_34")}</th>
+                <th className="px-4 py-3">{t("ui_data_autor_497")}</th>
+                <th className="px-4 py-3 text-right">{t("ui_status_149")}</th>
+                <th className="px-4 py-3 text-right">{t("ui_a_es_613")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60">
@@ -143,8 +140,8 @@ export function ModelRegistry() {
                   </td>
                   <td className="px-4 py-3 text-xs">
                     <div className="flex flex-col gap-0.5">
-                      <span className={v.accuracy > 90 ? "text-emerald-500 font-semibold" : "text-amber-500"}>Acc: {v.accuracy.toFixed(1)}%</span>
-                      <span className="text-muted-foreground text-[10px]">F1: {v.f1Score.toFixed(1)}%</span>
+                      <span className={v.accuracy > 90 ? "text-emerald-500 font-semibold" : "text-amber-500"}>{t("ui_acc_655")}{v.accuracy.toFixed(1)}%</span>
+                      <span className="text-muted-foreground text-[10px]">{t("ui_f1_790")}{v.f1Score.toFixed(1)}%</span>
                     </div>
                   </td>
                   <td className="px-4 py-3 text-xs">
@@ -155,13 +152,12 @@ export function ModelRegistry() {
                     {getStatusBadge(v.status)}
                   </td>
                   <td className="px-4 py-3 text-right space-x-2 flex justify-end items-center mt-2">
-                    <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" title="Ver Certificado de Validação">
+                    <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" title={t("ui_ver_certificado_de_valida_166")}>
                       <FileText className="h-4 w-4 text-blue-500" />
                     </Button>
                     {v.status !== "production" && (
                       <Button variant="outline" size="sm" className="h-7 px-2 text-[10px] font-bold text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10">
-                        Promover
-                      </Button>
+                        {t("ui_promover_396")}</Button>
                     )}
                   </td>
                 </tr>
@@ -170,8 +166,7 @@ export function ModelRegistry() {
           </table>
           {versions.length === 0 && (
             <div className="p-8 text-center text-sm text-muted-foreground">
-              Nenhum modelo encontrado no registro. Treine um modelo primeiro.
-            </div>
+              {t("ui_nenhum_modelo_encontrado_no_463")}</div>
           )}
         </div>
       </CardContent>

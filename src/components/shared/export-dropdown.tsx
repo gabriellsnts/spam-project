@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface ExportDropdownProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -90,11 +91,11 @@ export function ExportDropdown({ data = [], filenamePrefix = "export" }: ExportD
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
           <Download className="h-4 w-4" />
-          <span className="hidden sm:inline">Exportar Dados</span>
+          <span className="hidden sm:inline">{t("ui_exportar_dados_695")}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuLabel>Formato de Arquivo</DropdownMenuLabel>
+        <DropdownMenuLabel>{t("ui_formato_de_arquivo_828")}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         
         <DropdownMenuItem onClick={() => handleExport("CSV")} disabled={exportingFormat !== null}>

@@ -5,7 +5,7 @@ import { useDomain, DOMAINS } from "@/lib/context/domain-context";
 import { Loader2 } from "lucide-react";
 
 export function LoadingOverlay() {
-  const { isTransitioning, targetDomain } = useDomain();
+  const { t, isTransitioning, targetDomain } = useDomain();
   const [progress, setProgress] = useState(0);
   const [statusText, setStatusText] = useState("Iniciando...");
 
@@ -93,8 +93,7 @@ export function LoadingOverlay() {
           </div>
 
           <h3 className="text-lg font-semibold text-foreground mb-2">
-            Carregando Módulo Preditivo
-          </h3>
+            {t("ui_carregando_m_dulo_preditivo_320")}</h3>
           
           <p className="text-xs text-muted-foreground min-h-[32px] max-w-[280px] mb-6 flex items-center justify-center">
             {statusText}

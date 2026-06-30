@@ -71,8 +71,7 @@ export function TuningPanel() {
             </CardDescription>
           </div>
           <Badge variant="outline" className="capitalize">
-            {activeDomain || "todos"} Model
-          </Badge>
+            {activeDomain || "todos"} {t("ui_model_492")}</Badge>
         </div>
       </CardHeader>
       <CardContent>
@@ -188,7 +187,7 @@ export function TuningPanel() {
                 <div className="flex justify-between items-center">
                   <Label>{t("elastic_net_balance")}</Label>
                   <span className="text-sm font-mono text-muted-foreground">
-                    L1: {regularization.l1Ratio[0]}% / L2: {100 - regularization.l1Ratio[0]}%
+                    {t("ui_l1_71")}{regularization.l1Ratio[0]}{t("ui_l2_659")}{100 - regularization.l1Ratio[0]}%
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground mb-4">
@@ -247,7 +246,7 @@ export function TuningPanel() {
                   {/* Random Forest */}
                   <div className={`p-3 border rounded-lg flex items-center justify-between transition-colors ${ensembleModels.rf ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-background'}`}>
                     <div className="space-y-1">
-                      <Label className="font-semibold text-xs">Random Forest</Label>
+                      <Label className="font-semibold text-xs">{t("ui_random_forest_144")}</Label>
                       <p className="text-[9px] text-muted-foreground">{t("main_base_model")}</p>
                     </div>
                     <Switch checked={ensembleModels.rf} onCheckedChange={(v) => setEnsembleModels({...ensembleModels, rf: v})} />
@@ -255,7 +254,7 @@ export function TuningPanel() {
                   {/* XGBoost */}
                   <div className={`p-3 border rounded-lg flex items-center justify-between transition-colors ${ensembleModels.xgb ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-background'}`}>
                     <div className="space-y-1">
-                      <Label className="font-semibold text-xs">XGBoost</Label>
+                      <Label className="font-semibold text-xs">{t("ui_xgboost_768")}</Label>
                       <p className="text-[9px] text-muted-foreground">{t("gradient_boosting")}</p>
                     </div>
                     <Switch checked={ensembleModels.xgb} onCheckedChange={(v) => setEnsembleModels({...ensembleModels, xgb: v})} />
@@ -271,8 +270,8 @@ export function TuningPanel() {
                   {/* Redes Neurais */}
                   <div className={`p-3 border rounded-lg flex items-center justify-between transition-colors ${ensembleModels.nn ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-background'}`}>
                     <div className="space-y-1">
-                      <Label className="font-semibold text-xs">Deep Neural Network</Label>
-                      <p className="text-[9px] text-muted-foreground">MLP 3 Layers</p>
+                      <Label className="font-semibold text-xs">{t("ui_deep_neural_network_775")}</Label>
+                      <p className="text-[9px] text-muted-foreground">{t("ui_mlp_3_layers_931")}</p>
                     </div>
                     <Switch checked={ensembleModels.nn} onCheckedChange={(v) => setEnsembleModels({...ensembleModels, nn: v})} />
                   </div>

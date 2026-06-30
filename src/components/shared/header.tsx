@@ -123,10 +123,9 @@ export function Header() {
             </div>
             <div className="flex flex-col">
               <span className="text-foreground font-extrabold text-sm tracking-wider leading-none">
-                SPAM SYSTEM
-              </span>
+                {t("ui_spam_system_831")}</span>
               <span className="text-[9px] text-zinc-500 font-medium tracking-tight">
-                {t("multi_domain_prediction") || "Predição Multi-Domínio"}
+                {t("multi_domain_prediction")}
               </span>
             </div>
           </Link>
@@ -174,7 +173,7 @@ export function Header() {
               <button
                 onClick={dismissFinishedAlert}
                 className="ml-1 hover:text-foreground text-muted-foreground transition font-sans text-[10px] font-bold"
-                title={t("close_alert") || "Fechar Alerta"}
+                title={t("close_alert")}
               >
                 ✕
               </button>
@@ -216,7 +215,7 @@ export function Header() {
                     )}
                   >
                     <span className="text-sm">🇧🇷</span>
-                    <span>Português</span>
+                    <span>{t("ui_portugu_s_551")}</span>
                   </button>
                   <button
                     onClick={() => {
@@ -229,7 +228,7 @@ export function Header() {
                     )}
                   >
                     <span className="text-sm">🇺🇸</span>
-                    <span>English</span>
+                    <span>{t("ui_english_588")}</span>
                   </button>
                   <button
                     onClick={() => {
@@ -242,7 +241,7 @@ export function Header() {
                     )}
                   >
                     <span className="text-sm">🇪🇸</span>
-                    <span>Español</span>
+                    <span>{t("ui_espa_ol_35")}</span>
                   </button>
                 </div>
               </>

@@ -9,7 +9,7 @@ import { useDomain, GlossaryTerm, GlossaryCategory } from "@/lib/context/domain-
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 export default function GlossaryPage() {
-  const { glossary, addGlossaryTerm, updateGlossaryTerm, deleteGlossaryTerm, currentUser } = useDomain();
+  const { t, glossary, addGlossaryTerm, updateGlossaryTerm, deleteGlossaryTerm, currentUser } = useDomain();
   
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<GlossaryCategory | "Todas">("Todas");
@@ -85,18 +85,15 @@ export default function GlossaryPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
             <BookA className="h-8 w-8 text-sky-500" />
-            Glossário Técnico
-          </h1>
+            {t("ui_gloss_rio_t_cnico_398")}</h1>
           <p className="text-muted-foreground mt-1">
-            Consulte o significado de métricas, termos de negócio e conceitos técnicos do sistema.
-          </p>
+            {t("ui_consulte_o_significado_de_800")}</p>
         </div>
         
         {isAdmin && (
           <Button onClick={() => handleOpenModal()} className="gap-2 bg-sky-600 hover:bg-sky-500 text-white">
             <Plus className="h-4 w-4" />
-            Novo Termo
-          </Button>
+            {t("ui_novo_termo_105")}</Button>
         )}
       </div>
 
@@ -106,7 +103,7 @@ export default function GlossaryPage() {
             <div className="relative w-full flex-1">
               <Search className="h-4 w-4 text-muted-foreground absolute left-3 top-3" />
               <Input 
-                placeholder="Buscar por termo ou palavras na definição..." 
+                placeholder={t("ui_buscar_por_termo_ou_560")} 
                 className="pl-9 bg-background/50 h-10"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -134,10 +131,9 @@ export default function GlossaryPage() {
           {filteredTerms.length === 0 ? (
             <div className="py-12 text-center text-muted-foreground flex flex-col items-center">
               <BookOpen className="h-12 w-12 mb-3 opacity-20" />
-              <p>Nenhum termo encontrado para sua busca e filtros.</p>
+              <p>{t("ui_nenhum_termo_encontrado_para_706")}</p>
               <Button variant="link" onClick={() => { setSearch(""); setCategoryFilter("Todas"); }} className="mt-2">
-                Limpar filtros
-              </Button>
+                {t("ui_limpar_filtros_236")}</Button>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -178,8 +174,7 @@ export default function GlossaryPage() {
                   {item.relatedTerms && item.relatedTerms.length > 0 && (
                     <div className="mt-5 pt-4 border-t border-border/30">
                       <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-2 flex items-center gap-1">
-                        <ArrowRight className="h-3 w-3" /> Termos Relacionados
-                      </p>
+                        <ArrowRight className="h-3 w-3" /> {t("ui_termos_relacionados_403")}</p>
                       <div className="flex flex-wrap gap-2">
                         {item.relatedTerms.map(relatedId => {
                           const relatedTerm = glossary.find(t => t.id === relatedId);
@@ -212,11 +207,11 @@ export default function GlossaryPage() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Termo</label>
-              <Input value={term} onChange={(e) => setTerm(e.target.value)} placeholder="Ex: Lead Time" />
+              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">{t("ui_termo_845")}</label>
+              <Input value={term} onChange={(e) => setTerm(e.target.value)} placeholder={t("ui_ex_lead_time_775")} />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Categoria</label>
+              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">{t("ui_categoria_166")}</label>
               <select 
                 className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-sky-500"
                 value={category}
@@ -228,20 +223,19 @@ export default function GlossaryPage() {
               </select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Definição</label>
+              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">{t("ui_defini_o_617")}</label>
               <textarea 
                 className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-sky-500 resize-none"
                 value={definition} 
                 onChange={(e) => setDefinition(e.target.value)} 
-                placeholder="Explicação clara do termo..."
+                placeholder={t("ui_explica_o_clara_do_491")}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
+            <Button variant="outline" onClick={() => setIsModalOpen(false)}>{t("ui_cancelar_16")}</Button>
             <Button onClick={handleSaveTerm} disabled={!term || !definition} className="bg-sky-600 hover:bg-sky-500 text-white">
-              Salvar Termo
-            </Button>
+              {t("ui_salvar_termo_791")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

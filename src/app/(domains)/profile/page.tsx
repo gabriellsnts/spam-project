@@ -256,7 +256,7 @@ export default function ProfilePage() {
                     )}
                   >
                     <span className="text-2xl">🇧🇷</span>
-                    <span className="text-xs font-bold">Português (BR)</span>
+                    <span className="text-xs font-bold">{t("ui_portugu_s_br_117")}</span>
                   </button>
 
                   {/* Inglês */}
@@ -270,7 +270,7 @@ export default function ProfilePage() {
                     )}
                   >
                     <span className="text-2xl">🇺🇸</span>
-                    <span className="text-xs font-bold">English (US)</span>
+                    <span className="text-xs font-bold">{t("ui_english_us_555")}</span>
                   </button>
 
                   {/* Espanhol */}
@@ -284,7 +284,7 @@ export default function ProfilePage() {
                     )}
                   >
                     <span className="text-2xl">🇪🇸</span>
-                    <span className="text-xs font-bold">Español</span>
+                    <span className="text-xs font-bold">{t("ui_espa_ol_289")}</span>
                   </button>
                 </div>
               </CardContent>
@@ -319,7 +319,7 @@ export default function ProfilePage() {
                       type="email"
                       value={localEmail}
                       onChange={(e) => setLocalEmail(e.target.value)}
-                      placeholder="gestor@empresa.com"
+                      placeholder={t("ui_gestor_empresa_com_217")}
                       className="w-full text-xs bg-zinc-100 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 focus:border-emerald-500/50"
                     />
                   </div>
@@ -338,8 +338,8 @@ export default function ProfilePage() {
                     {isSaving && <div className="h-3.5 w-3.5 rounded-full border-2 border-white/20 border-t-white animate-spin" />}
                     {saveSuccess && <Check className="h-3.5 w-3.5" />}
                     {!isSaving && !saveSuccess && t("save_settings")}
-                    {isSaving && (t("saving") || "Salvando...")}
-                    {saveSuccess && (t("saved") || "Salvo!")}
+                    {isSaving && (t("saving"))}
+                    {saveSuccess && (t("saved"))}
                   </button>
                 </div>
 

@@ -38,7 +38,7 @@ const checkPasswordStrength = (pass: string) => {
 };
 
 export function UserManagement() {
-  const { currentUser, users, setUsers, addLog, privacyNoticeText, savePrivacyNoticeText } = useDomain();
+  const { t, currentUser, users, setUsers, addLog, privacyNoticeText, savePrivacyNoticeText } = useDomain();
 
   // Estados do formulário
   const [fullName, setFullName] = useState("");
@@ -187,11 +187,9 @@ export function UserManagement() {
           <CardHeader>
             <CardTitle className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
               <UserCheck className="h-4.5 w-4.5 text-green-500" />
-              Cadastrar Usuário
-            </CardTitle>
+              {t("ui_cadastrar_usu_rio_354")}</CardTitle>
             <CardDescription className="text-xs text-slate-700 dark:text-zinc-500">
-              Preencha as informações obrigatórias para criar uma nova conta.
-            </CardDescription>
+              {t("ui_preencha_as_informa_es_981")}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -209,14 +207,14 @@ export function UserManagement() {
 
               {/* Nome Completo */}
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-800 dark:text-zinc-400 uppercase tracking-wider block">Nome Completo</label>
+                <label className="text-[10px] font-bold text-slate-800 dark:text-zinc-400 uppercase tracking-wider block">{t("ui_nome_completo_200")}</label>
                 <div className="relative">
                   <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
                   <input
                     type="text"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Ex: João da Silva"
+                    placeholder={t("ui_ex_jo_o_da_819")}
                     className="w-full h-9 pl-9 pr-3 rounded-lg bg-zinc-950/80 border border-zinc-850 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none text-zinc-200 text-xs transition"
                   />
                 </div>
@@ -224,14 +222,14 @@ export function UserManagement() {
 
               {/* Usuário */}
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-800 dark:text-zinc-400 uppercase tracking-wider block">Usuário</label>
+                <label className="text-[10px] font-bold text-slate-800 dark:text-zinc-400 uppercase tracking-wider block">{t("ui_usu_rio_801")}</label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
                   <input
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Ex: joao.silva"
+                    placeholder={t("ui_ex_joao_silva_952")}
                     className="w-full h-9 pl-9 pr-3 rounded-lg bg-zinc-950/80 border border-zinc-850 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none text-zinc-200 text-xs transition"
                   />
                 </div>
@@ -239,7 +237,7 @@ export function UserManagement() {
 
               {/* Senha */}
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-800 dark:text-zinc-400 uppercase tracking-wider block">Senha</label>
+                <label className="text-[10px] font-bold text-slate-800 dark:text-zinc-400 uppercase tracking-wider block">{t("ui_senha_505")}</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
                   <input
@@ -255,7 +253,7 @@ export function UserManagement() {
                 {password && (
                   <div className="pt-1.5 space-y-1.5 animate-in slide-in-from-top-1 duration-200">
                     <div className="flex items-center justify-between text-[10px]">
-                      <span className="text-slate-750 dark:text-zinc-500 font-semibold">Força da Senha:</span>
+                      <span className="text-slate-750 dark:text-zinc-500 font-semibold">{t("ui_for_a_da_senha_946")}</span>
                       <span className={`font-bold ${strength.textColor}`}>{strength.label}</span>
                     </div>
                     {/* Barra de progresso visual */}
@@ -266,15 +264,15 @@ export function UserManagement() {
                     <div className="grid grid-cols-1 gap-1 text-[9px] text-slate-750 dark:text-zinc-500 pt-1">
                       <div className="flex items-center gap-1">
                         {requirements.minLength ? <Check className="h-3 w-3 text-green-500" /> : <X className="h-3 w-3 text-red-500" />}
-                        <span>Pelo menos 6 caracteres</span>
+                        <span>{t("ui_pelo_menos_6_caracteres_41")}</span>
                       </div>
                       <div className="flex items-center gap-1">
                         {requirements.hasUpper ? <Check className="h-3 w-3 text-green-500" /> : <X className="h-3 w-3 text-zinc-600" />}
-                        <span>Uma letra maiúscula (A-Z)</span>
+                        <span>{t("ui_uma_letra_mai_scula_647")}</span>
                       </div>
                       <div className="flex items-center gap-1">
                         {requirements.hasNumberOrSpecial ? <Check className="h-3 w-3 text-green-500" /> : <X className="h-3 w-3 text-zinc-600" />}
-                        <span>Um número ou caractere especial</span>
+                        <span>{t("ui_um_n_mero_ou_909")}</span>
                       </div>
                     </div>
                   </div>
@@ -283,7 +281,7 @@ export function UserManagement() {
 
               {/* Confirmar Senha */}
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-800 dark:text-zinc-400 uppercase tracking-wider block">Confirmar Senha</label>
+                <label className="text-[10px] font-bold text-slate-800 dark:text-zinc-400 uppercase tracking-wider block">{t("ui_confirmar_senha_441")}</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
                   <input
@@ -298,15 +296,15 @@ export function UserManagement() {
 
               {/* Perfil de Acesso */}
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-800 dark:text-zinc-400 uppercase tracking-wider block">Perfil de Acesso</label>
+                <label className="text-[10px] font-bold text-slate-800 dark:text-zinc-400 uppercase tracking-wider block">{t("ui_perfil_de_acesso_421")}</label>
                 <select
                   value={profile}
                   onChange={(e) => setProfile(e.target.value)}
                   className="w-full h-9 px-3 rounded-lg bg-zinc-950/80 border border-zinc-850 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none text-zinc-250 text-xs transition appearance-none cursor-pointer"
                 >
-                  <option value="Super Admin">Administrador (Super Admin)</option>
-                  <option value="Gestor Analítico">Gestor de Operações (Gestor Analítico)</option>
-                  <option value="Analista de Dados">Analista (Analista de Dados)</option>
+                  <option value="Super Admin">{t("ui_administrador_super_admin_639")}</option>
+                  <option value="Gestor Analítico">{t("ui_gestor_de_opera_es_198")}</option>
+                  <option value="Analista de Dados">{t("ui_analista_analista_de_dados_873")}</option>
                 </select>
               </div>
 
@@ -315,10 +313,10 @@ export function UserManagement() {
                 <div className="p-2.5 bg-zinc-950 rounded-lg border border-zinc-800/85 space-y-1 text-[9px] font-mono text-slate-700 dark:text-zinc-400 animate-in zoom-in-95">
                   <div className="flex items-center gap-1 text-green-500 font-bold uppercase tracking-wider text-[8px]">
                     <Shield className="h-3 w-3 shrink-0" />
-                    <span>Simulador de Hashing</span>
+                    <span>{t("ui_simulador_de_hashing_748")}</span>
                   </div>
-                  <div className="truncate font-mono">Algoritmo: SHA-256</div>
-                  <div className="truncate font-semibold text-zinc-350 font-mono">Hash: {simulatedHash}</div>
+                  <div className="truncate font-mono">{t("ui_algoritmo_sha_256_986")}</div>
+                  <div className="truncate font-semibold text-zinc-350 font-mono">{t("ui_hash_772")}{simulatedHash}</div>
                 </div>
               )}
 
@@ -342,11 +340,9 @@ export function UserManagement() {
           <CardHeader>
             <CardTitle className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
               <Shield className="h-4.5 w-4.5 text-green-500" />
-              Diretrizes de Privacidade (LGPD)
-            </CardTitle>
+              {t("ui_diretrizes_de_privacidade_lgpd_662")}</CardTitle>
             <CardDescription className="text-xs text-slate-700 dark:text-zinc-500">
-              Configure o aviso legal exibido aos operadores antes do upload de qualquer base de dados (CSV).
-            </CardDescription>
+              {t("ui_configure_o_aviso_legal_196")}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={(e) => {
@@ -377,13 +373,12 @@ export function UserManagement() {
 
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-slate-800 dark:text-zinc-400 uppercase tracking-wider block">
-                  Texto do Aviso de Privacidade
-                </label>
+                  {t("ui_texto_do_aviso_de_354")}</label>
                 <textarea
                   value={localPrivacyText}
                   onChange={(e) => setLocalPrivacyText(e.target.value)}
                   rows={8}
-                  placeholder="Insira o aviso legal aqui..."
+                  placeholder={t("ui_insira_o_aviso_legal_999")}
                   className="w-full p-3 rounded-lg bg-zinc-950/80 border border-zinc-850 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none text-zinc-200 text-xs transition resize-none leading-relaxed"
                 />
               </div>
@@ -392,8 +387,7 @@ export function UserManagement() {
                 type="submit"
                 className="w-full h-9 text-xs font-bold bg-green-500 hover:bg-green-600 text-zinc-950 transition shadow-sm"
               >
-                Salvar Aviso de Privacidade
-              </Button>
+                {t("ui_salvar_aviso_de_privacidade_657")}</Button>
             </form>
           </CardContent>
         </Card>
@@ -405,21 +399,19 @@ export function UserManagement() {
           <CardHeader>
             <CardTitle className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
               <User className="h-4.5 w-4.5 text-green-500" />
-              Usuários Cadastrados
-            </CardTitle>
+              {t("ui_usu_rios_cadastrados_704")}</CardTitle>
             <CardDescription className="text-xs text-slate-700 dark:text-zinc-500">
-              Lista completa de contas cadastradas e controle de status.
-            </CardDescription>
+              {t("ui_lista_completa_de_contas_275")}</CardDescription>
           </CardHeader>
           <CardContent className="flex-1 overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="border-b border-zinc-200 dark:border-zinc-800 text-[10px] uppercase font-bold text-slate-800 dark:text-zinc-400">
-                  <th className="py-3 px-4 font-bold font-semibold">Nome</th>
-                  <th className="py-3 px-4 font-bold font-semibold">Usuário</th>
-                  <th className="py-3 px-4 font-bold font-semibold">Perfil</th>
-                  <th className="py-3 px-4 font-bold font-semibold">Status</th>
-                  <th className="py-3 px-4 font-bold text-right font-semibold">Ações</th>
+                  <th className="py-3 px-4 font-bold font-semibold">{t("ui_nome_118")}</th>
+                  <th className="py-3 px-4 font-bold font-semibold">{t("ui_usu_rio_421")}</th>
+                  <th className="py-3 px-4 font-bold font-semibold">{t("ui_perfil_138")}</th>
+                  <th className="py-3 px-4 font-bold font-semibold">{t("ui_status_350")}</th>
+                  <th className="py-3 px-4 font-bold text-right font-semibold">{t("ui_a_es_881")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -435,20 +427,17 @@ export function UserManagement() {
                       {user.status === "ativo" ? (
                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-550/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25">
                           <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                          Ativo
-                        </span>
+                          {t("ui_ativo_227")}</span>
                       ) : (
                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-500/10 text-red-655 dark:text-red-400 border border-red-500/25">
                           <span className="h-1.5 w-1.5 rounded-full bg-red-400" />
-                          Inativo
-                        </span>
+                          {t("ui_inativo_174")}</span>
                       )}
                     </td>
                     <td className="py-3.5 px-4 text-right">
                       {currentUser && user.username === currentUser.username ? (
                         <span className="text-[10px] text-slate-650 dark:text-zinc-650 font-bold italic mr-2 select-none">
-                          Sua Conta (Ativa)
-                        </span>
+                          {t("ui_sua_conta_ativa_495")}</span>
                       ) : (
                         <Button
                           size="sm"
@@ -469,8 +458,7 @@ export function UserManagement() {
                 {users.length === 0 && (
                   <tr>
                     <td colSpan={5} className="py-8 text-center text-zinc-500 italic">
-                      Nenhum usuário cadastrado no sistema.
-                    </td>
+                      {t("ui_nenhum_usu_rio_cadastrado_446")}</td>
                   </tr>
                 )}
               </tbody>

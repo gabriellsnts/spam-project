@@ -44,7 +44,7 @@ const TUTORIAL_STEPS = [
 ];
 
 export function InteractiveTutorial() {
-  const { tutorialState, pauseTutorial, resumeTutorial, endTutorial } = useDomain();
+  const { t, tutorialState, pauseTutorial, resumeTutorial, endTutorial } = useDomain();
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
 
@@ -91,13 +91,12 @@ export function InteractiveTutorial() {
     return (
       <div className="fixed bottom-4 right-4 z-[9999] bg-card/90 backdrop-blur-md border border-primary/30 shadow-2xl rounded-xl p-4 flex items-center gap-4 animate-in fade-in slide-in-from-bottom">
         <div>
-          <h4 className="font-bold text-sm">Tutorial Pausado</h4>
-          <p className="text-xs text-muted-foreground">Etapa {tutorialState.currentStep} de {tutorialState.totalSteps}</p>
+          <h4 className="font-bold text-sm">{t("ui_tutorial_pausado_244")}</h4>
+          <p className="text-xs text-muted-foreground">{t("ui_etapa_58")}{tutorialState.currentStep} de {tutorialState.totalSteps}</p>
         </div>
         <div className="flex items-center gap-2">
           <Button size="sm" variant="outline" onClick={resumeTutorial} className="h-8 gap-2">
-            <Play className="h-4 w-4" /> Retomar
-          </Button>
+            <Play className="h-4 w-4" /> {t("ui_retomar_123")}</Button>
           <Button size="sm" variant="ghost" onClick={endTutorial} className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10">
             <X className="h-4 w-4" />
           </Button>
@@ -141,7 +140,7 @@ export function InteractiveTutorial() {
           <div className="flex items-start justify-between mb-2">
             <div className="flex items-center gap-2 text-xs font-semibold text-primary mb-1">
               <span className="bg-primary/10 px-2 py-0.5 rounded-full">
-                Etapa {tutorialState.currentStep} de {tutorialState.totalSteps}
+                {t("ui_etapa_403")}{tutorialState.currentStep} de {tutorialState.totalSteps}
               </span>
               {activeStepConfig && (
                 <span className="flex items-center gap-1 text-muted-foreground">
@@ -166,12 +165,10 @@ export function InteractiveTutorial() {
           <div className="flex items-center justify-between mt-2 pt-4 border-t border-border">
             <Button variant="ghost" size="sm" onClick={pauseTutorial} className="text-xs h-8 text-muted-foreground">
               <Pause className="h-3 w-3 mr-1.5" />
-              Pausar
-            </Button>
+              {t("ui_pausar_320")}</Button>
             
             <div className="flex items-center gap-2 text-xs text-primary font-medium animate-pulse">
-              Faça a ação indicada
-              <ChevronRight className="h-4 w-4" />
+              {t("ui_fa_a_a_a_235")}<ChevronRight className="h-4 w-4" />
             </div>
           </div>
         </div>

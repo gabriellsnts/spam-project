@@ -9,7 +9,7 @@ import { useDomain } from "@/lib/context/domain-context";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 
 export default function TrashPage() {
-  const { trashItems, restoreTrashItems, deleteTrashItemsPermanently, emptyTrash, currentUser } = useDomain();
+  const { t, trashItems, restoreTrashItems, deleteTrashItemsPermanently, emptyTrash, currentUser } = useDomain();
   
   const [search, setSearch] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -92,11 +92,9 @@ export default function TrashPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
             <Trash2 className="h-8 w-8 text-rose-500" />
-            Lixeira
-          </h1>
+            {t("ui_lixeira_727")}</h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            Itens excluídos permanecem aqui por 30 dias antes da exclusão automática definitiva.
-          </p>
+            {t("ui_itens_exclu_dos_permanecem_209")}</p>
         </div>
 
         {isAdmin && trashItems.length > 0 && (
@@ -106,8 +104,7 @@ export default function TrashPage() {
             onClick={() => setIsConfirmEmptyOpen(true)}
           >
             <AlertTriangle className="h-4 w-4" />
-            Esvaziar Lixeira
-          </Button>
+            {t("ui_esvaziar_lixeira_118")}</Button>
         )}
       </div>
 
@@ -116,10 +113,10 @@ export default function TrashPage() {
           <div className="flex flex-col sm:flex-row justify-between gap-4 items-center">
             <CardTitle className="text-sm font-semibold flex items-center gap-2 text-foreground/80">
               <FileWarning className="h-4 w-4 text-amber-500" />
-              Itens Retidos ({trashItems.length})
+              {t("ui_itens_retidos_38")}{trashItems.length})
             </CardTitle>
             <Input
-              placeholder="Pesquisar itens excluídos..."
+              placeholder={t("ui_pesquisar_itens_exclu_dos_310")}
               className="max-w-xs h-9 bg-background/50 border-border/50 text-xs"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -133,11 +130,9 @@ export default function TrashPage() {
               </span>
               <div className="flex gap-2">
                 <Button size="sm" onClick={() => handleRestore(Array.from(selectedIds))} className="h-7 text-[10px] bg-emerald-600 hover:bg-emerald-500 text-white gap-1">
-                  <RotateCcw className="h-3 w-3" /> Restaurar
-                </Button>
+                  <RotateCcw className="h-3 w-3" /> {t("ui_restaurar_14")}</Button>
                 <Button size="sm" variant="destructive" onClick={() => setIsConfirmDeleteOpen(true)} className="h-7 text-[10px] bg-rose-600 hover:bg-rose-500 gap-1">
-                  <Trash2 className="h-3 w-3" /> Excluir
-                </Button>
+                  <Trash2 className="h-3 w-3" /> {t("ui_excluir_498")}</Button>
               </div>
             </div>
           )}
@@ -146,8 +141,8 @@ export default function TrashPage() {
           {filteredItems.length === 0 ? (
             <div className="py-16 text-center flex flex-col items-center justify-center">
               <Inbox className="h-12 w-12 text-muted-foreground/30 mb-3" />
-              <p className="text-muted-foreground text-sm font-medium">Nenhum item encontrado.</p>
-              <p className="text-xs text-muted-foreground/60 mt-1">A lixeira está limpa no momento.</p>
+              <p className="text-muted-foreground text-sm font-medium">{t("ui_nenhum_item_encontrado_418")}</p>
+              <p className="text-xs text-muted-foreground/60 mt-1">{t("ui_a_lixeira_est_limpa_838")}</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -163,11 +158,11 @@ export default function TrashPage() {
                         )}
                       </button>
                     </th>
-                    <th className="p-4 font-semibold">Nome do Item</th>
-                    <th className="p-4 font-semibold">Tipo</th>
-                    <th className="p-4 font-semibold">Excluído Em</th>
-                    <th className="p-4 font-semibold">Excluído Por</th>
-                    <th className="p-4 text-right font-semibold">Ações</th>
+                    <th className="p-4 font-semibold">{t("ui_nome_do_item_962")}</th>
+                    <th className="p-4 font-semibold">{t("ui_tipo_677")}</th>
+                    <th className="p-4 font-semibold">{t("ui_exclu_do_em_863")}</th>
+                    <th className="p-4 font-semibold">{t("ui_exclu_do_por_141")}</th>
+                    <th className="p-4 text-right font-semibold">{t("ui_a_es_212")}</th>
                   </tr>
                 </thead>
                 <tbody className="text-sm divide-y divide-border/20">
@@ -201,7 +196,7 @@ export default function TrashPage() {
                               size="icon" 
                               className="h-8 w-8 text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10"
                               onClick={() => handleRestore([item.id])}
-                              title="Restaurar"
+                              title={t("ui_restaurar_193")}
                               disabled={!isAdmin}
                             >
                               <RotateCcw className="h-4 w-4" />
@@ -224,15 +219,13 @@ export default function TrashPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-rose-500">
               <AlertTriangle className="h-5 w-5" />
-              Esvaziar Lixeira?
-            </DialogTitle>
+              {t("ui_esvaziar_lixeira_726")}</DialogTitle>
             <DialogDescription>
-              Esta ação removerá <strong>todos os {trashItems.length} itens</strong> da lixeira permanentemente. Não será possível recuperá-los.
-            </DialogDescription>
+              {t("ui_esta_a_o_remover_901")}<strong>todos os {trashItems.length} itens</strong> {t("ui_da_lixeira_permanentemente_n_292")}</DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4">
-            <Button variant="outline" onClick={() => setIsConfirmEmptyOpen(false)}>Cancelar</Button>
-            <Button variant="destructive" onClick={handleEmptyTrash} className="bg-rose-600 hover:bg-rose-700">Sim, Esvaziar Tudo</Button>
+            <Button variant="outline" onClick={() => setIsConfirmEmptyOpen(false)}>{t("ui_cancelar_2")}</Button>
+            <Button variant="destructive" onClick={handleEmptyTrash} className="bg-rose-600 hover:bg-rose-700">{t("ui_sim_esvaziar_tudo_436")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -243,15 +236,13 @@ export default function TrashPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-rose-500">
               <AlertTriangle className="h-5 w-5" />
-              Excluir Itens Selecionados?
-            </DialogTitle>
+              {t("ui_excluir_itens_selecionados_541")}</DialogTitle>
             <DialogDescription>
-              Você está prestes a excluir <strong>{selectedIds.size} item(ns)</strong> permanentemente. Esta ação não pode ser desfeita.
-            </DialogDescription>
+              {t("ui_voc_est_prestes_a_741")}<strong>{selectedIds.size} item(ns)</strong> {t("ui_permanentemente_esta_a_o_961")}</DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4">
-            <Button variant="outline" onClick={() => setIsConfirmDeleteOpen(false)}>Cancelar</Button>
-            <Button variant="destructive" onClick={handlePermanentDelete} className="bg-rose-600 hover:bg-rose-700">Confirmar Exclusão</Button>
+            <Button variant="outline" onClick={() => setIsConfirmDeleteOpen(false)}>{t("ui_cancelar_104")}</Button>
+            <Button variant="destructive" onClick={handlePermanentDelete} className="bg-rose-600 hover:bg-rose-700">{t("ui_confirmar_exclus_o_117")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

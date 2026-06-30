@@ -11,7 +11,7 @@ import { ArrowLeft, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminUsersPage() {
-  const { currentUser, isAuthLoading } = useDomain();
+  const { t, currentUser, isAuthLoading } = useDomain();
   const router = useRouter();
 
   // Redirecionamento se não for administrador
@@ -27,7 +27,7 @@ export default function AdminUsersPage() {
   if (isAuthLoading) {
     return (
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-        <span className="text-zinc-400 text-sm">Validando permissões de acesso...</span>
+        <span className="text-zinc-400 text-sm">{t("ui_validando_permiss_es_de_498")}</span>
       </div>
     );
   }
@@ -40,13 +40,11 @@ export default function AdminUsersPage() {
           <div className="h-12 w-12 rounded-xl bg-red-500/20 border border-red-500/30 flex items-center justify-center text-red-500 shadow-[0_0_25px_rgba(239,68,68,0.2)]">
             <ShieldAlert className="h-6 w-6" />
           </div>
-          <h1 className="text-xl font-bold text-zinc-100 uppercase tracking-wider">Acesso Restrito</h1>
+          <h1 className="text-xl font-bold text-zinc-100 uppercase tracking-wider">{t("ui_acesso_restrito_354")}</h1>
           <p className="text-zinc-500 text-xs leading-relaxed">
-            Esta área é acessível apenas por administradores do sistema. Você não possui as credenciais necessárias. Redirecionando para a página inicial...
-          </p>
+            {t("ui_esta_rea_acess_vel_529")}</p>
           <Button onClick={() => router.push("/")} className="mt-4 bg-zinc-900 border border-zinc-800 text-zinc-200 hover:bg-zinc-800 text-xs">
-            Voltar ao Painel
-          </Button>
+            {t("ui_voltar_ao_painel_920")}</Button>
         </div>
       </div>
     );
@@ -66,17 +64,14 @@ export default function AdminUsersPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-black tracking-tight leading-tight text-zinc-100 uppercase">
-                Gerenciamento de Usuários
-              </h1>
+                {t("ui_gerenciamento_de_usu_rios_635")}</h1>
               <p className="text-zinc-500 text-xs mt-1">
-                Cadastre novos perfis de acesso e controle o status das contas existentes.
-              </p>
+                {t("ui_cadastre_novos_perfis_de_215")}</p>
             </div>
             <Link href="/" passHref legacyBehavior>
               <Button variant="outline" size="sm" className="text-xs gap-1 border-zinc-800 hover:bg-zinc-900 transition">
                 <ArrowLeft className="h-3.5 w-3.5" />
-                Painel Inicial
-              </Button>
+                {t("ui_painel_inicial_409")}</Button>
             </Link>
           </div>
 

@@ -296,10 +296,9 @@ export default function ModelComparison({ domain }: ModelComparisonProps) {
                               )}
                             </div>
                             <div className="text-[11px] text-muted-foreground mt-1 flex items-center gap-1 truncate max-w-[200px]" title={model.datasetName}>
-                              <FileText className="h-3 w-3 flex-shrink-0" /> {model.datasetName || "base_historica.csv"} ({(model.datasetSize || 0).toFixed(1)} KB)
-                            </div>
+                              <FileText className="h-3 w-3 flex-shrink-0" /> {model.datasetName || "base_historica.csv"} ({(model.datasetSize || 0).toFixed(1)} {t("ui_kb_511")}</div>
                             <div className="text-[10px] text-muted-foreground mt-0.5 font-mono">
-                              ID: {model.modelId.split("-")[2]} • Hash: {model.hash ? model.hash.substring(0, 8) : "N/A"}
+                              {t("ui_id_35")}{model.modelId.split("-")[2]} {t("ui_hash_266")}{model.hash ? model.hash.substring(0, 8) : "N/A"}
                             </div>
                           </div>
                         </div>

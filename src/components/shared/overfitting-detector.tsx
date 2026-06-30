@@ -196,14 +196,12 @@ export function OverfittingDetector({ model }: OverfittingDetectorProps) {
           <div>
             <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
               <TrendingDown className="h-4 w-4 text-muted-foreground/60" />
-              Diagnóstico de Overfitting / Underfitting
-              {demoMode !== "none" && (
-                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 font-bold">DEMO</span>
+              {t("ui_diagn_stico_de_overfitting_802")}{demoMode !== "none" && (
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 font-bold">{t("ui_demo_75")}</span>
               )}
             </CardTitle>
             <CardDescription className="text-[11px] mt-0.5">
-              Análise automática da capacidade de generalização do modelo ativo.
-            </CardDescription>
+              {t("ui_an_lise_autom_tica_207")}</CardDescription>
           </div>
           <div className="flex flex-wrap gap-1.5 shrink-0">
             <Button
@@ -244,7 +242,7 @@ export function OverfittingDetector({ model }: OverfittingDetectorProps) {
         {/* Train vs Test visual */}
         <div className="space-y-2 rounded-xl border border-border/30 bg-card/40 p-4">
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-3">
-            Performance: Treino vs Teste ({isRegression ? "R²" : "Acurácia"})
+            {t("ui_performance_treino_vs_teste_329")}{isRegression ? "R²" : "Acurácia"})
           </p>
 
           {[
@@ -266,7 +264,7 @@ export function OverfittingDetector({ model }: OverfittingDetectorProps) {
           ))}
 
           <div className="pt-2 flex items-center gap-2">
-            <span className="text-[10px] text-muted-foreground">Gap treino-teste:</span>
+            <span className="text-[10px] text-muted-foreground">{t("ui_gap_treino_teste_884")}</span>
             <span className={cn(
               "text-xs font-bold font-mono px-2 py-0.5 rounded border",
               result.gap > 15 ? "bg-rose-500/15 text-rose-400 border-rose-500/30" :
@@ -298,8 +296,7 @@ export function OverfittingDetector({ model }: OverfittingDetectorProps) {
             <div className="flex items-start gap-1.5 text-[10px] text-muted-foreground pt-1">
               <Info className="h-3 w-3 shrink-0 mt-0.5" />
               <span>
-                As métricas de treino são estimadas com base no modelo ativo. Para análise exata, utilize validação cruzada (RF60) com o dataset completo.
-              </span>
+                {t("ui_as_m_tricas_de_366")}</span>
             </div>
           </div>
         )}

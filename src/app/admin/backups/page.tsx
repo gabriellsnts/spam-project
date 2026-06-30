@@ -8,15 +8,15 @@ import { useDomain } from "@/lib/context/domain-context";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 
 export default function BackupsPage() {
-  const { 
-    systemBackups, 
-    backupConfig, 
-    createBackup, 
-    restoreBackup, 
-    deleteBackup, 
-    updateBackupConfig,
-    currentUser 
-  } = useDomain();
+  const { t, 
+          systemBackups, 
+          backupConfig, 
+          createBackup, 
+          restoreBackup, 
+          deleteBackup, 
+          updateBackupConfig,
+          currentUser 
+        } = useDomain();
 
   const [isConfirmRestoreOpen, setIsConfirmRestoreOpen] = useState<string | null>(null);
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState<string | null>(null);
@@ -65,11 +65,9 @@ export default function BackupsPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
             <DatabaseBackup className="h-8 w-8 text-emerald-500" />
-            Backups do Sistema
-          </h1>
+            {t("ui_backups_do_sistema_200")}</h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            Gerencie e restaure snapshots completos de configurações, modelos e histórico do sistema.
-          </p>
+            {t("ui_gerencie_e_restaure_snapshots_399")}</p>
         </div>
 
         {isAdmin && (
@@ -78,8 +76,7 @@ export default function BackupsPage() {
             onClick={handleManualBackup}
           >
             <HardDrive className="h-4 w-4" />
-            Criar Backup Manual Agora
-          </Button>
+            {t("ui_criar_backup_manual_agora_995")}</Button>
         )}
       </div>
 
@@ -88,30 +85,28 @@ export default function BackupsPage() {
           <CardHeader className="pb-3 border-b border-border/30">
             <CardTitle className="text-base font-semibold flex items-center gap-2 text-foreground/80">
               <Clock className="h-4 w-4 text-sky-500" />
-              Política de Retenção Automática
-            </CardTitle>
+              {t("ui_pol_tica_de_reten_216")}</CardTitle>
             <CardDescription className="text-xs">
-              Configure a periodicidade de snapshots e o limite máximo de armazenamento (CA01, CA04).
-            </CardDescription>
+              {t("ui_configure_a_periodicidade_de_250")}</CardDescription>
           </CardHeader>
           <CardContent className="pt-4 space-y-4">
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-muted-foreground">Frequência</label>
+              <label className="text-xs font-semibold text-muted-foreground">{t("ui_frequ_ncia_183")}</label>
               <select 
                 className="w-full bg-background border border-border/50 rounded-md text-sm p-2"
                 value={localFreq}
                 onChange={(e) => setLocalFreq(e.target.value as "daily" | "weekly" | "monthly" | "none")}
                 disabled={!isAdmin}
               >
-                <option value="none">Desativado</option>
-                <option value="daily">Diário</option>
-                <option value="weekly">Semanal</option>
-                <option value="monthly">Mensal</option>
+                <option value="none">{t("ui_desativado_589")}</option>
+                <option value="daily">{t("ui_di_rio_541")}</option>
+                <option value="weekly">{t("ui_semanal_948")}</option>
+                <option value="monthly">{t("ui_mensal_30")}</option>
               </select>
             </div>
             
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-muted-foreground">Limite Máximo de Snapshots</label>
+              <label className="text-xs font-semibold text-muted-foreground">{t("ui_limite_m_ximo_de_977")}</label>
               <input 
                 type="number"
                 min="1"
@@ -121,13 +116,12 @@ export default function BackupsPage() {
                 onChange={(e) => setLocalMaxBackups(e.target.value)}
                 disabled={!isAdmin}
               />
-              <p className="text-[10px] text-muted-foreground">Ao atingir o limite, o backup mais antigo será sobrescrito.</p>
+              <p className="text-[10px] text-muted-foreground">{t("ui_ao_atingir_o_limite_727")}</p>
             </div>
 
             {isAdmin && (
               <Button onClick={handleSaveConfig} className="w-full bg-sky-600 hover:bg-sky-700 text-white mt-2">
-                Salvar Configurações
-              </Button>
+                {t("ui_salvar_configura_es_29")}</Button>
             )}
           </CardContent>
         </Card>
@@ -136,26 +130,26 @@ export default function BackupsPage() {
           <CardHeader className="border-b border-border/30 bg-muted/20 pb-4">
             <CardTitle className="text-sm font-semibold flex items-center gap-2 text-foreground/80">
               <ShieldCheck className="h-4 w-4 text-emerald-500" />
-              Histórico de Backups ({(systemBackups || []).length})
+              {t("ui_hist_rico_de_backups_463")}{(systemBackups || []).length})
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {!(systemBackups || []).length ? (
               <div className="py-16 text-center flex flex-col items-center justify-center">
                 <DatabaseBackup className="h-12 w-12 text-muted-foreground/30 mb-3" />
-                <p className="text-muted-foreground text-sm font-medium">Nenhum backup disponível.</p>
-                <p className="text-xs text-muted-foreground/60 mt-1">Crie um backup manual ou configure a rotina automática.</p>
+                <p className="text-muted-foreground text-sm font-medium">{t("ui_nenhum_backup_dispon_vel_924")}</p>
+                <p className="text-xs text-muted-foreground/60 mt-1">{t("ui_crie_um_backup_manual_41")}</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-border/30 bg-muted/10 text-[11px] text-muted-foreground uppercase tracking-wider">
-                      <th className="p-3 font-semibold">Tipo</th>
-                      <th className="p-3 font-semibold">Data/Hora</th>
-                      <th className="p-3 font-semibold">Tamanho</th>
-                      <th className="p-3 font-semibold">Integridade / Hash</th>
-                      <th className="p-3 text-right font-semibold">Ações</th>
+                      <th className="p-3 font-semibold">{t("ui_tipo_996")}</th>
+                      <th className="p-3 font-semibold">{t("ui_data_hora_114")}</th>
+                      <th className="p-3 font-semibold">{t("ui_tamanho_104")}</th>
+                      <th className="p-3 font-semibold">{t("ui_integridade_hash_480")}</th>
+                      <th className="p-3 text-right font-semibold">{t("ui_a_es_745")}</th>
                     </tr>
                   </thead>
                   <tbody className="text-sm divide-y divide-border/20">
@@ -163,9 +157,9 @@ export default function BackupsPage() {
                       <tr key={bkp.id} className="hover:bg-muted/10 transition-colors">
                         <td className="p-3">
                           {bkp.type === "auto" ? (
-                            <span className="px-2 py-1 bg-sky-500/10 text-sky-500 rounded-md border border-sky-500/20 text-xs font-semibold">Auto</span>
+                            <span className="px-2 py-1 bg-sky-500/10 text-sky-500 rounded-md border border-sky-500/20 text-xs font-semibold">{t("ui_auto_608")}</span>
                           ) : (
-                            <span className="px-2 py-1 bg-emerald-500/10 text-emerald-500 rounded-md border border-emerald-500/20 text-xs font-semibold">Manual</span>
+                            <span className="px-2 py-1 bg-emerald-500/10 text-emerald-500 rounded-md border border-emerald-500/20 text-xs font-semibold">{t("ui_manual_443")}</span>
                           )}
                         </td>
                         <td className="p-3 text-muted-foreground text-xs">
@@ -195,8 +189,7 @@ export default function BackupsPage() {
                               onClick={() => setIsConfirmRestoreOpen(bkp.id)}
                               disabled={!isAdmin}
                             >
-                              <RotateCcw className="h-3 w-3 mr-1" /> Restaurar
-                            </Button>
+                              <RotateCcw className="h-3 w-3 mr-1" /> {t("ui_restaurar_286")}</Button>
                             <Button 
                               variant="ghost" 
                               size="sm" 
@@ -204,8 +197,7 @@ export default function BackupsPage() {
                               onClick={() => setIsConfirmDeleteOpen(bkp.id)}
                               disabled={!isAdmin}
                             >
-                              <Trash2 className="h-3 w-3 mr-1" /> Excluir
-                            </Button>
+                              <Trash2 className="h-3 w-3 mr-1" /> {t("ui_excluir_400")}</Button>
                           </div>
                         </td>
                       </tr>
@@ -224,15 +216,13 @@ export default function BackupsPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-emerald-500">
               <RotateCcw className="h-5 w-5" />
-              Restaurar Sistema?
-            </DialogTitle>
+              {t("ui_restaurar_sistema_733")}</DialogTitle>
             <DialogDescription>
-              A restauração sobrescreverá <strong>todo o estado atual do sistema</strong> (modelos, alertas, lixeira, auditoria) com os dados do backup selecionado. Alterações não salvas serão perdidas.
-            </DialogDescription>
+              {t("ui_a_restaura_o_sobrescrever_417")}<strong>{t("ui_todo_o_estado_atual_758")}</strong> {t("ui_modelos_alertas_lixeira_auditoria_832")}</DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4">
-            <Button variant="outline" onClick={() => setIsConfirmRestoreOpen(null)}>Cancelar</Button>
-            <Button onClick={handleRestore} className="bg-emerald-600 hover:bg-emerald-700 text-white">Sim, Restaurar Backup</Button>
+            <Button variant="outline" onClick={() => setIsConfirmRestoreOpen(null)}>{t("ui_cancelar_681")}</Button>
+            <Button onClick={handleRestore} className="bg-emerald-600 hover:bg-emerald-700 text-white">{t("ui_sim_restaurar_backup_225")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -243,15 +233,13 @@ export default function BackupsPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-rose-500">
               <AlertTriangle className="h-5 w-5" />
-              Excluir Backup?
-            </DialogTitle>
+              {t("ui_excluir_backup_282")}</DialogTitle>
             <DialogDescription>
-              Você está prestes a excluir este snapshot permanentemente. Esta ação não pode ser desfeita.
-            </DialogDescription>
+              {t("ui_voc_est_prestes_a_277")}</DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4">
-            <Button variant="outline" onClick={() => setIsConfirmDeleteOpen(null)}>Cancelar</Button>
-            <Button variant="destructive" onClick={handleDelete} className="bg-rose-600 hover:bg-rose-700">Confirmar Exclusão</Button>
+            <Button variant="outline" onClick={() => setIsConfirmDeleteOpen(null)}>{t("ui_cancelar_235")}</Button>
+            <Button variant="destructive" onClick={handleDelete} className="bg-rose-600 hover:bg-rose-700">{t("ui_confirmar_exclus_o_725")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

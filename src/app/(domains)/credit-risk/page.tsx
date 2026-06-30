@@ -112,20 +112,20 @@ export default function CreditRiskPage() {
 
   const validateField = (name: string, value: string, type: "numeric" | "text") => {
     if (!value || value.trim() === "") {
-      return t("field_required") || "Este campo é obrigatório.";
+      return t("field_required");
     }
     if (type === "numeric") {
       const cleaned = value.replace(",", ".");
       if (isNaN(Number(cleaned)) || !/^\d+(\.\d+)?$/.test(cleaned)) {
-        return t("field_invalid_number") || "Insira um número válido (ex: 125000). Letras não são permitidas.";
+        return t("field_invalid_number");
       }
       if (Number(cleaned) <= 0) {
-        return t("field_greater_than_zero") || "O valor deve ser maior que zero.";
+        return t("field_greater_than_zero");
       }
       if (name === "score") {
         const val = Number(cleaned);
         if (val < 300 || val > 1000) {
-          return t("field_score_range") || "O score deve estar entre 300 e 1000.";
+          return t("field_score_range");
         }
       }
     }
@@ -140,10 +140,10 @@ export default function CreditRiskPage() {
 
   const getFieldLabel = (name: string) => {
     switch (name) {
-      case "proposta_id": return t("proposal_id_label") || "ID da Proposta";
-      case "cliente": return t("applicant_name_label") || "Nome do Cliente / Proponente";
-      case "valor": return t("amount_requested_label") || "Valor Solicitado (R$)";
-      case "score": return t("credit_score_label") || "Score de Crédito (300-1000)";
+      case "proposta_id": return t("proposal_id_label");
+      case "cliente": return t("applicant_name_label");
+      case "valor": return t("amount_requested_label");
+      case "score": return t("credit_score_label");
       default: return name;
     }
   };
@@ -372,7 +372,7 @@ export default function CreditRiskPage() {
                   : "bg-emerald-500/10 text-emerald-550 dark:text-emerald-400 border-emerald-500/20 animate-pulse"
               }`}>
                 <CheckCircle2 className="h-3 w-3" />
-                {isModelObsolete ? t("obsolete_model") || "Modelo Obsoleto" : t("ready_to_use") || "Modelo Pronto para Uso"}
+                {isModelObsolete ? t("obsolete_model") : t("ready_to_use")}
               </span>
             )}
           </h2>
@@ -458,7 +458,7 @@ export default function CreditRiskPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-[10px] text-muted-foreground">Classification: Healthy</div>
+                <div className="text-[10px] text-muted-foreground">{t("ui_classification_healthy_712")}</div>
               </CardContent>
             </Card>
 
@@ -472,19 +472,19 @@ export default function CreditRiskPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-[10px] text-muted-foreground">Awaiting model decision</div>
+                <div className="text-[10px] text-muted-foreground">{t("ui_awaiting_model_decision_931")}</div>
               </CardContent>
             </Card>
 
             <Card className="bg-card border-border transition-colors duration-300">
               <CardHeader className="pb-2">
                 <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
-                  {t("total_exposure")} (<GlossaryTooltip termId="3">VaR</GlossaryTooltip>)
+                  {t("total_exposure")} (<GlossaryTooltip termId="3">{t("ui_var_772")}</GlossaryTooltip>)
                 </CardDescription>
                 <CardTitle className="text-2xl font-black text-foreground">{metrics.totalExposure}</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-[10px] text-muted-foreground">Value at Risk estimated at 95%</div>
+                <div className="text-[10px] text-muted-foreground">{t("ui_value_at_risk_estimated_172")}</div>
               </CardContent>
             </Card>
           </div>
@@ -510,10 +510,9 @@ export default function CreditRiskPage() {
                     <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-full mb-3">
                       <Lock className="h-6 w-6" />
                     </div>
-                    <h4 className="text-xs font-bold text-foreground mb-1">Individual Prediction Module Locked</h4>
+                    <h4 className="text-xs font-bold text-foreground mb-1">{t("ui_individual_prediction_module_locked_674")}</h4>
                     <p className="text-[10px] text-muted-foreground max-w-md leading-relaxed">
-                      There is no active model trained for the Credit Risk domain. Upload a historical dataset in the calibration tab below and run training to unlock this form.
-                    </p>
+                      {t("ui_there_is_no_active_708")}</p>
                   </div>
                 ) : (
                   <div className="space-y-6">
@@ -588,10 +587,10 @@ export default function CreditRiskPage() {
                                   ? "bg-orange-500/10 text-orange-450"
                                   : "bg-rose-500/10 text-rose-400"
                               }`}>
-                                Verdict: {t(predictionResult.acao.toLowerCase().replace(" ", "_")) || predictionResult.acao}
+                                {t("ui_verdict_31")}{t(predictionResult.acao.toLowerCase().replace(" ", "_")) || predictionResult.acao}
                               </span>
                               <span className="text-[10px] text-muted-foreground font-mono">
-                                ID: {predictionResult.dataInput.propostaId}
+                                {t("ui_id_620")}{predictionResult.dataInput.propostaId}
                               </span>
                             </div>
 
@@ -619,7 +618,7 @@ export default function CreditRiskPage() {
                                 </span>
                               </div>
                               <div>
-                                <span className="text-muted-foreground block font-semibold">Score Informado</span>
+                                <span className="text-muted-foreground block font-semibold">{t("ui_score_informado_452")}</span>
                                 <span className="text-foreground font-mono font-bold">
                                   {predictionResult.dataInput.score} pts
                                 </span>
@@ -631,7 +630,7 @@ export default function CreditRiskPage() {
                                 </span>
                               </div>
                               <div>
-                                <span className="text-muted-foreground block font-semibold">ID do Modelo</span>
+                                <span className="text-muted-foreground block font-semibold">{t("ui_id_do_modelo_694")}</span>
                                 <span className="text-foreground font-mono font-bold truncate block max-w-[120px]" title={activeModel.modelId}>
                                   {activeModel.modelId.substring(12, 19)}...
                                 </span>
@@ -682,8 +681,7 @@ export default function CreditRiskPage() {
                             className="border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10 text-xs font-bold gap-1.5"
                           >
                             <Printer className="h-4 w-4" />
-                            Print Receipt
-                          </Button>
+                            {t("ui_print_receipt_417")}</Button>
                         </div>
                       </div>
                     )}
@@ -697,11 +695,9 @@ export default function CreditRiskPage() {
               <CardHeader>
                 <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
                   <History className="h-4 w-4 text-emerald-500" />
-                  History
-                </CardTitle>
+                  {t("ui_history_167")}</CardTitle>
                 <CardDescription className="text-[11px] text-muted-foreground">
-                  Last 5 individual predictions (click to load).
-                </CardDescription>
+                  {t("ui_last_5_individual_predictions_513")}</CardDescription>
               </CardHeader>
               <CardContent className="flex-1">
                 {history.length === 0 ? (
@@ -758,7 +754,7 @@ export default function CreditRiskPage() {
 
           <AlertThresholdSettings
             domain="credit-risk"
-            title={t("limit_lifetime_rul") || "Limiar de Probabilidade de Default (Crédito)"}
+            title={t("limit_lifetime_rul")}
             min={0}
             max={100}
             unit="%"
@@ -778,7 +774,7 @@ export default function CreditRiskPage() {
                     </CardTitle>
                     <CardDescription className="text-[11px] text-muted-foreground mt-1">
                       {activeModel ? (
-                        <>Modelo ativo: <strong>{activeModel.modelId}</strong> com Acurácia de <strong>{((activeModel.metrics.accuracy || 0) * 100).toFixed(1)}%</strong>.</>
+                        <>{t("ui_modelo_ativo_167")}<strong>{activeModel.modelId}</strong> {t("ui_com_acur_cia_de_32")}<strong>{((activeModel.metrics.accuracy || 0) * 100).toFixed(1)}%</strong>.</>
                       ) : (
                         t("proposals_desc")
                       )}
@@ -801,7 +797,7 @@ export default function CreditRiskPage() {
                       size="sm" 
                       onClick={() => setSortOrder(prev => prev === "desc" ? "asc" : "desc")}
                       className="text-[10px] h-8"
-                      title="Ordenar por Risco"
+                      title={t("ui_ordenar_por_risco_863")}
                     >
                       {sortOrder === "asc" ? <ChevronUp className="h-3 w-3 mr-1" /> : <ChevronDown className="h-3 w-3 mr-1" />}
                       {t("risk_level").replace(":", "")}
@@ -814,7 +810,7 @@ export default function CreditRiskPage() {
                           onClick={() => setRiskFilter(level)}
                           className={`px-2 py-1 text-[10px] rounded capitalize ${riskFilter === level ? "bg-background shadow font-bold text-foreground" : "text-muted-foreground hover:text-foreground"}`}
                         >
-                          {level === "all" ? (t("all_risks") || "Todos").split(" ")[0] : level === "high" ? "Alto" : level === "medium" ? "Méd" : "Baixo"}
+                          {level === "all" ? (t("all_risks")).split(" ")[0] : level === "high" ? "Alto" : level === "medium" ? "Méd" : "Baixo"}
                         </button>
                       ))}
                     </div>
@@ -825,8 +821,8 @@ export default function CreditRiskPage() {
                 {!activeModel ? (
                    <div className="h-[280px] w-full flex flex-col items-center justify-center text-muted-foreground border-t border-border bg-muted/5">
                      <AlertCircle className="h-8 w-8 mb-2 opacity-50" />
-                     <p className="text-sm">Predições não disponíveis.</p>
-                     <p className="text-xs opacity-70">Treine o modelo de Risco de Crédito para gerar o scoring.</p>
+                     <p className="text-sm">{t("ui_predi_es_n_o_64")}</p>
+                     <p className="text-xs opacity-70">{t("ui_treine_o_modelo_de_114")}</p>
                    </div>
                 ) : (
                   <div className="divide-y divide-border border-t border-border">
@@ -851,14 +847,14 @@ export default function CreditRiskPage() {
                               <div className="text-[10px] text-muted-foreground flex items-center gap-2">
                                 <span className="font-mono">{p.id}</span>
                                 <span>•</span>
-                                <span>Valor: <strong className="text-muted-foreground/90">{p.amount}</strong></span>
+                                <span>{t("ui_valor_584")}<strong className="text-muted-foreground/90">{p.amount}</strong></span>
                               </div>
                             </div>
 
                             <div className="flex items-center gap-6 sm:ml-auto">
                               <div className="grid grid-cols-2 gap-8 text-right sm:max-w-[150px]">
                                 <div>
-                                  <div className="text-[9px] text-muted-foreground font-semibold uppercase">Score</div>
+                                  <div className="text-[9px] text-muted-foreground font-semibold uppercase">{t("ui_score_88")}</div>
                                   <div className={`text-xs font-bold font-mono ${
                                     risk === 'high' ? "text-rose-500" : risk === 'medium' ? "text-amber-500" : "text-emerald-500"
                                   }`}>{p.score}</div>
@@ -907,11 +903,9 @@ export default function CreditRiskPage() {
               <CardHeader>
                 <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
                   <Percent className="h-4 w-4 text-muted-foreground/60" />
-                  Ratings Distribution
-                </CardTitle>
+                  {t("ui_ratings_distribution_119")}</CardTitle>
                 <CardDescription className="text-[11px] text-muted-foreground">
-                  Distribuição de clientes ativos nas classes de risco financeiro.
-                </CardDescription>
+                  {t("ui_distribui_o_de_clientes_404")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3.5">
                 {ratings.map((r) => (
@@ -933,8 +927,7 @@ export default function CreditRiskPage() {
                   <div className="p-3 bg-rose-500/10 border border-rose-500/25 rounded-lg text-[10px] text-rose-500 animate-pulse flex items-start gap-2 mt-4">
                     <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
                     <div>
-                      <strong>Aviso de Risco Sistemático:</strong> Teste de estresse indica rebaixamento em massa de 40% da carteira de ratings AAA e AA para classes B e C. Risco de provisionamento de capital aumentado.
-                    </div>
+                      <strong>{t("ui_aviso_de_risco_sistem_498")}</strong> {t("ui_teste_de_estresse_indica_911")}</div>
                   </div>
                 )}
               </CardContent>
@@ -987,9 +980,9 @@ export default function CreditRiskPage() {
               </div>
 
               <div className="p-3 bg-muted/40 border border-border/80 rounded-xl text-xs space-y-2">
-                <div className="font-bold text-foreground">Impacto Esperado</div>
+                <div className="font-bold text-foreground">{t("ui_impacto_esperado_548")}</div>
                 <div className="text-muted-foreground text-[10px]">
-                  Status: <strong className={stressActive ? "text-rose-500 animate-pulse" : "text-emerald-500"}>{stressActive ? "STRESSED SYSTEMIC RISK WARNING" : "NORMAL"}</strong>
+                  {t("ui_status_772")}<strong className={stressActive ? "text-rose-500 animate-pulse" : "text-emerald-500"}>{stressActive ? "STRESSED SYSTEMIC RISK WARNING" : "NORMAL"}</strong>
                 </div>
               </div>
             </CardContent>
@@ -1008,8 +1001,7 @@ export default function CreditRiskPage() {
                       {t("residuals_diagnostic")}
                     </CardTitle>
                     <CardDescription className="text-[11px] text-muted-foreground">
-                      Matriz de confusão interativa mapeando acertos e erros de classificação do modelo.
-                    </CardDescription>
+                      {t("ui_matriz_de_confus_o_666")}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <ConfusionMatrixView model={activeModel} />
@@ -1140,21 +1132,21 @@ export default function CreditRiskPage() {
             ` }} />
             
             <div className="receipt-header">
-              <div>SPAM - SISTEMA PREDITIVO DE ANÁLISE MULTIDOMÍNIO</div>
-              <div className="receipt-title">COMPROVANTE DE VEREDICTO DE CRÉDITO</div>
+              <div>{t("ui_spam_sistema_preditivo_de_580")}</div>
+              <div className="receipt-title">{t("ui_comprovante_de_veredicto_de_970")}</div>
             </div>
 
             <div className="receipt-section">
               <div className="receipt-row">
-                <strong>Data de Emissão:</strong>
+                <strong>{t("ui_data_de_emiss_o_755")}</strong>
                 <span>{new Date().toLocaleDateString("pt-BR")} - {new Date().toLocaleTimeString("pt-BR")}</span>
               </div>
               <div className="receipt-row">
-                <strong>ID do Modelo Preditivo:</strong>
+                <strong>{t("ui_id_do_modelo_preditivo_631")}</strong>
                 <span>{activeModel?.modelId || "N/A"}</span>
               </div>
               <div className="receipt-row">
-                <strong>Algoritmo Executado:</strong>
+                <strong>{t("ui_algoritmo_executado_680")}</strong>
                 <span>{activeModel?.algorithm || "N/A"} ({activeModel?.type || "N/A"})</span>
               </div>
             </div>
@@ -1162,21 +1154,21 @@ export default function CreditRiskPage() {
             <div className="receipt-divider" />
 
             <div className="receipt-section">
-              <h3 style={{ fontSize: "13px", fontWeight: "bold", marginBottom: "8px" }}>DADOS DE ENTRADA DA PROPOSTA</h3>
+              <h3 style={{ fontSize: "13px", fontWeight: "bold", marginBottom: "8px" }}>{t("ui_dados_de_entrada_da_724")}</h3>
               <div className="receipt-row">
-                <span>ID da Proposta:</span>
+                <span>{t("ui_id_da_proposta_220")}</span>
                 <strong style={{ fontFamily: "monospace" }}>{predictionResult.dataInput.propostaId}</strong>
               </div>
               <div className="receipt-row">
-                <span>Cliente Proponente:</span>
+                <span>{t("ui_cliente_proponente_575")}</span>
                 <strong>{predictionResult.dataInput.cliente}</strong>
               </div>
               <div className="receipt-row">
-                <span>Valor Solicitado:</span>
+                <span>{t("ui_valor_solicitado_646")}</span>
                 <strong>{predictionResult.dataInput.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</strong>
               </div>
               <div className="receipt-row">
-                <span>Score de Crédito:</span>
+                <span>{t("ui_score_de_cr_dito_474")}</span>
                 <strong>{predictionResult.dataInput.score} pontos</strong>
               </div>
             </div>
@@ -1184,10 +1176,10 @@ export default function CreditRiskPage() {
             <div className="receipt-divider" />
 
             <div className="receipt-section">
-              <h3 style={{ fontSize: "13px", fontWeight: "bold", marginBottom: "8px", textAlign: "center" }}>RESULTADO DO MOTOR ANALÍTICO</h3>
+              <h3 style={{ fontSize: "13px", fontWeight: "bold", marginBottom: "8px", textAlign: "center" }}>{t("ui_resultado_do_motor_anal_336")}</h3>
               <div className="receipt-verdict">
-                VEREDICTO DO MODELO: {predictionResult.acao.toUpperCase()}<br />
-                PROBABILIDADE DE RETORNO DO CRÉDITO: {predictionResult.probabilidadeRetorno}%
+                {t("ui_veredicto_do_modelo_334")}{predictionResult.acao.toUpperCase()}<br />
+                {t("ui_probabilidade_de_retorno_do_256")}{predictionResult.probabilidadeRetorno}%
               </div>
               <p style={{ textAlign: "center", fontStyle: "italic", fontSize: "10px", marginTop: "5px" }}>
                 {predictionResult.acao === "Aprovar"
@@ -1203,12 +1195,11 @@ export default function CreditRiskPage() {
             <div className="receipt-divider" />
 
             <div className="signature-line">
-              Assinatura do Analista Responsável
-            </div>
+              {t("ui_assinatura_do_analista_respons_977")}</div>
 
             <div className="receipt-footer">
-              <div>SPAM Intelligent Systems © {new Date().getFullYear()}</div>
-              <div>Chave de Autenticidade: {predictionResult.dataInput.propostaId}-{predictionResult.dataInput.score}</div>
+              <div>{t("ui_spam_intelligent_systems_567")}{new Date().getFullYear()}</div>
+              <div>{t("ui_chave_de_autenticidade_321")}{predictionResult.dataInput.propostaId}-{predictionResult.dataInput.score}</div>
             </div>
           </div>
         )}

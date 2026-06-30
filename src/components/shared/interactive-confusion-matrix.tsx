@@ -171,13 +171,12 @@ export function InteractiveConfusionMatrix({ model, domainAccent = "violet" }: I
           <div>
             <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
               <Target className="h-4 w-4 text-violet-400" />
-              Matriz de Confusão Interativa
-              {isDemo && (
-                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 font-bold">DEMO</span>
+              {t("ui_matriz_de_confus_o_277")}{isDemo && (
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 font-bold">{t("ui_demo_936")}</span>
               )}
             </CardTitle>
             <CardDescription className="text-[11px] mt-0.5">
-              Clique em uma célula para ver interpretação detalhada · {total} instâncias de teste
+              {t("ui_clique_em_uma_c_703")}{total} instâncias de teste
             </CardDescription>
           </div>
           <div className="flex flex-wrap gap-1.5">
@@ -201,13 +200,11 @@ export function InteractiveConfusionMatrix({ model, domainAccent = "violet" }: I
             {isEditMode && (
               <Button variant="outline" size="sm" className="h-7 text-[10px] px-2" onClick={handleReset}>
                 <RotateCcw className="h-3 w-3 mr-1" />
-                Reset
-              </Button>
+                {t("ui_reset_838")}</Button>
             )}
             <Button variant="outline" size="sm" className="h-7 text-[10px] px-2" onClick={handleDownloadCSV}>
               <Download className="h-3 w-3 mr-1" />
-              CSV
-            </Button>
+              {t("ui_csv_164")}</Button>
             {!originalMatrix && (
               <Button
                 variant="outline"
@@ -216,8 +213,7 @@ export function InteractiveConfusionMatrix({ model, domainAccent = "violet" }: I
                 onClick={handleDemo}
               >
                 <Sparkles className="h-3 w-3 mr-1" />
-                Modo Demo
-              </Button>
+                {t("ui_modo_demo_605")}</Button>
             )}
           </div>
         </div>
@@ -230,8 +226,8 @@ export function InteractiveConfusionMatrix({ model, domainAccent = "violet" }: I
             {/* Header */}
             <div className="grid grid-cols-[auto_1fr_1fr] gap-1 text-center">
               <div className="w-28" />
-              <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest py-1">Previsto Neg. (0)</div>
-              <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest py-1">Previsto Pos. (1)</div>
+              <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest py-1">{t("ui_previsto_neg_0_826")}</div>
+              <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest py-1">{t("ui_previsto_pos_1_320")}</div>
             </div>
 
             {cellLayout.map((row, rowIdx) => (
@@ -298,8 +294,7 @@ export function InteractiveConfusionMatrix({ model, domainAccent = "violet" }: I
             {isEditMode && (
               <p className="text-[10px] text-muted-foreground text-center flex items-center justify-center gap-1">
                 <Info className="h-3 w-3" />
-                Edite os valores para recalcular as métricas em tempo real
-              </p>
+                {t("ui_edite_os_valores_para_157")}</p>
             )}
           </div>
 
@@ -326,7 +321,7 @@ export function InteractiveConfusionMatrix({ model, domainAccent = "violet" }: I
                 </div>
                 <p className="text-xs text-muted-foreground">{selectedCell.description}</p>
                 <div className="pt-2 border-t border-border/30">
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Interpretação Operacional</p>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">{t("ui_interpreta_o_operacional_775")}</p>
                   <p className="text-xs text-foreground/80 leading-relaxed">{selectedCell.interpretation}</p>
                 </div>
                 <div className="pt-1">
@@ -336,14 +331,14 @@ export function InteractiveConfusionMatrix({ model, domainAccent = "violet" }: I
             ) : (
               <div className="rounded-xl border border-border/30 bg-muted/5 p-4 flex flex-col items-center justify-center min-h-[110px] gap-2">
                 <Info className="h-5 w-5 text-muted-foreground/40" />
-                <p className="text-[11px] text-muted-foreground text-center">Clique em uma célula da matriz para ver sua interpretação operacional detalhada.</p>
+                <p className="text-[11px] text-muted-foreground text-center">{t("ui_clique_em_uma_c_641")}</p>
               </div>
             )}
 
             {/* Derived metrics */}
             <div className="rounded-xl border border-border/40 bg-card/40 overflow-hidden">
               <div className="px-3 py-2 border-b border-border/30 bg-muted/10">
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Métricas Derivadas</p>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t("ui_m_tricas_derivadas_446")}</p>
               </div>
               <div className="divide-y divide-border/20">
                 {metricItems.map((m) => (

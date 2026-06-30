@@ -155,7 +155,7 @@ export default function MaintenancePage() {
                   : "bg-emerald-500/10 text-emerald-550 dark:text-emerald-400 border-emerald-500/20 animate-pulse"
               }`}>
                 <CheckCircle2 className="h-3 w-3" />
-                {isModelObsolete ? t("obsolete_model") || "Modelo Obsoleto" : t("ready_to_use") || "Modelo Pronto para Uso"}
+                {isModelObsolete ? t("obsolete_model") : t("ready_to_use")}
               </span>
             )}
           </h2>
@@ -166,7 +166,7 @@ export default function MaintenancePage() {
 
         <div className="flex flex-col sm:flex-row items-center gap-2 relative z-10">
           <Button variant="outline" size="sm" onClick={handleExport} className="text-xs">
-            {t("export_csv") || "Exportar Relatório"}
+            {t("export_csv")}
           </Button>
         </div>
       </div>
@@ -191,7 +191,7 @@ export default function MaintenancePage() {
                 <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
                   {t("oee_average")}
                 </CardDescription>
-                <CardTitle className="text-2xl font-black text-foreground">84.0%</CardTitle>
+                <CardTitle className="text-2xl font-black text-foreground">{t("ui_84_0_120")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-[10px] text-muted-foreground flex items-center gap-1">
@@ -206,7 +206,7 @@ export default function MaintenancePage() {
                 <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
                   {t("availability")}
                 </CardDescription>
-                <CardTitle className="text-2xl font-black text-foreground">92.4%</CardTitle>
+                <CardTitle className="text-2xl font-black text-foreground">{t("ui_92_4_593")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-[10px] text-muted-foreground">{t("planned_downtime")}</div>
@@ -336,16 +336,16 @@ export default function MaintenancePage() {
                                 </span>
                               )}
                             </div>
-                            <div className="text-[9px] text-muted-foreground font-mono">UUID: {m.id}-SENSOR</div>
+                            <div className="text-[9px] text-muted-foreground font-mono">{t("ui_uuid_707")}{m.id}{t("ui_sensor_437")}</div>
                           </div>
                         </div>
 
                         <div className="grid grid-cols-3 gap-4 sm:gap-8 text-right">
                           <div>
-                            <div className="text-[9px] text-muted-foreground uppercase font-semibold">Temp.</div>
+                            <div className="text-[9px] text-muted-foreground uppercase font-semibold">{t("ui_temp_420")}</div>
                             <div className={`text-xs font-bold font-mono ${
                               m.temp > 80 ? "text-rose-500" : m.temp > 70 ? "text-amber-500 animate-pulse" : "text-foreground/80"
-                            }`}>{m.temp} °C</div>
+                            }`}>{m.temp} {t("ui_c_611")}</div>
                           </div>
                           <div>
                             <div className="text-[9px] text-muted-foreground uppercase font-semibold">{t("vibration_label").split(" ")[0]}</div>
@@ -354,7 +354,7 @@ export default function MaintenancePage() {
                             }`}>{m.vibration} mm/s</div>
                           </div>
                           <div>
-                            <div className="text-[9px] text-muted-foreground uppercase font-semibold">OEE</div>
+                            <div className="text-[9px] text-muted-foreground uppercase font-semibold">{t("ui_oee_187")}</div>
                             <div className={`text-xs font-bold font-mono ${
                               m.oee < 80 ? "text-amber-500" : "text-emerald-555 dark:text-emerald-405 font-bold"
                             }`}>{m.oee}%</div>
@@ -426,8 +426,7 @@ export default function MaintenancePage() {
                       <div key={m.id} className="space-y-2">
                         <div className="flex justify-between text-xs">
                           <span className="text-muted-foreground flex items-center gap-1">
-                            {t("machine_" + m.id.toLowerCase())} (RUL)
-                            {simOverride && (
+                            {t("machine_" + m.id.toLowerCase())} {t("ui_rul_757")}{simOverride && (
                               <span className="text-[8px] px-1 bg-amber-500/10 text-amber-500 rounded border border-amber-500/20 font-bold">
                                 {t("simulating")}
                               </span>
@@ -502,7 +501,7 @@ export default function MaintenancePage() {
               <CardContent>
                 <div className="text-xs text-muted-foreground">
                   {activeModel ? (
-                    <>R² do Modelo: <strong className="font-mono text-emerald-500 text-sm">{(activeModel.metrics.r2 || 0).toFixed(4)}</strong></>
+                    <>{t("ui_r_do_modelo_503")}<strong className="font-mono text-emerald-500 text-sm">{(activeModel.metrics.r2 || 0).toFixed(4)}</strong></>
                   ) : (
                     "Acurácia RUL: 94.8% (Padrão)"
                   )}
@@ -530,7 +529,7 @@ export default function MaintenancePage() {
           </div>
 
           {activeModel && (
-            <FeatureImportanceChart data={mockFeatures} title="Preditores de Falha (Manutenção)" />
+            <FeatureImportanceChart data={mockFeatures} title={t("ui_preditores_de_falha_manuten_46")} />
           )}
 
           {activeModel && (

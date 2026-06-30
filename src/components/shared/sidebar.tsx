@@ -75,7 +75,7 @@ export function Sidebar() {
             </div>
             <div className="flex justify-between text-[10px] text-muted-foreground">
               <span>{t("overall_oee")}</span>
-              <span className="text-foreground font-semibold">84.0%</span>
+              <span className="text-foreground font-semibold">{t("ui_84_0_302")}</span>
             </div>
           </div>
         );
@@ -84,11 +84,11 @@ export function Sidebar() {
           <div className="space-y-1.5">
             <div className="flex justify-between text-[10px] text-muted-foreground">
               <span>{t("model")}</span>
-              <span className="text-sky-500 font-semibold font-mono text-[9px]">Prophet-ML</span>
+              <span className="text-sky-500 font-semibold font-mono text-[9px]">{t("ui_prophet_ml_13")}</span>
             </div>
             <div className="flex justify-between text-[10px] text-muted-foreground">
               <span>{t("accuracy")}</span>
-              <span className="text-foreground font-semibold">93.8%</span>
+              <span className="text-foreground font-semibold">{t("ui_93_8_994")}</span>
             </div>
           </div>
         );
@@ -101,7 +101,7 @@ export function Sidebar() {
             </div>
             <div className="flex justify-between text-[10px] text-muted-foreground">
               <span>{t("overall_nps")}</span>
-              <span className="text-foreground font-semibold">78 pt</span>
+              <span className="text-foreground font-semibold">{t("ui_78_pt_482")}</span>
             </div>
           </div>
         );
@@ -110,11 +110,11 @@ export function Sidebar() {
           <div className="space-y-1.5">
             <div className="flex justify-between text-[10px] text-muted-foreground">
               <span>{t("risk_var")}</span>
-              <span className="text-emerald-500 font-semibold">R$ 1.2M</span>
+              <span className="text-emerald-500 font-semibold">{t("ui_r_1_2m_940")}</span>
             </div>
             <div className="flex justify-between text-[10px] text-muted-foreground">
               <span>{t("default_pd")}</span>
-              <span className="text-foreground font-semibold">1.80%</span>
+              <span className="text-foreground font-semibold">{t("ui_1_80_132")}</span>
             </div>
           </div>
         );
@@ -154,8 +154,8 @@ export function Sidebar() {
     },
     {
       id: "model-history",
-      name: t("model_history") || "Histórico de Modelos",
-      desc: t("model_history_desc") || "Compare e gerencie versões de modelos",
+      name: t("model_history"),
+      desc: t("model_history_desc"),
       icon: HistoryIcon
     },
     {
@@ -231,7 +231,7 @@ export function Sidebar() {
 
           {!isCollapsed && (
             <div className="px-3 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest animate-in fade-in duration-300">
-              {t("profile_settings") || "Configurações"}
+              {t("profile_settings")}
             </div>
           )}
 
@@ -290,7 +290,7 @@ export function Sidebar() {
                   <div className="space-y-0.5">
                     <div className="text-xs font-bold leading-none">{t("admin_management")}</div>
                     <div className="text-[9px] text-muted-foreground font-normal leading-none mt-1 group-hover:text-foreground/70 transition-colors">
-                      {t("admin_management_desc") || "Gerenciamento de usuários"}
+                      {t("admin_management_desc")}
                     </div>
                   </div>
                 )}
@@ -320,7 +320,7 @@ export function Sidebar() {
                   <div className="space-y-0.5">
                     <div className="text-xs font-bold leading-none">{t("theme_customization")}</div>
                     <div className="text-[9px] text-muted-foreground font-normal leading-none mt-1 group-hover:text-foreground/70 transition-colors">
-                      {t("theme_customization_desc") || "Cores e branding corporativo"}
+                      {t("theme_customization_desc")}
                     </div>
                   </div>
                 )}
@@ -340,7 +340,7 @@ export function Sidebar() {
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border-transparent",
                   isCollapsed && "justify-center"
                 )}
-                title="Ajuste Fino & Notificações"
+                title={t("ui_ajuste_fino_notifica_es_10")}
               >
                 {activeProfileSection === "tuning" && (
                   <div className="absolute left-0 top-3 bottom-3 w-1 bg-emerald-500 rounded-r-md" />
@@ -500,7 +500,7 @@ export function Sidebar() {
                 "w-full flex items-center p-2.5 rounded-xl border border-transparent transition-all duration-300 hover:translate-x-1 group text-muted-foreground hover:text-foreground hover:bg-muted/40",
                 isCollapsed ? "justify-center" : "gap-3 px-3"
               )}
-              title="Glossário"
+              title={t("ui_gloss_rio_182")}
             >
               <BookOpen className="h-5 w-5 shrink-0" />
               {!isCollapsed && (
@@ -514,7 +514,7 @@ export function Sidebar() {
                 "w-full flex items-center p-2.5 rounded-xl border border-transparent transition-all duration-300 hover:translate-x-1 group text-muted-foreground hover:text-foreground hover:bg-muted/40",
                 isCollapsed ? "justify-center" : "gap-3 px-3"
               )}
-              title="Central de Ajuda"
+              title={t("ui_central_de_ajuda_838")}
             >
               <HelpCircle className="h-5 w-5 shrink-0" />
               {!isCollapsed && (

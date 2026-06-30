@@ -306,3 +306,12 @@ Funcionou bem: A substituição das strings de estado vazio e do drawer ocorreu co
 Dificuldade: As traduções dinâmicas exigiram scripts customizados no dicionário pt/en/es para não introduzir duplicatas de chaves.
 Correção aplicada: Criação de script injetável robusto no dicionário e uso de Skeleton Loader no drawer simulando loading de 500ms.
 Melhoria de UX sugerida pela IA: Inclusão de um skeleton de 500ms na transição entre menus do Utility Drawer e hover:translate-x-1 na sidebar.
+
+[RF06] Internacionalização Massiva (Global Sweep)
+
+Prompt usado: Varredura de strings estáticas em Português remanescentes em todos os componentes da aplicação utilizando regex/AST.
+Funcionou bem: Identificamos mais de 450 strings literais em dezenas de componentes.
+Dificuldade: A manipulação de AST com ts-morph causou alguns bugs na inserção de chaves e hooks (como a inserção dupla do hook ou propriedades inexistentes como addElement no PatternBinding) e conflitou com alguns hooks existentes.
+Correção aplicada: Script iterado e refinado para usar addBindingElement equivalente correto, extração precisa e tratamento fallback para texto JSX e atributos. Substituições isoladas via replace_file_content no final para fechar pequenos furos de sintaxe.
+Melhoria de UX sugerida pela IA: Consolidar todas as strings diretamente no dicionário de traduções durante o próprio sweep.
+

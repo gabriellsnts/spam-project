@@ -16,13 +16,14 @@ import {
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 
+
 export function AlertsMenu() {
-  const {
-    alerts,
-    recognizeAlert,
-    clearAlerts,
-    initiateDomainSwitch
-  } = useDomain();
+  const { t,
+          alerts,
+          recognizeAlert,
+          clearAlerts,
+          initiateDomainSwitch
+        } = useDomain();
 
   const [isOpen, setIsOpen] = useState(false);
   const [filter, setFilter] = useState<"all" | "unrecognized">("unrecognized");
@@ -63,7 +64,7 @@ export function AlertsMenu() {
         size="icon"
         onClick={() => setIsOpen(true)}
         className="relative h-9 w-9 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900 border border-transparent hover:border-zinc-800 transition"
-        title="Alertas e Notificações"
+        title={t("ui_alertas_e_notifica_es_709")}
       >
         <Bell className="h-5 w-5" />
         {unrecognizedAlerts.length > 0 && (
@@ -92,7 +93,7 @@ export function AlertsMenu() {
             <div className="p-5 border-b border-border flex items-center justify-between bg-muted/30 backdrop-blur-md">
               <div className="flex items-center gap-2">
                 <Bell className="h-5 w-5 text-zinc-400" />
-                <h2 className="text-md font-semibold text-foreground">Alertas do Sistema</h2>
+                <h2 className="text-md font-semibold text-foreground">{t("ui_alertas_do_sistema_82")}</h2>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
@@ -113,7 +114,7 @@ export function AlertsMenu() {
                     : "border-transparent text-muted-foreground hover:text-foreground"
                 )}
               >
-                Ativos ({unrecognizedAlerts.length})
+                {t("ui_ativos_87")}{unrecognizedAlerts.length})
               </button>
               <button
                 onClick={() => setFilter("all")}
@@ -124,7 +125,7 @@ export function AlertsMenu() {
                     : "border-transparent text-muted-foreground hover:text-foreground"
                 )}
               >
-                Histórico ({alerts.length})
+                {t("ui_hist_rico_633")}{alerts.length})
               </button>
             </div>
 
@@ -133,7 +134,7 @@ export function AlertsMenu() {
               {displayedAlerts.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-center p-6 text-muted-foreground">
                   <Bell className="h-10 w-10 text-muted-foreground/40 mb-2 stroke-[1.5]" />
-                  <p className="text-sm">Nenhum alerta encontrado.</p>
+                  <p className="text-sm">{t("ui_nenhum_alerta_encontrado_250")}</p>
                 </div>
               ) : (
                 displayedAlerts.map((alert: Alert) => {
@@ -220,13 +221,11 @@ export function AlertsMenu() {
                               className="h-6 text-[9px] font-black bg-zinc-900 border border-border/80 hover:bg-green-550/10 hover:border-green-500 hover:text-green-500 text-foreground transition-all duration-200 px-2 flex items-center gap-1"
                             >
                               <Check className="h-3 w-3" />
-                              Reconhecer
-                            </Button>
+                              {t("ui_reconhecer_841")}</Button>
                           ) : (
                             <span className="text-[9px] text-zinc-500/60 dark:text-zinc-450/60 font-bold flex items-center gap-0.5 select-none py-0.5 px-1.5 bg-zinc-950/20 border border-border/20 rounded">
                               <Check className="h-3 w-3 text-emerald-500/70" />
-                              Reconhecido
-                            </span>
+                              {t("ui_reconhecido_104")}</span>
                           )}
 
                           {/* Shortcut to domain dashboard */}
@@ -253,7 +252,7 @@ export function AlertsMenu() {
             {/* Footer Actions */}
             <div className="p-4 border-t border-border bg-muted/20 backdrop-blur-md flex items-center justify-between shrink-0">
               <span className="text-xs text-muted-foreground font-mono">
-                Alertas ativos: {unrecognizedAlerts.length}
+                {t("ui_alertas_ativos_8")}{unrecognizedAlerts.length}
               </span>
               {alerts.length > 0 && (
                 <Button
@@ -263,8 +262,7 @@ export function AlertsMenu() {
                   className="h-7 text-xs text-rose-500 hover:text-rose-455 hover:bg-rose-500/5 font-bold transition flex items-center gap-1.5"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
-                  Limpar Tudo
-                </Button>
+                  {t("ui_limpar_tudo_207")}</Button>
               )}
             </div>
           </div>

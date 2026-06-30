@@ -41,7 +41,7 @@ const domainVariables: Record<string, Record<string, VariableInfo>> = {
 };
 
 export default function WhatIfSimulator() {
-  const { activeDomain, addLog } = useDomain();
+  const { t, activeDomain, addLog } = useDomain();
   const domainKey = activeDomain || "maintenance";
   const variables: Record<string, VariableInfo> = useMemo(() => domainVariables[domainKey] || {}, [domainKey]);
 
@@ -93,11 +93,11 @@ export default function WhatIfSimulator() {
   // CA05 - Sensibilidade (Mock Visual Badge)
   const renderSensitivityBadge = (key: string) => {
     const diff = values[key] - defaultValues[key];
-    if (diff === 0) return <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-500/10 text-zinc-500 border border-zinc-500/20">Impacto Neutro</span>;
+    if (diff === 0) return <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-500/10 text-zinc-500 border border-zinc-500/20">{t("ui_impacto_neutro_940")}</span>;
     if (Math.abs(diff) > variables[key].max * 0.3) {
-      return <span className="text-[10px] px-1.5 py-0.5 rounded bg-rose-500/15 text-rose-500 border border-rose-500/20 font-bold">Impacto Alto</span>;
+      return <span className="text-[10px] px-1.5 py-0.5 rounded bg-rose-500/15 text-rose-500 border border-rose-500/20 font-bold">{t("ui_impacto_alto_58")}</span>;
     }
-    return <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500 border border-amber-500/20 font-bold">Impacto Médio</span>;
+    return <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500 border border-amber-500/20 font-bold">{t("ui_impacto_m_dio_364")}</span>;
   };
 
   const handleInjectDemo = () => {
@@ -159,47 +159,46 @@ export default function WhatIfSimulator() {
     <Card className="w-full bg-card border-border shadow-md">
       <CardHeader className="pb-3 flex flex-row items-center justify-between">
         <div>
-          <CardTitle className="text-sm font-bold text-foreground">What-If Analysis - Simulação Preditiva</CardTitle>
-          <CardDescription className="text-[11px] text-muted-foreground">Altere variáveis operacionais para avaliar o impacto nas predições do modelo atual sem retreinamento.</CardDescription>
+          <CardTitle className="text-sm font-bold text-foreground">{t("ui_what_if_analysis_simula_624")}</CardTitle>
+          <CardDescription className="text-[11px] text-muted-foreground">{t("ui_altere_vari_veis_operacionais_677")}</CardDescription>
         </div>
         <Button variant="outline" size="sm" onClick={handleInjectDemo} className="h-7 text-[10px]">
-          Injetar Dados (Modo Demo)
-        </Button>
+          {t("ui_injetar_dados_modo_demo_538")}</Button>
       </CardHeader>
       
       <CardContent className="space-y-6">
         {/* Dropdown de cenários e Salvar */}
         <div className="flex items-center gap-3 bg-muted/30 p-3 rounded-lg border border-border">
           <div className="flex-1 space-y-1">
-            <label className="text-[10px] text-muted-foreground font-bold uppercase">Carregar Cenário Salvo</label>
+            <label className="text-[10px] text-muted-foreground font-bold uppercase">{t("ui_carregar_cen_rio_salvo_340")}</label>
             <select 
               className="w-full text-xs p-1.5 rounded bg-background border border-border"
               value={selectedScenario}
               onChange={(e) => loadScenario(e.target.value)}
             >
-              <option value="" disabled>Selecione um cenário...</option>
+              <option value="" disabled>{t("ui_selecione_um_cen_rio_979")}</option>
               {savedScenarios.map(s => (
                 <option key={s.name} value={s.name}>{s.name}</option>
               ))}
             </select>
           </div>
           <div className="flex-1 space-y-1">
-            <label className="text-[10px] text-muted-foreground font-bold uppercase">Nome do Cenário</label>
+            <label className="text-[10px] text-muted-foreground font-bold uppercase">{t("ui_nome_do_cen_rio_507")}</label>
             <div className="flex gap-2">
               <Input 
                 className="h-7 text-xs"
-                placeholder="Ex: Alta Demanda" 
+                placeholder={t("ui_ex_alta_demanda_514")} 
                 value={scenarioName} 
                 onChange={(e) => setScenarioName(e.target.value)}
               />
-              <Button size="sm" className="h-7 text-[10px]" onClick={saveScenario} disabled={!scenarioName}>Salvar</Button>
+              <Button size="sm" className="h-7 text-[10px]" onClick={saveScenario} disabled={!scenarioName}>{t("ui_salvar_842")}</Button>
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4 pr-4 border-r border-border/50">
-            <h3 className="font-semibold text-xs uppercase text-muted-foreground tracking-wider mb-2">Variáveis de Entrada</h3>
+            <h3 className="font-semibold text-xs uppercase text-muted-foreground tracking-wider mb-2">{t("ui_vari_veis_de_entrada_21")}</h3>
             {Object.entries(variables).map(([key, info]) => (
               <div key={key} className="space-y-1.5 p-2 rounded-lg hover:bg-muted/30 transition-colors">
                 <div className="flex justify-between items-center text-xs">
@@ -225,11 +224,11 @@ export default function WhatIfSimulator() {
           </div>
 
           <div className="space-y-4">
-            <h3 className="font-semibold text-xs uppercase text-muted-foreground tracking-wider mb-2">Impacto na Previsão (CA02 / CA03)</h3>
+            <h3 className="font-semibold text-xs uppercase text-muted-foreground tracking-wider mb-2">{t("ui_impacto_na_previs_o_169")}</h3>
             
             <div className="grid grid-cols-2 gap-3 mb-4">
               <div className="bg-muted/40 p-3 rounded-xl border border-border text-center">
-                <p className="text-[10px] text-muted-foreground font-bold uppercase">Cenário Base</p>
+                <p className="text-[10px] text-muted-foreground font-bold uppercase">{t("ui_cen_rio_base_914")}</p>
                 <p className="text-2xl font-black text-foreground">{basePrediction?.toFixed(1)}%</p>
               </div>
               <div className={`p-3 rounded-xl border text-center transition-colors ${
@@ -237,7 +236,7 @@ export default function WhatIfSimulator() {
                   ? "bg-rose-500/10 border-rose-500/30 text-rose-500" 
                   : "bg-emerald-500/10 border-emerald-500/30 text-emerald-500"
               }`}>
-                <p className="text-[10px] font-bold uppercase opacity-80">Cenário Simulado</p>
+                <p className="text-[10px] font-bold uppercase opacity-80">{t("ui_cen_rio_simulado_963")}</p>
                 <p className="text-2xl font-black">{simulatedPrediction?.toFixed(1)}%</p>
               </div>
             </div>
@@ -260,8 +259,7 @@ export default function WhatIfSimulator() {
 
         <div className="flex justify-end pt-4 border-t border-border">
           <Button onClick={exportCSV} className="h-8 text-xs bg-emerald-600 hover:bg-emerald-500 text-white">
-            Exportar Relatório CSV (Audit)
-          </Button>
+            {t("ui_exportar_relat_rio_csv_924")}</Button>
         </div>
       </CardContent>
     </Card>

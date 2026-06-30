@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useDomain } from "@/lib/context/domain-context";
 
 interface FAQ {
   question: string;
@@ -94,6 +95,7 @@ const GENERAL_FAQS: FAQ[] = [
 ];
 
 export default function HelpPage() {
+    const { t } = useDomain();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeDomain, setActiveDomain] = useState<string | null>(null);
   const [expandedFaq, setExpandedFaq] = useState<string | null>(null);
@@ -122,20 +124,16 @@ export default function HelpPage() {
         <div className="space-y-1 relative z-10">
           <div className="flex items-center gap-2 text-sky-500 font-bold text-xs uppercase tracking-widest">
             <HelpCircle className="h-4 w-4" />
-            Central de Ajuda
-          </div>
+            {t("ui_central_de_ajuda_129")}</div>
           <h2 className="text-2xl font-black text-foreground tracking-tight">
-            Documentação Integrada por Módulo
-          </h2>
+            {t("ui_documenta_o_integrada_por_389")}</h2>
           <p className="text-muted-foreground text-xs">
-            Perguntas frequentes e guias de uso para todos os módulos do SPAM System.
-          </p>
+            {t("ui_perguntas_frequentes_e_guias_170")}</p>
         </div>
         <Link href="/docs/glossary">
           <Button variant="outline" size="sm" className="text-xs gap-1.5 shrink-0">
             <Book className="h-3.5 w-3.5" />
-            Glossário Completo
-            <ExternalLink className="h-3 w-3" />
+            {t("ui_gloss_rio_completo_858")}<ExternalLink className="h-3 w-3" />
           </Button>
         </Link>
       </div>
@@ -146,7 +144,7 @@ export default function HelpPage() {
         <Input
           id="help-search"
           className="pl-9 bg-card border-border text-sm"
-          placeholder="Buscar perguntas (ex: 'overfitting', 'exportar', 'CSV'...)"
+          placeholder={t("ui_buscar_perguntas_ex_overfitting_732")}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
@@ -160,8 +158,7 @@ export default function HelpPage() {
           className={cn("h-7 text-[11px]", !activeDomain && "bg-muted/40")}
           onClick={() => setActiveDomain(null)}
         >
-          Todos os módulos
-        </Button>
+          {t("ui_todos_os_m_dulos_787")}</Button>
         {DOMAINS_HELP.map((d) => (
           <Button
             key={d.key}
@@ -180,8 +177,8 @@ export default function HelpPage() {
       {showGeneral && (
         <Card className="border-border bg-card/50">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-bold text-foreground">Perguntas Gerais do Sistema</CardTitle>
-            <CardDescription className="text-[11px]">Funcionalidades comuns a todos os módulos.</CardDescription>
+            <CardTitle className="text-sm font-bold text-foreground">{t("ui_perguntas_gerais_do_sistema_58")}</CardTitle>
+            <CardDescription className="text-[11px]">{t("ui_funcionalidades_comuns_a_todos_448")}</CardDescription>
           </CardHeader>
           <CardContent className="divide-y divide-border/30">
             {filterFaqs(GENERAL_FAQS).map((faq, i) => {
@@ -243,7 +240,7 @@ export default function HelpPage() {
                 );
               })}
               {filtered.length === 0 && searchQuery && (
-                <div className="px-5 py-4 text-xs text-muted-foreground">Nenhuma resposta encontrada para &quot;{searchQuery}&quot;.</div>
+                <div className="px-5 py-4 text-xs text-muted-foreground">{t("ui_nenhuma_resposta_encontrada_para_130")}{searchQuery}{t("ui_quot_125")}</div>
               )}
             </CardContent>
           </Card>
@@ -252,12 +249,11 @@ export default function HelpPage() {
 
       {/* Footer link */}
       <div className="text-center pb-4">
-        <p className="text-xs text-muted-foreground mb-2">Precisa de mais detalhes sobre um termo específico?</p>
+        <p className="text-xs text-muted-foreground mb-2">{t("ui_precisa_de_mais_detalhes_39")}</p>
         <Link href="/docs/glossary">
           <Button variant="outline" size="sm" className="gap-1.5 text-xs">
             <Book className="h-3.5 w-3.5" />
-            Acessar Glossário Completo de Termos
-          </Button>
+            {t("ui_acessar_gloss_rio_completo_202")}</Button>
         </Link>
       </div>
     </div>

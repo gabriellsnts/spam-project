@@ -552,3 +552,16 @@
 - **UX**: O botao 'Save Settings' agora inicia desabilitado, dependendo de alteracoes na configuracao. Foi implementado feedback visual de sucesso apos o salvamento, com transicao para icone de check e cor verde. Adicionado estado de loading simulado nos switches de notificacao.
 - **i18n**: As strings residuais do bloco 'Tutorial Interativo' e 'Tuning' foram extraidas e integradas com o hook de traducao t().
 
+
+## [RF06] Internacionalização Massiva (Global Sweep) - 2026-06-30
+- **Autor**: Agent
+- **O que foi feito**: 
+  - Varredura de todo o diretório \src/\ para identificar e extrair strings literais em Português remanescentes.
+  - Mais de 450 chaves de tradução adicionadas automaticamente ao dicionário \src/lib/translations.ts\.
+  - Mais de 40 componentes refatorados via AST (Abstract Syntax Tree) para injetar o hook \useDomain\ e envelopar strings com \	('chave')\.
+  - Adicionado suporte de tradução em Fallbacks JSX (ex: \	('...') || '...'\) e atributos chave como \placeholder\, \	itle\ e \label\.
+- **Como testar**:
+  - Altere a linguagem no perfil de configurações e navegue por dashboards, modais, tooltips e botões da aplicação.
+  - Execute \
+pm run build\ para garantir que os hooks inseridos estão bem formatados e em uso adequado.
+

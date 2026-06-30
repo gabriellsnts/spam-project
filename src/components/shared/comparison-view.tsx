@@ -783,7 +783,7 @@ export function ComparisonView({ domain }: ComparisonViewProps) {
                         <th onClick={() => handleSort("deviation")} className="p-3 font-semibold text-muted-foreground text-right cursor-pointer hover:text-foreground transition-colors select-none">
                           {t("calculated_deviation")} <ArrowUpDown className="h-3 w-3 inline ml-1 opacity-70" />
                         </th>
-                        <th className="p-3 font-semibold text-muted-foreground text-center">Status</th>
+                        <th className="p-3 font-semibold text-muted-foreground text-center">{t("ui_status_842")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -895,7 +895,7 @@ export function ComparisonView({ domain }: ComparisonViewProps) {
                     </div>
                     <div className="space-y-1">
                       <div className="flex justify-between text-[10px] text-muted-foreground">
-                        <span>AUC-ROC</span>
+                        <span>{t("ui_auc_roc_763")}</span>
                         <span className="font-bold text-foreground">{metrics.aucRoc?.toFixed(4)}</span>
                       </div>
                       <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden">

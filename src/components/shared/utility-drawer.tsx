@@ -650,7 +650,7 @@ export function UtilityDrawer() {
                     : "border-transparent text-muted-foreground hover:text-foreground"
                 )}
               >
-                {t("active_alerts") || "Ativos"} ({unrecognizedAlerts.length})
+                {t("active_alerts")} ({unrecognizedAlerts.length})
               </button>
               <button
                 onClick={() => setFilter("all")}
@@ -661,7 +661,7 @@ export function UtilityDrawer() {
                     : "border-transparent text-muted-foreground hover:text-foreground"
                 )}
               >
-                {t("history") || "Histórico"} ({alerts.length})
+                {t("history")} ({alerts.length})
               </button>
             </div>
 
@@ -671,7 +671,7 @@ export function UtilityDrawer() {
                   {/* Filtro de Domínio */}
                   <div className="flex-1 flex flex-col gap-1">
                     <label className="text-[8px] uppercase tracking-wider font-extrabold text-muted-foreground">
-                      {t("domain") || "Domínio"}
+                      {t("domain")}
                     </label>
                     <select
                       value={domainFilter}
@@ -689,7 +689,7 @@ export function UtilityDrawer() {
                   {/* Filtro de Período */}
                   <div className="flex-1 flex flex-col gap-1">
                     <label className="text-[8px] uppercase tracking-wider font-extrabold text-muted-foreground">
-                      {t("period") || "Período"}
+                      {t("period")}
                     </label>
                     <select
                       value={periodFilter}
@@ -711,7 +711,7 @@ export function UtilityDrawer() {
                   className="w-full h-8 text-[11px] font-bold bg-green-500 hover:bg-green-600 text-zinc-950 transition-colors flex items-center justify-center gap-1.5 rounded-md"
                 >
                   <Download className="h-3.5 w-3.5" />
-                  {t("export_csv") || "Exportar CSV"}
+                  {t("export_csv")}
                 </Button>
               </div>
             )}
@@ -839,7 +839,7 @@ export function UtilityDrawer() {
                                 className="h-6 text-[9px] font-black bg-muted border border-border/80 hover:bg-green-500/10 hover:border-green-500 hover:text-green-500 text-foreground transition-all duration-200 px-2 flex items-center gap-1"
                               >
                                 <Check className="h-3 w-3" />
-                                {t("acknowledge") || "Reconhecer"}
+                                {t("acknowledge")}
                               </Button>
                             ) : (
                               <span className="text-[9px] text-muted-foreground/60 font-bold flex items-center gap-0.5 select-none py-0.5 px-1.5 bg-background/20 border border-border/20 rounded">
@@ -897,7 +897,7 @@ export function UtilityDrawer() {
                   className="h-7 text-xs text-rose-500 hover:text-rose-455 hover:bg-rose-500/5 font-bold transition flex items-center gap-1.5"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
-                  {t("clear_all") || "Limpar Tudo"}
+                  {t("clear_all")}
                 </Button>
               )}
             </div>
@@ -911,7 +911,7 @@ export function UtilityDrawer() {
                 {/* Filtro de Domínio */}
                 <div className="flex-1 flex flex-col gap-1">
                   <label className="text-[8px] uppercase tracking-wider font-extrabold text-muted-foreground">
-                    {t("domain") || "Domínio"}
+                    {t("domain")}
                   </label>
                   <select
                     value={domainFilter}
@@ -929,7 +929,7 @@ export function UtilityDrawer() {
                 {/* Filtro de Período */}
                 <div className="flex-1 flex flex-col gap-1">
                   <label className="text-[8px] uppercase tracking-wider font-extrabold text-muted-foreground">
-                    {t("period") || "Período"}
+                    {t("period")}
                   </label>
                   <select
                     value={periodFilter}
@@ -951,7 +951,7 @@ export function UtilityDrawer() {
                 className="w-full h-8 text-[11px] font-bold bg-green-500 hover:bg-green-600 text-zinc-950 transition-colors flex items-center justify-center gap-1.5 rounded-md"
               >
                 <Download className="h-3.5 w-3.5" />
-                {t("export_csv") || "Exportar CSV"}
+                {t("export_csv")}
               </Button>
             </div>
 
@@ -1072,7 +1072,7 @@ export function UtilityDrawer() {
                   className="h-7 text-xs text-rose-500 hover:text-rose-455 hover:bg-rose-500/5 font-bold transition flex items-center gap-1.5"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
-                  {t("clear_history") || "Limpar Histórico"}
+                  {t("clear_history")}
                 </Button>
               )}
             </div>
@@ -1103,8 +1103,7 @@ export function UtilityDrawer() {
                 {/* User Filter */}
                 <div className="flex-1 flex flex-col gap-1">
                   <label className="text-[8px] uppercase tracking-wider font-extrabold text-muted-foreground">
-                    Usuário
-                  </label>
+                    {t("ui_usu_rio_451")}</label>
                   <select
                     value={logUserFilter}
                     onChange={(e) => setLogUserFilter(e.target.value)}
@@ -1122,8 +1121,7 @@ export function UtilityDrawer() {
                 {/* Action Type Filter */}
                 <div className="flex-1 flex flex-col gap-1">
                   <label className="text-[8px] uppercase tracking-wider font-extrabold text-muted-foreground">
-                    Tipo de Ação
-                  </label>
+                    {t("ui_tipo_de_a_o_46")}</label>
                   <select
                     value={logActionType}
                     onChange={(e) => setLogActionType(e.target.value)}
@@ -1142,8 +1140,7 @@ export function UtilityDrawer() {
               <div className="flex items-center gap-2">
                 <div className="flex-1 flex flex-col gap-1">
                   <label className="text-[8px] uppercase tracking-wider font-extrabold text-muted-foreground">
-                    Data Inicial
-                  </label>
+                    {t("ui_data_inicial_39")}</label>
                   <input
                     type="date"
                     value={logStartDate}
@@ -1153,8 +1150,7 @@ export function UtilityDrawer() {
                 </div>
                 <div className="flex-1 flex flex-col gap-1">
                   <label className="text-[8px] uppercase tracking-wider font-extrabold text-muted-foreground">
-                    Data Final
-                  </label>
+                    {t("ui_data_final_743")}</label>
                   <input
                     type="date"
                     value={logEndDate}
@@ -1176,8 +1172,7 @@ export function UtilityDrawer() {
                     }}
                     className="text-[9px] font-bold text-rose-500 hover:text-rose-400 transition"
                   >
-                    {t('clear_filters')} Avançados
-                  </button>
+                    {t('clear_filters')} {t("ui_avan_ados_479")}</button>
                 ) : (
                   <span />
                 )}
@@ -1189,8 +1184,7 @@ export function UtilityDrawer() {
                   className="h-7 text-[10px] font-bold bg-green-500 hover:bg-green-600 disabled:opacity-50 text-zinc-950 transition-colors flex items-center justify-center gap-1 px-3 rounded-md shrink-0 ml-auto"
                 >
                   <Download className="h-3 w-3" />
-                  Exportar CSV
-                </Button>
+                  {t("ui_exportar_csv_855")}</Button>
               </div>
             </div>
 
@@ -1272,15 +1266,15 @@ export function UtilityDrawer() {
                   <div className="flex-1 overflow-y-auto space-y-4 text-[11px] scrollbar-thin pr-1">
                     <div className="bg-muted/40 border border-border/15 rounded-xl p-3.5 space-y-3">
                       <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground font-semibold">{t("log_id") || "ID do Registro:"}</span>
+                        <span className="text-muted-foreground font-semibold">{t("log_id")}</span>
                         <span className="font-mono font-bold text-foreground bg-muted px-1.5 py-0.5 rounded border border-border/20">#{selectedLog.id}</span>
                       </div>
                       <div className="flex justify-between items-center border-t border-border/10 pt-2.5">
-                        <span className="text-muted-foreground font-semibold">{t("action_date") || "Data da Ação:"}</span>
+                        <span className="text-muted-foreground font-semibold">{t("action_date")}</span>
                         <span className="font-bold text-foreground">{new Date(selectedLog.timestamp).toLocaleDateString("pt-BR")}</span>
                       </div>
                       <div className="flex justify-between items-center border-t border-border/10 pt-2.5">
-                        <span className="text-muted-foreground font-semibold">{t("action_time") || "Horário da Ação:"}</span>
+                        <span className="text-muted-foreground font-semibold">{t("action_time")}</span>
                         <span className="font-bold text-foreground font-mono">{new Date(selectedLog.timestamp).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</span>
                       </div>
                     </div>
@@ -1314,7 +1308,7 @@ export function UtilityDrawer() {
                       onClick={() => setSelectedLog(null)}
                       className="w-full text-xs font-bold bg-muted border border-border/30 text-foreground hover:bg-muted/80"
                     >
-                      {t("back_to_list") || "Voltar para a Listagem"}
+                      {t("back_to_list")}
                     </Button>
                   </div>
                 </div>
@@ -1334,7 +1328,7 @@ export function UtilityDrawer() {
                   className="h-7 text-xs text-rose-500 hover:text-rose-455 hover:bg-rose-500/5 font-bold transition flex items-center gap-1.5"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
-                  {t("clear_logs") || "Limpar Logs"}
+                  {t("clear_logs")}
                 </Button>
               )}
             </div>

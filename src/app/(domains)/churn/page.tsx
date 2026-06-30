@@ -178,7 +178,7 @@ export default function ChurnPage() {
                   : "bg-emerald-500/10 text-emerald-550 dark:text-emerald-400 border-emerald-500/20 animate-pulse"
               }`}>
                 <CheckCircle2 className="h-3 w-3" />
-                {isModelObsolete ? t("obsolete_model") || "Modelo Obsoleto" : t("ready_to_use") || "Modelo Pronto para Uso"}
+                {isModelObsolete ? t("obsolete_model") : t("ready_to_use")}
               </span>
             )}
           </h2>
@@ -189,7 +189,7 @@ export default function ChurnPage() {
 
         <div className="flex flex-col sm:flex-row items-center gap-2 relative z-10">
           <Button variant="outline" size="sm" onClick={handleExport} className="text-xs">
-            {t("export_csv") || "Exportar Relatório (PDF)"}
+            {t("export_csv")}
           </Button>
           {!activeModel ? (
             <div className="flex items-center gap-2 text-amber-500 bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-500/20 text-xs font-semibold font-sans">
@@ -254,7 +254,7 @@ export default function ChurnPage() {
                 <CardTitle className="text-2xl font-black text-foreground">{dynamicAtRisk}</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-[10px] text-muted-foreground">Churn Score &gt; 80%</div>
+                <div className="text-[10px] text-muted-foreground">{t("ui_churn_score_gt_80_719")}</div>
               </CardContent>
             </Card>
 
@@ -268,7 +268,7 @@ export default function ChurnPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-[10px] text-muted-foreground">Email &amp; Call Campaigns</div>
+                <div className="text-[10px] text-muted-foreground">{t("ui_email_amp_call_campaigns_107")}</div>
               </CardContent>
             </Card>
 
@@ -299,7 +299,7 @@ export default function ChurnPage() {
 
           <AlertThresholdSettings
             domain="churn"
-            title={t("limit_lifetime_rul") || "Limiar de Risco de Churn (Evasão)"}
+            title={t("limit_lifetime_rul")}
             min={0}
             max={100}
             unit="%"
@@ -319,7 +319,7 @@ export default function ChurnPage() {
                     </CardTitle>
                     <CardDescription className="text-[11px] text-muted-foreground mt-1">
                       {activeModel ? (
-                        <>Modelo ativo: <strong>{activeModel.modelId}</strong> com Acurácia de <strong>{((activeModel.metrics.accuracy || 0) * 100).toFixed(1)}%</strong>.</>
+                        <>{t("ui_modelo_ativo_548")}<strong>{activeModel.modelId}</strong> {t("ui_com_acur_cia_de_525")}<strong>{((activeModel.metrics.accuracy || 0) * 100).toFixed(1)}%</strong>.</>
                       ) : (
                         "Faça o treinamento do modelo para gerar as classificações e scores de churn."
                       )}
@@ -344,7 +344,7 @@ export default function ChurnPage() {
                           onClick={() => setRiskFilter(level)}
                           className={`px-2 py-1 text-[10px] rounded capitalize ${riskFilter === level ? "bg-background shadow font-bold text-foreground" : "text-muted-foreground hover:text-foreground"}`}
                         >
-                          {level === "all" ? (t("all_risks") || "Todos").split(" ")[0] : level === "high" ? "Alto" : level === "medium" ? "Méd" : "Baixo"}
+                          {level === "all" ? (t("all_risks")).split(" ")[0] : level === "high" ? "Alto" : level === "medium" ? "Méd" : "Baixo"}
                         </button>
                       ))}
                     </div>
@@ -355,8 +355,8 @@ export default function ChurnPage() {
                 {!activeModel ? (
                    <div className="h-[280px] w-full flex flex-col items-center justify-center text-muted-foreground border-t border-border bg-muted/5">
                      <AlertCircle className="h-8 w-8 mb-2 opacity-50" />
-                     <p className="text-sm">Tabela de Classificação indisponível.</p>
-                     <p className="text-xs opacity-70">Treine o modelo de Churn para gerar o scoring dos clientes.</p>
+                     <p className="text-sm">{t("ui_tabela_de_classifica_o_933")}</p>
+                     <p className="text-xs opacity-70">{t("ui_treine_o_modelo_de_190")}</p>
                    </div>
                 ) : (
                   <div className="divide-y divide-border border-t border-border">
@@ -379,15 +379,15 @@ export default function ChurnPage() {
                                 <span className={`w-2 h-2 rounded-full ${risk === 'high' ? 'bg-rose-500' : risk === 'medium' ? 'bg-amber-500' : 'bg-emerald-500'}`} />
                               </div>
                               <div className="text-[10px] text-muted-foreground flex items-center gap-2">
-                                <span className="font-mono">ID: {c.id}</span>
+                                <span className="font-mono">{t("ui_id_371")}{c.id}</span>
                                 <span>•</span>
-                                <span>LTV: <strong className="text-muted-foreground/90">{c.ltv}</strong></span>
+                                <span>{t("ui_ltv_133")}<strong className="text-muted-foreground/90">{c.ltv}</strong></span>
                               </div>
                             </div>
 
                             <div className="flex items-center gap-6 sm:ml-auto">
                               <div className="text-right">
-                                <div className="text-[9px] text-muted-foreground font-semibold uppercase">Churn Score</div>
+                                <div className="text-[9px] text-muted-foreground font-semibold uppercase">{t("ui_churn_score_741")}</div>
                                 <div className={`text-sm font-black font-mono ${
                                   risk === 'high' ? "text-rose-500" : risk === 'medium' ? "text-amber-500" : "text-emerald-500"
                                 }`}>{c.score}%</div>
@@ -410,7 +410,7 @@ export default function ChurnPage() {
                                   <div className="text-[10px] text-muted-foreground font-semibold uppercase mb-1">{t("recommended_action")}</div>
                                   <div className="flex items-center justify-between bg-background p-2.5 rounded border border-border/60">
                                     <span className="text-xs font-bold text-violet-500">{c.action}</span>
-                                    <Button size="sm" variant="ghost" className="h-6 text-[10px]">Assign Task</Button>
+                                    <Button size="sm" variant="ghost" className="h-6 text-[10px]">{t("ui_assign_task_382")}</Button>
                                   </div>
                                 </div>
                               </div>
@@ -428,39 +428,32 @@ export default function ChurnPage() {
               <CardHeader>
                 <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
                   <HeartHandshake className="h-4 w-4 text-muted-foreground/60" />
-                  Recommended Strategies (CS)
-                </CardTitle>
+                  {t("ui_recommended_strategies_cs_831")}</CardTitle>
                 <CardDescription className="text-[11px] text-muted-foreground">
-                  Ações baseadas no perfil da carteira.
-                </CardDescription>
+                  {t("ui_a_es_baseadas_no_461")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="p-3 bg-muted/40 border border-border rounded-lg space-y-1 text-xs">
                   <div className="flex items-center gap-1.5 text-foreground/80 font-bold">
                     <Star className="h-3.5 w-3.5 text-amber-500" />
-                    Programa VIP de Upgrade
-                  </div>
+                    {t("ui_programa_vip_de_upgrade_601")}</div>
                   <p className="text-muted-foreground text-[10px] leading-relaxed">
-                    Disparar campanha direcionada para clientes com score &gt; 70% e LTV superior a R$ 50k, oferecendo suporte prioritário 24/7.
-                  </p>
+                    {t("ui_disparar_campanha_direcionada_para_862")}</p>
                 </div>
 
                 <div className="p-3 bg-muted/40 border border-border rounded-lg space-y-1 text-xs">
                   <div className="flex items-center gap-1.5 text-foreground/80 font-bold">
                     <Sparkles className="h-3.5 w-3.5 text-violet-500" />
-                    Integração Assistida (Onboarding)
-                  </div>
+                    {t("ui_integra_o_assistida_onboarding_498")}</div>
                   <p className="text-muted-foreground text-[10px] leading-relaxed">
-                    Agendamento de mentorias técnicas para clientes novos cujo engajamento de uso caiu abaixo de 20% no primeiro mês.
-                  </p>
+                    {t("ui_agendamento_de_mentorias_t_545")}</p>
                 </div>
 
                 {churnSimulated && (
                   <div className="p-3 bg-rose-500/10 border border-rose-500/25 rounded-lg text-[10px] text-rose-500 animate-pulse flex items-start gap-2">
                     <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                     <div>
-                      <strong>Alerta de Churn Crítico:</strong> O cliente <em>Tecnologia Avançada Beta</em> está em inatividade total há 7 dias consecutivos. Probabilidade de cancelamento de contrato subiu para 91%.
-                    </div>
+                      <strong>{t("ui_alerta_de_churn_cr_17")}</strong> {t("ui_o_cliente_777")}<em>{t("ui_tecnologia_avan_ada_beta_323")}</em> {t("ui_est_em_inatividade_total_402")}</div>
                   </div>
                 )}
               </CardContent>
@@ -513,9 +506,9 @@ export default function ChurnPage() {
               </div>
 
               <div className="p-3 bg-muted/40 border border-border/80 rounded-xl text-xs space-y-2">
-                <div className="font-bold text-foreground">Cenário de Estresse</div>
+                <div className="font-bold text-foreground">{t("ui_cen_rio_de_estresse_383")}</div>
                 <div className="text-muted-foreground text-[10px]">
-                  Status: <strong className={churnSimulated ? "text-rose-500 animate-pulse" : "text-emerald-500"}>{churnSimulated ? "SIMULATED CHURN ACTIVE" : "NORMAL"}</strong>
+                  {t("ui_status_729")}<strong className={churnSimulated ? "text-rose-500 animate-pulse" : "text-emerald-500"}>{churnSimulated ? "SIMULATED CHURN ACTIVE" : "NORMAL"}</strong>
                 </div>
               </div>
             </CardContent>
@@ -534,8 +527,7 @@ export default function ChurnPage() {
                       {t("residuals_diagnostic")}
                     </CardTitle>
                     <CardDescription className="text-[11px] text-muted-foreground">
-                      Matriz de confusão interativa mapeando acertos e erros de classificação do modelo.
-                    </CardDescription>
+                      {t("ui_matriz_de_confus_o_756")}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <ConfusionMatrixView model={activeModel} />

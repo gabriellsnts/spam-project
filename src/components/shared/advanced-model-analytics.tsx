@@ -260,15 +260,15 @@ export function AdvancedModelAnalytics() {
                   <div className="space-y-2 mt-4">
                     <div className="flex justify-between text-xs">
                       <span>{t("baseline_f1")}</span>
-                      <span className="font-mono font-bold">0.89</span>
+                      <span className="font-mono font-bold">{t("ui_0_89_341")}</span>
                     </div>
                     <div className="flex justify-between text-xs">
                       <span>{t("f1_10_noise")}</span>
-                      <span className="font-mono text-amber-500 font-bold">0.82 (-7%)</span>
+                      <span className="font-mono text-amber-500 font-bold">{t("ui_0_82_7_68")}</span>
                     </div>
                     <div className="flex justify-between text-xs">
                       <span>{t("f1_25_noise")}</span>
-                      <span className="font-mono text-rose-500 font-bold">0.65 (-24%)</span>
+                      <span className="font-mono text-rose-500 font-bold">{t("ui_0_65_24_244")}</span>
                     </div>
                   </div>
                 </div>
@@ -281,11 +281,11 @@ export function AdvancedModelAnalytics() {
                   <div className="space-y-2 mt-4">
                     <div className="flex justify-between text-xs">
                       <span>{t("baseline_recall")}</span>
-                      <span className="font-mono font-bold">0.85</span>
+                      <span className="font-mono font-bold">{t("ui_0_85_946")}</span>
                     </div>
                     <div className="flex justify-between text-xs">
                       <span>{t("recall_post_attack")}</span>
-                      <span className="font-mono text-emerald-500 font-bold">0.83 (-2%)</span>
+                      <span className="font-mono text-emerald-500 font-bold">{t("ui_0_83_2_358")}</span>
                     </div>
                     <p className="text-[10px] text-muted-foreground mt-2 border-t pt-2">
                       {t("model_high_resilience")}
@@ -301,11 +301,11 @@ export function AdvancedModelAnalytics() {
                   <div className="space-y-2 mt-4">
                     <div className="flex justify-between text-xs">
                       <span>{t("original_accuracy")}</span>
-                      <span className="font-mono font-bold">92%</span>
+                      <span className="font-mono font-bold">{t("ui_92_799")}</span>
                     </div>
                     <div className="flex justify-between text-xs">
                       <span>{t("with_1_feature_zero")}</span>
-                      <span className="font-mono text-amber-500 font-bold">88%</span>
+                      <span className="font-mono text-amber-500 font-bold">{t("ui_88_522")}</span>
                     </div>
                     <div className="flex justify-between text-xs">
                       <span>{t("vulnerability")}</span>

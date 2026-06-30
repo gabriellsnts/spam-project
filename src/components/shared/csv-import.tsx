@@ -726,7 +726,7 @@ export function CSVImport() {
                   <div className="p-4 rounded-xl border border-border bg-muted/20">
                     <span className="text-muted-foreground text-[10px] uppercase font-bold tracking-wide">{t("model_normalization")}</span>
                     <div className="text-2xl font-black text-sky-500 font-mono mt-1">
-                      Min-Max <span className="text-[11px] text-muted-foreground font-normal font-sans">[0, 1]</span>
+                      {t("ui_min_max_391")}<span className="text-[11px] text-muted-foreground font-normal font-sans">{t("ui_0_1_744")}</span>
                     </div>
                     <span className="text-[9px] text-muted-foreground/80 block mt-1">{t("simulated_scaled_data")}</span>
                   </div>
@@ -896,7 +896,7 @@ export function CSVImport() {
                     <table className="w-full text-left border-collapse text-[11px]">
                       <thead>
                         <tr className="bg-muted/50 border-b border-border">
-                          <th className="p-2.5 font-bold text-muted-foreground w-12 text-center font-mono">Row</th>
+                          <th className="p-2.5 font-bold text-muted-foreground w-12 text-center font-mono">{t("ui_row_403")}</th>
                           {headers.map((h) => (
                             <th key={h} className="p-2.5 font-bold text-muted-foreground font-mono min-w-[120px]">
                               {h}
@@ -973,7 +973,7 @@ export function CSVImport() {
                     </div>
                   ))}
                   <div className="text-emerald-500/50 pt-2 border-t border-emerald-500/10">
-                    &gt; {t("processing_completed_persisted")}
+                    {t("ui_gt_556")}{t("processing_completed_persisted")}
                   </div>
                 </div>
               </div>

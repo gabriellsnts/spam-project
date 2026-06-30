@@ -296,24 +296,21 @@ export function ResidualsPlotView({ model, theme: customTheme }: { model: Traine
             className="text-[9px] font-bold h-6.5 px-2 border-border hover:bg-muted font-sans text-muted-foreground hover:text-foreground"
             title={t("download_svg")}
           >
-            SVG
-          </Button>
+            {t("ui_svg_865")}</Button>
           <Button
             onClick={handleDownloadPNG}
             variant="outline"
             className="text-[9px] font-bold h-6.5 px-2 border-border hover:bg-muted font-sans text-muted-foreground hover:text-foreground"
             title={t("download_png")}
           >
-            PNG
-          </Button>
+            {t("ui_png_22")}</Button>
           <Button
             onClick={handleDownloadJPEG}
             variant="outline"
             className="text-[9px] font-bold h-6.5 px-2 border-border hover:bg-muted font-sans text-muted-foreground hover:text-foreground"
             title={t("download_jpeg")}
           >
-            JPEG
-          </Button>
+            {t("ui_jpeg_74")}</Button>
         </div>
       </div>
 
@@ -740,24 +737,21 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
             className="text-[9px] font-bold h-6.5 px-2 border-border hover:bg-muted font-sans text-muted-foreground hover:text-foreground"
             title={t("download_svg")}
           >
-            SVG
-          </Button>
+            {t("ui_svg_502")}</Button>
           <Button
             onClick={handleDownloadPNG}
             variant="outline"
             className="text-[9px] font-bold h-6.5 px-2 border-border hover:bg-muted font-sans text-muted-foreground hover:text-foreground"
             title={t("download_png")}
           >
-            PNG
-          </Button>
+            {t("ui_png_275")}</Button>
           <Button
             onClick={handleDownloadJPEG}
             variant="outline"
             className="text-[9px] font-bold h-6.5 px-2 border-border hover:bg-muted font-sans text-muted-foreground hover:text-foreground"
-            title="Baixar em alta resolução JPEG"
+            title={t("ui_baixar_em_alta_resolu_505")}
           >
-            JPEG
-          </Button>
+            {t("ui_jpeg_697")}</Button>
         </div>
       </div>
 
@@ -782,8 +776,7 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
               fontWeight="bold"
               fontFamily="sans-serif"
             >
-              Classe Predita
-            </text>
+              {t("ui_classe_predita_497")}</text>
 
             {/* Actual Class title vertical */}
             <text
@@ -794,12 +787,11 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
               fontWeight="bold"
               fontFamily="sans-serif"
             >
-              Classe Real
-            </text>
+              {t("ui_classe_real_79")}</text>
 
             {/* Columns Header (Predicted) */}
-            <text x={172.5} y={50} textAnchor="middle" fill={textMutedColor} fontSize="9px" fontWeight="bold" fontFamily="monospace">NEGATIVO (0)</text>
-            <text x={282.5} y={50} textAnchor="middle" fill={textMutedColor} fontSize="9px" fontWeight="bold" fontFamily="monospace">POSITIVO (1)</text>
+            <text x={172.5} y={50} textAnchor="middle" fill={textMutedColor} fontSize="9px" fontWeight="bold" fontFamily="monospace">{t("ui_negativo_0_461")}</text>
+            <text x={282.5} y={50} textAnchor="middle" fill={textMutedColor} fontSize="9px" fontWeight="bold" fontFamily="monospace">{t("ui_positivo_1_295")}</text>
 
             {/* Rows Header (Actual) */}
             <text x={110} y={115} textAnchor="end" fill={textMutedColor} fontSize="9px" fontWeight="bold" fontFamily="monospace">{t("negative_0")}</text>
@@ -1942,7 +1934,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                   {t("ready_to_use_model")}
                 </span>
                 <span className="text-[10px] text-muted-foreground font-mono">
-                  ID: {activeModel.modelId}
+                  {t("ui_id_651")}{activeModel.modelId}
                 </span>
               </div>
               {isModelObsolete && (
@@ -1975,7 +1967,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                 {activeModel.type === "Classification" ? (
                   <>
                     <div className="bg-zinc-900/60 border border-border/60 px-2 py-1 rounded text-[10px] font-mono">
-                      <span className="text-muted-foreground text-[8px] uppercase block">AUC-ROC</span>
+                      <span className="text-muted-foreground text-[8px] uppercase block">{t("ui_auc_roc_378")}</span>
                       <span className="text-emerald-500 font-bold">{((activeModel.metrics.aucRoc || 0) * 100).toFixed(2)}%</span>
                     </div>
                     <div className="bg-zinc-900/60 border border-border/60 px-2 py-1 rounded text-[10px] font-mono">
@@ -1994,15 +1986,15 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                 ) : (
                   <>
                     <div className="bg-zinc-900/60 border border-border/60 px-2 py-1 rounded text-[10px] font-mono">
-                      <span className="text-muted-foreground text-[8px] uppercase block">R² (Score)</span>
+                      <span className="text-muted-foreground text-[8px] uppercase block">{t("ui_r_score_449")}</span>
                       <span className="text-emerald-500 font-bold">{(activeModel.metrics.r2 || 0).toFixed(4)}</span>
                     </div>
                     <div className="bg-zinc-900/60 border border-border/60 px-2 py-1 rounded text-[10px] font-mono">
-                      <span className="text-muted-foreground text-[8px] uppercase block">RMSE</span>
+                      <span className="text-muted-foreground text-[8px] uppercase block">{t("ui_rmse_132")}</span>
                       <span className="text-foreground font-bold">{(activeModel.metrics.rmse || 0).toFixed(3)}</span>
                     </div>
                     <div className="bg-zinc-900/60 border border-border/60 px-2 py-1 rounded text-[10px] font-mono">
-                      <span className="text-muted-foreground text-[8px] uppercase block">MAE</span>
+                      <span className="text-muted-foreground text-[8px] uppercase block">{t("ui_mae_271")}</span>
                       <span className="text-foreground font-bold">{(activeModel.metrics.mae || 0).toFixed(3)}</span>
                     </div>
                   </>
@@ -2107,8 +2099,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                   {t("expected_cols_structure")}
                 </div>
                 <p className="text-muted-foreground text-[10px] leading-relaxed">
-                  {t("expected_cols_desc1")} <code className="font-mono text-foreground font-semibold px-0.5 bg-muted">,</code> {t("or")} <code className="font-mono text-foreground font-semibold px-0.5 bg-muted">;</code>):
-                </p>
+                  {t("expected_cols_desc1")} <code className="font-mono text-foreground font-semibold px-0.5 bg-muted">,</code> {t("or")} <code className="font-mono text-foreground font-semibold px-0.5 bg-muted">;</code>{t("ui__350")}</p>
                 <div className="flex flex-wrap gap-1.5 pt-1">
                   {expectedCols.map((col) => (
                     <span key={col} className="px-2 py-0.5 rounded bg-background border border-border/60 font-mono text-[9px] text-foreground/80">
@@ -2133,7 +2124,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                 <div className="space-y-3">
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{t("endpoint_url")}</label>
-                    <Input placeholder="https://api.empresa.com/v1/data" className="font-mono text-xs" />
+                    <Input placeholder={t("ui_https_api_empresa_com_144")} className="font-mono text-xs" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{t("bearer_token")}</label>
@@ -2315,8 +2306,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                 <div className="md:col-span-4 p-4 border border-border/80 rounded-xl space-y-3 bg-muted/10">
                   <h5 className="text-[11px] font-bold text-foreground/80 flex items-center gap-1.5 border-b border-border/60 pb-1.5">
                     <span className={cn("h-1.5 w-1.5 rounded-full bg-current", theme.accent)} />
-                    {t("completeness")} por Coluna
-                  </h5>
+                    {t("completeness")} {t("ui_por_coluna_997")}</h5>
                   <div className="space-y-2.5 max-h-[140px] overflow-y-auto pr-1 scrollbar-thin">
                     {(Object.entries(qualityReport.completeness) as [string, number][]).map(([col, pct]) => {
                       const isPerfect = pct === 100;
@@ -2555,8 +2545,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                                 {isError ? (
                                   <span className="flex items-center gap-1">
                                     <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-ping shrink-0" />
-                                    [vazio/erro]
-                                  </span>
+                                    {t("ui_vazio_erro_852")}</span>
                                 ) : (
                                   cell
                                 )}
@@ -3065,11 +3054,11 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                             ) : (
                               <>
                                 <div className="bg-zinc-900/60 border border-border/60 px-2 py-0.5 rounded text-[10px] font-mono">
-                                  <span className="text-muted-foreground text-[8px] uppercase block">RMSE</span>
+                                  <span className="text-muted-foreground text-[8px] uppercase block">{t("ui_rmse_404")}</span>
                                   <span className="text-foreground font-bold">{(previousModel.metrics.rmse || 0).toFixed(3)}</span>
                                 </div>
                                 <div className="bg-zinc-900/60 border border-border/60 px-2 py-0.5 rounded text-[10px] font-mono">
-                                  <span className="text-muted-foreground text-[8px] uppercase block">MAE</span>
+                                  <span className="text-muted-foreground text-[8px] uppercase block">{t("ui_mae_369")}</span>
                                   <span className="text-foreground font-bold">{(previousModel.metrics.mae || 0).toFixed(3)}</span>
                                 </div>
                               </>
@@ -3141,11 +3130,11 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                             ) : (
                               <>
                                 <div className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded text-[10px] font-mono">
-                                  <span className="text-muted-foreground text-[8px] uppercase block">RMSE</span>
+                                  <span className="text-muted-foreground text-[8px] uppercase block">{t("ui_rmse_445")}</span>
                                   <span className="text-foreground font-bold">{(activeModel.metrics.rmse || 0).toFixed(3)}</span>
                                 </div>
                                 <div className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded text-[10px] font-mono">
-                                  <span className="text-muted-foreground text-[8px] uppercase block">MAE</span>
+                                  <span className="text-muted-foreground text-[8px] uppercase block">{t("ui_mae_67")}</span>
                                   <span className="text-foreground font-bold">{(activeModel.metrics.mae || 0).toFixed(3)}</span>
                                 </div>
                               </>
@@ -3182,7 +3171,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                       </div>
                       <div>
                         <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">{t("split_train_test")}</span>
-                        <span className="text-foreground font-semibold">{activeModel.trainSize} (80%) / {activeModel.testSize} (20%)</span>
+                        <span className="text-foreground font-semibold">{activeModel.trainSize} {t("ui_80_828")}{activeModel.testSize} {t("ui_20_56")}</span>
                       </div>
                       <div>
                         <span className="text-muted-foreground block text-[9px] uppercase font-sans font-bold">{t("problem_type")}</span>
@@ -3199,7 +3188,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                               className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded cursor-help"
                               title={t("auc_roc_tooltip")}
                             >
-                              <span className="text-muted-foreground text-[8px] uppercase block">AUC-ROC</span>
+                              <span className="text-muted-foreground text-[8px] uppercase block">{t("ui_auc_roc_542")}</span>
                               <span className="text-foreground font-bold font-mono">{((activeModel.metrics.aucRoc || 0) * 100).toFixed(2)}%</span>
                             </div>
                             <div 
@@ -3312,13 +3301,13 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                               <td className="p-2 text-[9px]">
                                 {cycle.metrics.accuracy !== undefined ? (
                                   <div className="flex flex-wrap gap-1.5 font-sans">
-                                    <span className="text-emerald-500 font-bold bg-emerald-500/10 border border-emerald-500/20 px-1 rounded text-[8px]">AUC: {((cycle.metrics.aucRoc || 0) * 100).toFixed(1)}%</span>
-                                    <span className="text-muted-foreground text-[8px]">ACC: {((cycle.metrics.accuracy || 0) * 100).toFixed(1)}%</span>
+                                    <span className="text-emerald-500 font-bold bg-emerald-500/10 border border-emerald-500/20 px-1 rounded text-[8px]">{t("ui_auc_489")}{((cycle.metrics.aucRoc || 0) * 100).toFixed(1)}%</span>
+                                    <span className="text-muted-foreground text-[8px]">{t("ui_acc_60")}{((cycle.metrics.accuracy || 0) * 100).toFixed(1)}%</span>
                                   </div>
                                 ) : (
                                   <div className="flex flex-wrap gap-1.5 font-sans">
-                                    <span className="text-sky-500 font-bold bg-sky-500/10 border border-sky-500/20 px-1 rounded text-[8px]">R²: {(cycle.metrics.r2 || 0).toFixed(3)}</span>
-                                    <span className="text-muted-foreground text-[8px]">RMSE: {(cycle.metrics.rmse || 0).toFixed(2)}</span>
+                                    <span className="text-sky-500 font-bold bg-sky-500/10 border border-sky-500/20 px-1 rounded text-[8px]">{t("ui_r_475")}{(cycle.metrics.r2 || 0).toFixed(3)}</span>
+                                    <span className="text-muted-foreground text-[8px]">{t("ui_rmse_809")}{(cycle.metrics.rmse || 0).toFixed(2)}</span>
                                   </div>
                                 )}
                               </td>
@@ -3465,7 +3454,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                   <thead>
                     <tr className="bg-muted/50 border-b border-border/60 text-[9px] uppercase tracking-wider text-muted-foreground font-bold font-sans">
                       <th className="p-3">{t("validation_metric_label")}</th>
-                      <th className="p-3 text-center min-w-[130px]">Random Forest</th>
+                      <th className="p-3 text-center min-w-[130px]">{t("ui_random_forest_544")}</th>
                       <th className="p-3 text-center min-w-[130px]">{altName}</th>
                       <th className="p-3 text-center min-w-[110px]">{t("variation_label")}</th>
                     </tr>
@@ -3531,8 +3520,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
                       variant="outline"
                       className="text-[9px] font-bold h-7 px-2.5 hover:bg-muted border-dashed border-muted-foreground/30 text-muted-foreground hover:text-foreground"
                     >
-                      {t("select")} Random Forest
-                    </Button>
+                      {t("select")} {t("ui_random_forest_784")}</Button>
                   )}
                   {!altModel && (
                     <Button

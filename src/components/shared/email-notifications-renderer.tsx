@@ -6,7 +6,7 @@ import { X, Mail, AlertTriangle, Clock, ArrowRight, CheckCircle2, AlertCircle } 
 import { cn } from "@/lib/utils";
 
 export function EmailNotificationsRenderer() {
-  const { sentEmails } = useDomain();
+  const { t, sentEmails } = useDomain();
 
   // Função para remover um e-mail individual da tela (se quisermos)
   const [activeEmails, setActiveEmails] = React.useState<SimulatedEmail[]>([]);
@@ -44,10 +44,9 @@ export function EmailNotificationsRenderer() {
                 </div>
                 <div>
                   <h4 className="text-xs font-black text-white uppercase tracking-wider flex items-center gap-2">
-                    📧 E-mail Enviado com Sucesso
-                  </h4>
+                    {t("ui_e_mail_enviado_com_44")}</h4>
                   <p className="text-[10px] text-zinc-400 font-mono mt-0.5">
-                    Para: <span className="text-emerald-400 font-bold">{email.recipient}</span>
+                    {t("ui_para_253")}<span className="text-emerald-400 font-bold">{email.recipient}</span>
                   </p>
                 </div>
               </div>
@@ -63,7 +62,7 @@ export function EmailNotificationsRenderer() {
             <div className="px-4 py-2 bg-zinc-900/40 border-b border-zinc-800/40 flex items-center justify-between text-[10px] text-zinc-400 font-medium">
               <span className="flex items-center gap-1">
                 <Clock className="h-3 w-3 text-zinc-500" />
-                Disparado às {dateStr}
+                {t("ui_disparado_s_340")}{dateStr}
               </span>
               <span className={cn(
                 "px-2 py-0.5 rounded-full font-bold uppercase tracking-wider text-[9px] border",
@@ -77,14 +76,12 @@ export function EmailNotificationsRenderer() {
             {email.isScheduledReport ? (
               <div className="p-4 space-y-3 max-h-[320px] overflow-y-auto">
                 <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
-                  Relatório Técnico de Execução:
-                </div>
+                  {t("ui_relat_rio_t_cnico_106")}</div>
 
                 <div className="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800/50 flex flex-col gap-2.5">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-zinc-150">
-                      Mecanismo de Agendamento
-                    </span>
+                      {t("ui_mecanismo_de_agendamento_632")}</span>
                     <span className={cn(
                       "text-[9px] px-1.5 py-0.5 rounded border font-black uppercase shrink-0",
                       email.scheduleStatus === "success" 
@@ -100,24 +97,20 @@ export function EmailNotificationsRenderer() {
                       <div>
                         <p className="flex items-center gap-1.5 text-emerald-400 font-semibold mb-1">
                           <CheckCircle2 className="h-4 w-4 shrink-0" />
-                          Processamento automático concluído.
-                        </p>
+                          {t("ui_processamento_autom_tico_conclu_84")}</p>
                         <p className="text-zinc-400 text-[11px]">
-                          O modelo preditivo foi treinado e novas inferências foram persistidas no localStorage com sucesso.
-                        </p>
+                          {t("ui_o_modelo_preditivo_foi_346")}</p>
                       </div>
                     ) : (
                       <div>
                         <p className="flex items-center gap-1.5 text-rose-400 font-semibold mb-1">
                           <AlertCircle className="h-4 w-4 shrink-0" />
-                          Falha na execução periódica.
-                        </p>
+                          {t("ui_falha_na_execu_o_996")}</p>
                         <p className="text-rose-400/95 font-mono text-[10px] bg-rose-950/20 border border-rose-900/30 p-2 rounded-lg leading-normal">
                           {email.errorDescription}
                         </p>
                         <p className="text-zinc-400 text-[10px] mt-2 italic">
-                          Mecanismo Fallback Ativo: O modelo e dados da execução anterior foram perfeitamente retidos.
-                        </p>
+                          {t("ui_mecanismo_fallback_ativo_o_49")}</p>
                       </div>
                     )}
                   </div>
@@ -127,13 +120,13 @@ export function EmailNotificationsRenderer() {
                       {email.domain === "churn" || email.domain === "credit-risk" ? (
                         <>
                           <div>
-                            <span className="text-zinc-500 block text-[9px] uppercase font-sans">Acurácia:</span>
+                            <span className="text-zinc-500 block text-[9px] uppercase font-sans">{t("ui_acur_cia_354")}</span>
                             <span className="text-zinc-200 font-bold">
                               {email.metricsSummary.accuracy ? `${(email.metricsSummary.accuracy * 100).toFixed(2)}%` : "N/A"}
                             </span>
                           </div>
                           <div>
-                            <span className="text-zinc-500 block text-[9px] uppercase font-sans">F1-Score:</span>
+                            <span className="text-zinc-500 block text-[9px] uppercase font-sans">{t("ui_f1_score_460")}</span>
                             <span className="text-zinc-200 font-bold">
                               {email.metricsSummary.f1Score ? `${(email.metricsSummary.f1Score * 100).toFixed(2)}%` : "N/A"}
                             </span>
@@ -142,13 +135,13 @@ export function EmailNotificationsRenderer() {
                       ) : (
                         <>
                           <div>
-                            <span className="text-zinc-500 block text-[9px] uppercase font-sans">Coef. Determinação (R²):</span>
+                            <span className="text-zinc-500 block text-[9px] uppercase font-sans">{t("ui_coef_determina_o_r_899")}</span>
                             <span className="text-zinc-200 font-bold">
                               {email.metricsSummary.r2 ? email.metricsSummary.r2.toFixed(4) : "N/A"}
                             </span>
                           </div>
                           <div>
-                            <span className="text-zinc-500 block text-[9px] uppercase font-sans">RMSE (Erro Quadrático):</span>
+                            <span className="text-zinc-500 block text-[9px] uppercase font-sans">{t("ui_rmse_erro_quadr_tico_426")}</span>
                             <span className="text-zinc-200 font-bold">
                               {email.metricsSummary.rmse ? email.metricsSummary.rmse.toFixed(4) : "N/A"}
                             </span>
@@ -162,8 +155,7 @@ export function EmailNotificationsRenderer() {
             ) : (
               <div className="p-4 space-y-3 max-h-[320px] overflow-y-auto">
                 <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
-                  Conteúdo do Alerta ({email.alerts ? email.alerts.length : 0} item{email.alerts && email.alerts.length > 1 ? "s" : ""}):
-                </div>
+                  {t("ui_conte_do_do_alerta_314")}{email.alerts ? email.alerts.length : 0} item{email.alerts && email.alerts.length > 1 ? "s" : ""}{t("ui__317")}</div>
 
                 <div className="space-y-2.5">
                   {email.alerts && email.alerts.map((alert, idx) => (
@@ -179,18 +171,17 @@ export function EmailNotificationsRenderer() {
                           </span>
                         </div>
                         <span className="text-[9px] px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20 font-black uppercase shrink-0">
-                          Crítico
-                        </span>
+                          {t("ui_cr_tico_937")}</span>
                       </div>
 
                       <div className="grid grid-cols-2 gap-2 pt-1.5 border-t border-zinc-800/40 text-[10px] font-mono">
                         <div>
-                          <span className="text-zinc-500 block text-[9px] uppercase font-sans">Valor Atual:</span>
+                          <span className="text-zinc-500 block text-[9px] uppercase font-sans">{t("ui_valor_atual_542")}</span>
                           <span className="text-zinc-200 font-bold">{alert.value}</span>
                         </div>
                         <div>
-                          <span className="text-zinc-500 block text-[9px] uppercase font-sans">Limiar Configurado:</span>
-                          <span className="text-zinc-200 font-bold">&gt;= {alert.threshold}%</span>
+                          <span className="text-zinc-500 block text-[9px] uppercase font-sans">{t("ui_limiar_configurado_361")}</span>
+                          <span className="text-zinc-200 font-bold">{t("ui_gt_115")}{alert.threshold}%</span>
                         </div>
                       </div>
                     </div>
@@ -201,9 +192,9 @@ export function EmailNotificationsRenderer() {
 
             {/* Rodapé Simulado */}
             <div className="px-4 py-3 bg-zinc-900/20 border-t border-zinc-800/40 flex items-center justify-between text-[9px] text-zinc-500">
-              <span>E-mail ID: {email.id}</span>
+              <span>{t("ui_e_mail_id_7")}{email.id}</span>
               <span className="font-semibold text-zinc-400 flex items-center gap-0.5">
-                SPAM System <ArrowRight className="h-2.5 w-2.5" />
+                {t("ui_spam_system_515")}<ArrowRight className="h-2.5 w-2.5" />
               </span>
             </div>
           </div>

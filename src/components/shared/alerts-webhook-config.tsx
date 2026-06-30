@@ -12,7 +12,7 @@ import { BellRing, Webhook, Plus, Trash2, Save, Mail } from "lucide-react";
 import { useDomain } from "@/lib/context/domain-context";
 
 export function AlertsWebhookConfig() {
-  const { activeDomain, showPremiumToast } = useDomain();
+  const { t, activeDomain, showPremiumToast } = useDomain();
   
   const [emailAlerts, setEmailAlerts] = useState(true);
   const [emails, setEmails] = useState("admin@spam.com, data.science@spam.com");
@@ -52,36 +52,32 @@ export function AlertsWebhookConfig() {
         <CardHeader>
           <CardTitle className="text-xl flex items-center gap-2">
             <Mail className="h-5 w-5 text-indigo-500" />
-            Notificações por E-mail (RF78)
-          </CardTitle>
+            {t("ui_notifica_es_por_e_499")}</CardTitle>
           <CardDescription>
-            Configure alertas sobre degradação de modelo, novos retreinamentos e incidentes de segurança.
-          </CardDescription>
+            {t("ui_configure_alertas_sobre_degrada_223")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between space-x-2 border p-4 rounded-lg">
             <div className="flex flex-col space-y-1">
               <Label className="text-base font-semibold flex items-center gap-2">
                 <BellRing className="h-4 w-4" />
-                Alertas Ativos
-              </Label>
+                {t("ui_alertas_ativos_375")}</Label>
               <span className="text-sm text-muted-foreground">
-                Receber notificações críticas sobre o pipeline de {activeDomain || "todos"}.
+                {t("ui_receber_notifica_es_cr_101")}{activeDomain || "todos"}.
               </span>
             </div>
             <Switch checked={emailAlerts} onCheckedChange={setEmailAlerts} />
           </div>
 
           <div className={`space-y-2 transition-opacity ${emailAlerts ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
-            <Label>E-mails de Destino (separados por vírgula)</Label>
+            <Label>{t("ui_e_mails_de_destino_531")}</Label>
             <Input 
-              placeholder="ex: equipe@empresa.com" 
+              placeholder={t("ui_ex_equipe_empresa_com_960")} 
               value={emails}
               onChange={(e) => setEmails(e.target.value)}
             />
             <p className="text-xs text-muted-foreground">
-              Estes e-mails receberão resumos semanais (Gains/Lift) e alertas imediatos em caso de PSI &gt; 0.1.
-            </p>
+              {t("ui_estes_e_mails_receber_381")}</p>
           </div>
         </CardContent>
       </Card>
@@ -93,31 +89,27 @@ export function AlertsWebhookConfig() {
             <div>
               <CardTitle className="text-xl flex items-center gap-2">
                 <Webhook className="h-5 w-5 text-emerald-500" />
-                Integração via Webhooks (RF51)
-              </CardTitle>
+                {t("ui_integra_o_via_webhooks_862")}</CardTitle>
               <CardDescription>
-                Dispare requisições HTTP automáticas quando eventos do ciclo de vida do modelo ocorrerem.
-              </CardDescription>
+                {t("ui_dispare_requisi_es_http_33")}</CardDescription>
             </div>
             <Button size="sm" variant="outline" onClick={addWebhook} className="gap-2">
               <Plus className="h-4 w-4" />
-              Novo Webhook
-            </Button>
+              {t("ui_novo_webhook_638")}</Button>
           </div>
         </CardHeader>
         <CardContent>
           {webhooks.length === 0 ? (
             <div className="text-center p-6 border border-dashed rounded-lg text-muted-foreground">
-              Nenhum webhook configurado.
-            </div>
+              {t("ui_nenhum_webhook_configurado_254")}</div>
           ) : (
             <div className="rounded-md border overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[100px]">Status</TableHead>
-                    <TableHead>Evento-Gatilho</TableHead>
-                    <TableHead>Endpoint (URL)</TableHead>
+                    <TableHead className="w-[100px]">{t("ui_status_919")}</TableHead>
+                    <TableHead>{t("ui_evento_gatilho_9")}</TableHead>
+                    <TableHead>{t("ui_endpoint_url_426")}</TableHead>
                     <TableHead className="w-[70px]"></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -139,16 +131,16 @@ export function AlertsWebhookConfig() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="model_drift">Data Drift Detectado</SelectItem>
-                            <SelectItem value="retrain_success">Retreinamento Concluído</SelectItem>
-                            <SelectItem value="retrain_failed">Falha no Retreinamento</SelectItem>
-                            <SelectItem value="anomaly_detected">Anomalia de Previsão</SelectItem>
+                            <SelectItem value="model_drift">{t("ui_data_drift_detectado_946")}</SelectItem>
+                            <SelectItem value="retrain_success">{t("ui_retreinamento_conclu_do_875")}</SelectItem>
+                            <SelectItem value="retrain_failed">{t("ui_falha_no_retreinamento_557")}</SelectItem>
+                            <SelectItem value="anomaly_detected">{t("ui_anomalia_de_previs_o_275")}</SelectItem>
                           </SelectContent>
                         </Select>
                       </TableCell>
                       <TableCell>
                         <Input 
-                          placeholder="https://..." 
+                          placeholder={t("ui_https_248")} 
                           value={hook.url}
                           onChange={(e) => updateWebhook(hook.id, "url", e.target.value)}
                         />

@@ -6,7 +6,7 @@ import { useDomain } from "@/lib/context/domain-context";
 import { Activity } from "lucide-react";
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { currentUser, isAuthLoading } = useDomain();
+  const { t, currentUser, isAuthLoading } = useDomain();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -35,8 +35,8 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
             <Activity className="h-6 w-6" />
           </div>
           <div className="flex flex-col items-center">
-            <span className="text-zinc-200 font-extrabold text-sm tracking-wider uppercase">SPAM SYSTEM</span>
-            <span className="text-[10px] text-zinc-500 font-medium tracking-tight mt-1">Carregando credenciais seguras...</span>
+            <span className="text-zinc-200 font-extrabold text-sm tracking-wider uppercase">{t("ui_spam_system_382")}</span>
+            <span className="text-[10px] text-zinc-500 font-medium tracking-tight mt-1">{t("ui_carregando_credenciais_seguras_464")}</span>
           </div>
         </div>
       </div>

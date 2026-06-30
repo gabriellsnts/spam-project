@@ -148,25 +148,25 @@ export function DescriptiveStats({ fileDetails, allRows, activeDomain }: Descrip
   // Texto formatado para exportação (CA05)
   const summaryText = useMemo(() => {
     let text = `==================================================\n`;
-    text += `${t("stats_title") || "RESUMO ESTATÍSTICO DE DADOS IMPORTADOS (RF09)"}\n`;
+    text += `${t("stats_title")}\n`;
     text += `==================================================\n`;
-    text += `${t("file") || "Arquivo"}: ${fileDetails.name}\n`;
-    text += `${t("file_structure") || "Estrutura do Arquivo"}: ${fileDetails.size}\n`;
-    text += `${t("encoding") || "Codificação"}: ${fileDetails.encoding}\n`;
-    text += `${t("delimiter") || "Delimitador Técnico"}: '${fileDetails.delimiter}'\n`;
-    text += `${t("rows_processed") || "Total de Linhas"}: ${fileDetails.rows}\n`;
-    text += `${t("cols_processed") || "Total de Colunas"}: ${fileDetails.headers.length}\n`;
-    text += `${t("date") || "Data"}: ${new Date().toLocaleString()}\n`;
+    text += `${t("file")}: ${fileDetails.name}\n`;
+    text += `${t("file_structure")}: ${fileDetails.size}\n`;
+    text += `${t("encoding")}: ${fileDetails.encoding}\n`;
+    text += `${t("delimiter")}: '${fileDetails.delimiter}'\n`;
+    text += `${t("rows_processed")}: ${fileDetails.rows}\n`;
+    text += `${t("cols_processed")}: ${fileDetails.headers.length}\n`;
+    text += `${t("date")}: ${new Date().toLocaleString()}\n`;
     text += `==================================================\n\n`;
 
     statsList.forEach(col => {
-      text += `${t("column") || "Coluna"}: ${col.name} (${col.isNumeric ? (t("variable_numeric") || "Numérica") : (t("variable_text") || "Texto")})\n`;
-      text += `- ${t("missing_label") || "Valores Ausentes"}: ${col.missingCount} (${col.missingPct.toFixed(2)}%)\n`;
+      text += `${t("column")}: ${col.name} (${col.isNumeric ? (t("variable_numeric")) : (t("variable_text"))})\n`;
+      text += `- ${t("missing_label")}: ${col.missingCount} (${col.missingPct.toFixed(2)}%)\n`;
       if (col.isNumeric) {
-        text += `- ${t("mean_label") || "Média"}: ${col.mean.toFixed(4)}\n`;
-        text += `- ${t("stddev_label") || "Desvio Padrão"}: ${col.stdDev.toFixed(4)}\n`;
-        text += `- ${t("min_label") || "Mínimo"}: ${col.min.toFixed(4)}\n`;
-        text += `- ${t("max_label") || "Máximo"}: ${col.max.toFixed(4)}\n`;
+        text += `- ${t("mean_label")}: ${col.mean.toFixed(4)}\n`;
+        text += `- ${t("stddev_label")}: ${col.stdDev.toFixed(4)}\n`;
+        text += `- ${t("min_label")}: ${col.min.toFixed(4)}\n`;
+        text += `- ${t("max_label")}: ${col.max.toFixed(4)}\n`;
         text += `- Outliers: ${col.hasOutliers ? "Sim" : "Não"}\n`;
       }
       text += `--------------------------------------------------\n`;
@@ -216,7 +216,7 @@ export function DescriptiveStats({ fileDetails, allRows, activeDomain }: Descrip
           <CardContent>
             <div className="text-[10px] text-muted-foreground flex items-center gap-1.5 font-mono">
               <Database className="h-3.5 w-3.5 text-amber-500" />
-              <span>{fileDetails.encoding} | Delimitador: &apos;{fileDetails.delimiter}&apos;</span>
+              <span>{fileDetails.encoding} {t("ui_delimitador_apos_99")}{fileDetails.delimiter}{t("ui_apos_900")}</span>
             </div>
           </CardContent>
         </Card>
@@ -376,7 +376,7 @@ export function DescriptiveStats({ fileDetails, allRows, activeDomain }: Descrip
                         {col.hasOutliers && (
                           <span 
                             className="text-amber-500 animate-pulse shrink-0 cursor-help"
-                            title="Outliers (valores atípicos) detectados nesta variável."
+                            title={t("ui_outliers_valores_at_picos_439")}
                           >
                             <AlertTriangle className="h-4 w-4 fill-amber-500/10" />
                           </span>

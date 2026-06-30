@@ -276,7 +276,7 @@ const PRESETS = [
                   type="text" 
                   value={colors.primary} 
                   onChange={(e) => handleColorChange("primary", e.target.value)}
-                  placeholder="#16a34a"
+                  placeholder={t("ui_16a34a_801")}
                   className="flex-1 text-xs bg-zinc-100 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
                 />
               </div>
@@ -298,7 +298,7 @@ const PRESETS = [
                   type="text" 
                   value={colors.success} 
                   onChange={(e) => handleColorChange("success", e.target.value)}
-                  placeholder="#16a34a"
+                  placeholder={t("ui_16a34a_81")}
                   className="flex-1 text-xs bg-zinc-100 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
                 />
               </div>
@@ -320,7 +320,7 @@ const PRESETS = [
                   type="text" 
                   value={colors.alert} 
                   onChange={(e) => handleColorChange("alert", e.target.value)}
-                  placeholder="#ef4444"
+                  placeholder={t("ui_ef4444_585")}
                   className="flex-1 text-xs bg-zinc-100 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
                 />
               </div>
@@ -375,9 +375,8 @@ const PRESETS = [
                     style={{ backgroundColor: "var(--preview-primary)" }}
                     className="h-6 w-6 rounded-md flex items-center justify-center text-zinc-950 font-black text-xs shadow-md"
                   >
-                    SP
-                  </div>
-                  <span className="font-extrabold text-xs tracking-wider text-foreground">SPAM PREVIEW</span>
+                    {t("ui_sp_460")}</div>
+                  <span className="font-extrabold text-xs tracking-wider text-foreground">{t("ui_spam_preview_977")}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span 
@@ -411,7 +410,7 @@ const PRESETS = [
                     </span>
                   </div>
                   <div className="flex items-baseline gap-1.5 mt-1">
-                    <span className="text-lg font-black text-foreground">98.4%</span>
+                    <span className="text-lg font-black text-foreground">{t("ui_98_4_166")}</span>
                     <span className="text-[9px] text-emerald-500 font-semibold flex items-center gap-0.5">
                       {language === "en" ? "✓ Passed" : language === "es" ? "✓ Aprobado" : "✓ Aprovado"}
                     </span>
@@ -443,7 +442,7 @@ const PRESETS = [
                     </span>
                   </div>
                   <div className="flex items-baseline gap-1.5 mt-1">
-                    <span className="text-lg font-black text-foreground">87.5%</span>
+                    <span className="text-lg font-black text-foreground">{t("ui_87_5_869")}</span>
                     <span 
                       style={{ color: "var(--preview-alert)" }}
                       className="text-[9px] font-bold animate-pulse"
@@ -499,19 +498,19 @@ const PRESETS = [
                 <div className="p-2 rounded-lg bg-background border border-border flex flex-col justify-center min-w-0">
                   <span className="text-muted-foreground font-semibold truncate">{language === "en" ? "Highlight vs Bg" : language === "es" ? "Destaque vs Fondo" : "Destaque vs Fundo"}</span>
                   <span className={`text-xs font-black mt-0.5 ${primaryTextContrast >= 4.5 ? 'text-emerald-500' : 'text-amber-500 font-bold'}`}>
-                    {primaryTextContrast.toFixed(2)}:1 ({primaryTextContrast >= 4.5 ? (language === "en" ? "Passed" : language === "es" ? "Aprobado" : "Aprovado") : (language === "en" ? "Attention" : language === "es" ? "Atención" : "Atenção")})
+                    {primaryTextContrast.toFixed(2)}{t("ui_1_92")}{primaryTextContrast >= 4.5 ? (language === "en" ? "Passed" : language === "es" ? "Aprobado" : "Aprovado") : (language === "en" ? "Attention" : language === "es" ? "Atención" : "Atenção")})
                   </span>
                 </div>
                 <div className="p-2 rounded-lg bg-background border border-border flex flex-col justify-center min-w-0">
                   <span className="text-muted-foreground font-semibold truncate">{language === "en" ? "Success vs Bg" : language === "es" ? "Éxito vs Fondo" : "Sucesso vs Fundo"}</span>
                   <span className={`text-xs font-black mt-0.5 ${successTextContrast >= 4.5 ? 'text-emerald-500' : 'text-amber-500 font-bold'}`}>
-                    {successTextContrast.toFixed(2)}:1 ({successTextContrast >= 4.5 ? (language === "en" ? "Passed" : language === "es" ? "Aprobado" : "Aprovado") : (language === "en" ? "Attention" : language === "es" ? "Atención" : "Atenção")})
+                    {successTextContrast.toFixed(2)}{t("ui_1_267")}{successTextContrast >= 4.5 ? (language === "en" ? "Passed" : language === "es" ? "Aprobado" : "Aprovado") : (language === "en" ? "Attention" : language === "es" ? "Atención" : "Atenção")})
                   </span>
                 </div>
                 <div className="p-2 rounded-lg bg-background border border-border flex flex-col justify-center min-w-0">
                   <span className="text-muted-foreground font-semibold truncate">{language === "en" ? "Alert vs Bg" : language === "es" ? "Alerta vs Fondo" : "Alerta vs Fundo"}</span>
                   <span className={`text-xs font-black mt-0.5 ${alertTextContrast >= 4.5 ? 'text-emerald-500' : 'text-amber-500 font-bold'}`}>
-                    {alertTextContrast.toFixed(2)}:1 ({alertTextContrast >= 4.5 ? (language === "en" ? "Passed" : language === "es" ? "Aprobado" : "Aprovado") : (language === "en" ? "Attention" : language === "es" ? "Atención" : "Atenção")})
+                    {alertTextContrast.toFixed(2)}{t("ui_1_687")}{alertTextContrast >= 4.5 ? (language === "en" ? "Passed" : language === "es" ? "Aprobado" : "Aprovado") : (language === "en" ? "Attention" : language === "es" ? "Atención" : "Atenção")})
                   </span>
                 </div>
               </div>

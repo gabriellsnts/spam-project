@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { BarChart3, Download, Info, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+
 interface CorrelationMatrixProps {
   allRows: string[][];
   headers: string[];
@@ -134,18 +135,15 @@ export function CorrelationMatrix({ allRows, headers, activeDomain }: Correlatio
           <div>
             <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
               <BarChart3 className="h-4 w-4 text-sky-400" />
-              Matriz de Correlação entre Variáveis
-            </CardTitle>
+              {t("ui_matriz_de_correla_o_512")}</CardTitle>
             <CardDescription className="text-[11px] mt-0.5">
-              Coeficiente de Pearson (-1 a +1) entre todas as variáveis numéricas do dataset.
-            </CardDescription>
+              {t("ui_coeficiente_de_pearson_1_4")}</CardDescription>
           </div>
           <div className="flex flex-wrap gap-1.5">
             {hasData && (
               <Button variant="outline" size="sm" className="h-7 text-[10px] px-2" onClick={handleExportCSV}>
                 <Download className="h-3 w-3 mr-1" />
-                CSV
-              </Button>
+                {t("ui_csv_126")}</Button>
             )}
             <Button
               variant="outline"
@@ -164,7 +162,7 @@ export function CorrelationMatrix({ allRows, headers, activeDomain }: Correlatio
         {!hasData && !demoMode ? (
           <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
             <BarChart3 className="h-10 w-10 text-muted-foreground/20" />
-            <p className="text-sm text-muted-foreground">Importe um arquivo CSV com variáveis numéricas para gerar a matriz de correlação.</p>
+            <p className="text-sm text-muted-foreground">{t("ui_importe_um_arquivo_csv_305")}</p>
             <Button
               variant="outline"
               size="sm"
@@ -172,35 +170,33 @@ export function CorrelationMatrix({ allRows, headers, activeDomain }: Correlatio
               onClick={() => setDemoMode(true)}
             >
               <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-              Ver com dados de demonstração
-            </Button>
+              {t("ui_ver_com_dados_de_907")}</Button>
           </div>
         ) : (
           <div className="space-y-4">
             {demoMode && (
               <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-500">
                 <Sparkles className="h-3.5 w-3.5 shrink-0" />
-                Modo Demo ativo — dados simulados de telemetria de equipamentos industriais.
-              </div>
+                {t("ui_modo_demo_ativo_dados_254")}</div>
             )}
 
             {/* Correlation interpretation panel */}
             {selectedCell && selectedCell.r !== selectedCell.c && (
               <div className="animate-in fade-in duration-200 rounded-xl border border-border/40 bg-muted/10 px-4 py-3 flex flex-wrap gap-4 items-center">
                 <div>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Par selecionado</p>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">{t("ui_par_selecionado_877")}</p>
                   <p className="text-sm font-bold text-foreground">
                     {numericLabels[selectedCell.r]} × {numericLabels[selectedCell.c]}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">r de Pearson</p>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">{t("ui_r_de_pearson_241")}</p>
                   <p className={cn("text-lg font-black font-mono", selectedCell.val > 0 ? "text-emerald-400" : "text-rose-400")}>
                     {selectedCell.val.toFixed(4)}
                   </p>
                 </div>
                 <div className="flex-1">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Interpretação</p>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">{t("ui_interpreta_o_493")}</p>
                   <p className="text-xs text-foreground/80">{interpretCorr(selectedCell.val)}</p>
                 </div>
               </div>
@@ -256,7 +252,7 @@ export function CorrelationMatrix({ allRows, headers, activeDomain }: Correlatio
 
             {/* Legend */}
             <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-border/30">
-              <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Escala de Correlação</p>
+              <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">{t("ui_escala_de_correla_o_933")}</p>
               <div className="flex items-center gap-1">
                 {[-1, -0.7, -0.4, 0, 0.4, 0.7, 1].map((v) => (
                   <div
@@ -266,17 +262,17 @@ export function CorrelationMatrix({ allRows, headers, activeDomain }: Correlatio
                 ))}
               </div>
               <div className="flex gap-3 text-[9px] text-muted-foreground">
-                <span className="text-rose-400 font-bold">−1.0 Negativa</span>
+                <span className="text-rose-400 font-bold">{t("ui_1_0_negativa_314")}</span>
                 <span>|</span>
-                <span className="text-muted-foreground">0 Nula</span>
+                <span className="text-muted-foreground">{t("ui_0_nula_969")}</span>
                 <span>|</span>
-                <span className="text-emerald-400 font-bold">+1.0 Positiva</span>
+                <span className="text-emerald-400 font-bold">{t("ui_1_0_positiva_462")}</span>
               </div>
             </div>
 
             <div className="flex items-start gap-1.5 text-[10px] text-muted-foreground">
               <Info className="h-3 w-3 shrink-0 mt-0.5" />
-              <span>Passe o mouse sobre uma célula para ver o valor exato e a interpretação. Diagonal principal sempre = 1.000 (autocorrelação).</span>
+              <span>{t("ui_passe_o_mouse_sobre_470")}</span>
             </div>
           </div>
         )}

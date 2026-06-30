@@ -190,7 +190,7 @@ export default function DemandPage() {
                   : "bg-emerald-500/10 text-emerald-550 dark:text-emerald-400 border-emerald-500/20 animate-pulse"
               }`}>
                 <CheckCircle2 className="h-3 w-3" />
-                {isModelObsolete ? t("obsolete_model") || "Modelo Obsoleto" : t("ready_to_use") || "Modelo Pronto para Uso"}
+                {isModelObsolete ? t("obsolete_model") : t("ready_to_use")}
               </span>
             )}
           </h2>
@@ -201,7 +201,7 @@ export default function DemandPage() {
 
         <div className="flex flex-col sm:flex-row items-center gap-2 relative z-10">
           <Button variant="outline" size="sm" onClick={handleExport} className="text-xs">
-            {t("export_csv") || "Exportar Relatório (PDF)"}
+            {t("export_csv")}
           </Button>
           {!activeModel ? (
             <div className="flex items-center gap-2 text-amber-500 bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-500/20 text-xs font-semibold font-sans">
@@ -313,7 +313,7 @@ export default function DemandPage() {
 
           <AlertThresholdSettings
             domain="demand"
-            title={t("limit_lifetime_rul") || "Limiar de Segurança de Estoque (Cobertura)"}
+            title={t("limit_lifetime_rul")}
             min={0}
             max={60}
             unit={t("days")}
@@ -351,8 +351,8 @@ export default function DemandPage() {
                 {!activeModel ? (
                    <div className="h-[280px] w-full flex flex-col items-center justify-center text-muted-foreground border border-dashed border-border rounded-lg bg-muted/20">
                      <AlertCircle className="h-8 w-8 mb-2 opacity-50" />
-                     <p className="text-sm">Geração bloqueada.</p>
-                     <p className="text-xs opacity-70">Faça o upload de dados e treine o modelo primeiro.</p>
+                     <p className="text-sm">{t("ui_gera_o_bloqueada_810")}</p>
+                     <p className="text-xs opacity-70">{t("ui_fa_a_o_upload_570")}</p>
                    </div>
                 ) : (
                   <div className="h-[280px] w-full mt-4">
@@ -425,7 +425,7 @@ export default function DemandPage() {
                     </div>
                     
                     <div className="flex justify-between text-[10px] text-muted-foreground mt-0.5">
-                      <span>{t("stock_short")}: <strong className="text-foreground">{p.stock} un.</strong></span>
+                      <span>{t("stock_short")}: <strong className="text-foreground">{p.stock} {t("ui_un_481")}</strong></span>
                       <span>{t("stock_coverage")}: <strong className="text-foreground">{Math.round(p.coverage)} {t("days")}</strong></span>
                     </div>
 
@@ -494,7 +494,7 @@ export default function DemandPage() {
               <div className="p-3 bg-muted/40 border border-border/80 rounded-xl text-xs space-y-2">
                 <div className="font-bold text-foreground">{t("active_algorithm_metrics")}</div>
                 <div className="text-muted-foreground text-[10px]">
-                  Status: <strong className={seasonalActive ? "text-sky-500" : "text-emerald-500"}>{seasonalActive ? "SIMULATION ACTIVE" : "NORMAL"}</strong>
+                  {t("ui_status_79")}<strong className={seasonalActive ? "text-sky-500" : "text-emerald-500"}>{seasonalActive ? "SIMULATION ACTIVE" : "NORMAL"}</strong>
                 </div>
               </div>
             </CardContent>
@@ -513,15 +513,14 @@ export default function DemandPage() {
                     {t("residuals_diagnostic")}
                   </CardTitle>
                   <CardDescription className="text-[11px] text-muted-foreground">
-                    Gráfico de resíduos interativo para verificação da qualidade das predições.
-                  </CardDescription>
+                    {t("ui_gr_fico_de_res_219")}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ResidualsPlotView model={activeModel} />
                 </CardContent>
               </Card>
 
-              <FeatureImportanceChart data={mockFeatures} title={t("predictor_importance_demand") || "Preditores de Demanda"} />
+              <FeatureImportanceChart data={mockFeatures} title={t("predictor_importance_demand")} />
               <OverfittingDetector model={activeModel} domainAccent="sky" />
             </>
           )}
