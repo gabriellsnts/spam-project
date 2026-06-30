@@ -917,11 +917,11 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     // Carregar configurações de idioma (RF54) com dupla persistência (localStorage & Cookies)
     let savedLanguage: LanguageType | null = null;
     if (typeof document !== "undefined") {
-      const match = document.cookie.match(/(?:^|; )spam-language=([^;]*)/);
+      const match = document.cookie.match(/(?:^|; )spam_lang_pref=([^;]*)/);
       if (match) savedLanguage = match[1] as LanguageType;
     }
     if (!savedLanguage) {
-      savedLanguage = localStorage.getItem("spam-language") as LanguageType | null;
+      savedLanguage = localStorage.getItem("spam_lang_pref") as LanguageType | null;
     }
     
     let finalLanguage: LanguageType = "pt";
@@ -931,9 +931,9 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
       currentModuleLanguage = savedLanguage;
       setLanguageState(savedLanguage);
       // Sincronizar em ambos
-      localStorage.setItem("spam-language", savedLanguage);
+      localStorage.setItem("spam_lang_pref", savedLanguage);
       if (typeof document !== "undefined") {
-        document.cookie = `spam-language=${savedLanguage}; path=/; max-age=31536000; SameSite=Lax`;
+        document.cookie = `spam_lang_pref=${savedLanguage}; path=/; max-age=31536000; SameSite=Lax`;
       }
     } else {
       // Detecção automática do idioma do navegador (CA04)
@@ -946,9 +946,9 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         finalLanguage = "pt";
       }
 
-      localStorage.setItem("spam-language", finalLanguage);
+      localStorage.setItem("spam_lang_pref", finalLanguage);
       if (typeof document !== "undefined") {
-        document.cookie = `spam-language=${finalLanguage}; path=/; max-age=31536000; SameSite=Lax`;
+        document.cookie = `spam_lang_pref=${finalLanguage}; path=/; max-age=31536000; SameSite=Lax`;
       }
       currentModuleLanguage = finalLanguage;
       setLanguageState(finalLanguage);
@@ -1010,7 +1010,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
           finalLanguage = initialUser.language;
           currentModuleLanguage = initialUser.language;
           setLanguageState(initialUser.language);
-          localStorage.setItem("spam-language", initialUser.language);
+          localStorage.setItem("spam_lang_pref", initialUser.language);
         }
       } catch (e) {
         console.error("Erro ao carregar usuário salvo:", e);
@@ -2565,9 +2565,9 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
   const setLanguage = useCallback((lang: LanguageType) => {
     setLanguageState(lang);
     currentModuleLanguage = lang;
-    localStorage.setItem("spam-language", lang);
+    localStorage.setItem("spam_lang_pref", lang);
     if (typeof document !== "undefined") {
-      document.cookie = `spam-language=${lang}; path=/; max-age=31536000; SameSite=Lax`;
+      document.cookie = `spam_lang_pref=${lang}; path=/; max-age=31536000; SameSite=Lax`;
     }
 
     // Salvar preferência de idioma no perfil de usuário logado (CA03)
@@ -2654,12 +2654,10 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
         lastLogin: new Date().toISOString(),
         status: user.status,
         theme: user.theme || "dark",
-        language: user.language || language
+        language: language
       };
       
-      if (user.language) {
-        setLanguage(user.language);
-      }
+      setLanguage(language);
       
       setThemeState(user.theme || "dark");
       
