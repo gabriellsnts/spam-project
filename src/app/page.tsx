@@ -161,7 +161,7 @@ export default function Home() {
                           <div key={activity.id} className="flex items-start gap-2 text-xs">
                             <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-border flex-shrink-0" />
                             <div className="flex flex-col flex-1 min-w-0">
-                              <span className="text-foreground truncate font-medium">{activity.description}</span>
+                              <span className="text-foreground truncate font-medium">{t(activity.description)}</span>
                               <span className="text-[9px] text-muted-foreground">
                                 {new Date(activity.timestamp).toLocaleString()}
                               </span>

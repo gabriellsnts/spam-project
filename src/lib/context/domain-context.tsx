@@ -815,8 +815,8 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
       activeAlertsCount: 3,
       lastPredictionDate: new Date().toISOString(),
       recentActivities: [
-        { id: "1", description: "Alerta de vibração anômala no Motor B-12", timestamp: new Date(Date.now() - 3600000).toISOString(), type: "alert" },
-        { id: "2", description: "Novo modelo preditivo treinado", timestamp: new Date(Date.now() - 86400000).toISOString(), type: "training" },
+        { id: "1", description: "activity_anomaly_vibration_alert", timestamp: new Date(Date.now() - 3600000).toISOString(), type: "alert" },
+        { id: "2", description: "activity_new_model_trained", timestamp: new Date(Date.now() - 86400000).toISOString(), type: "training" },
       ]
     },
     "demand": {
@@ -824,7 +824,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
       activeAlertsCount: 0,
       lastPredictionDate: null,
       recentActivities: [
-        { id: "3", description: "Dados de sazonalidade importados", timestamp: new Date(Date.now() - 172800000).toISOString(), type: "system" }
+        { id: "3", description: "activity_seasonality_imported", timestamp: new Date(Date.now() - 172800000).toISOString(), type: "system" }
       ]
     },
     "churn": {
@@ -832,8 +832,8 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
       activeAlertsCount: 12,
       lastPredictionDate: new Date(Date.now() - 7200000).toISOString(),
       recentActivities: [
-        { id: "4", description: "Previsão de rotatividade gerada", timestamp: new Date(Date.now() - 7200000).toISOString(), type: "prediction" },
-        { id: "5", description: "Alerta de risco crítico - Cliente VIP", timestamp: new Date(Date.now() - 14400000).toISOString(), type: "alert" }
+        { id: "4", description: "activity_churn_prediction_generated", timestamp: new Date(Date.now() - 7200000).toISOString(), type: "prediction" },
+        { id: "5", description: "activity_critical_risk_vip_alert", timestamp: new Date(Date.now() - 14400000).toISOString(), type: "alert" }
       ]
     },
     "credit-risk": {
@@ -841,7 +841,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
       activeAlertsCount: 0,
       lastPredictionDate: new Date(Date.now() - 43200000).toISOString(),
       recentActivities: [
-        { id: "6", description: "Reavaliação de score da base completa", timestamp: new Date(Date.now() - 43200000).toISOString(), type: "prediction" }
+        { id: "6", description: "activity_full_base_score_reevaluation", timestamp: new Date(Date.now() - 43200000).toISOString(), type: "prediction" }
       ]
     }
   });
@@ -2431,7 +2431,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
           isModelTrained: true,
           lastPredictionDate: new Date().toISOString(),
           recentActivities: [
-            { id: Math.random().toString(), description: "Treinamento agendado concluído", timestamp: new Date().toISOString(), type: "training" },
+            { id: Math.random().toString(), description: "activity_scheduled_training_completed", timestamp: new Date().toISOString(), type: "training" },
             ...prev[domain].recentActivities
           ]
         }
