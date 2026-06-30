@@ -112,7 +112,7 @@ function analyze(model: TrainedModel): DiagnosisResult {
     recommendations = [
       "Revisar hiperparâmetros de regularização no sandbox de retreinamento.",
       "Analisar se features importantes foram corretamente selecionadas (verificar Feature Importance).",
-      "Considerar reduzir número de features via seleção automática (RF71).",
+      "Considerar reduzir número de features via seleção automática.",
       "Testar com conjunto de validação externo antes de promover para produção.",
     ];
   } else if (lowPerf) {
@@ -121,7 +121,7 @@ function analyze(model: TrainedModel): DiagnosisResult {
     title = "Underfitting Identificado";
     description = `A performance do modelo é baixa tanto no treino (${(trainAcc * 100).toFixed(1)}%) quanto no teste (${(testAcc * 100).toFixed(1)}%). O modelo não está capturando os padrões relevantes nos dados, o que indica subajuste — ele é simples demais para a complexidade do problema.`;
     recommendations = [
-      "Aumentar a complexidade do modelo — mais estimadores, maior profundidade máxima, ou usar ensemble (RF87).",
+      "Aumentar a complexidade do modelo — mais estimadores, maior profundidade máxima, ou usar ensemble.",
       "Revisar a engenharia de features: verificar se as variáveis preditoras corretas foram incluídas no dataset.",
       "Verificar se os dados de treinamento são suficientes (mínimo recomendado: 500 registros).",
       "Testar outros algoritmos mais adequados ao domínio (ex: Gradient Boosting, XGBoost).",
@@ -135,7 +135,7 @@ function analyze(model: TrainedModel): DiagnosisResult {
     recommendations = [
       "Modelo pronto para promoção ao ambiente de produção.",
       "Documentar as configurações atuais de hiperparâmetros para referência futura.",
-      "Ativar monitoramento de drift de dados (RF86) para detectar degradação ao longo do tempo.",
+      "Ativar monitoramento de drift de dados para detectar degradação ao longo do tempo.",
     ];
   } else {
     diagnosis = "balanced";

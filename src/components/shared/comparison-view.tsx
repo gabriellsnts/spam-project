@@ -259,7 +259,7 @@ export function ComparisonView({ domain }: ComparisonViewProps) {
     const nextHistory = [newRecord, ...history].slice(0, 10);
     setHistory(nextHistory);
     localStorage.setItem(`spam-rf32-history-${domain}`, JSON.stringify(nextHistory));
-    addLog(`Executada Comparacao Real vs Previsto (RF32) no dominio ${DOMAINS[domain].name} com ${N} registros. Outliers (>20%): ${oCount}.`);
+    addLog(`Executada Comparacao Real vs Previsto no dominio ${DOMAINS[domain].name} com ${N} registros. Outliers (>20%): ${oCount}.`);
   };
 
   const injectDemoData = () => {
@@ -597,7 +597,7 @@ export function ComparisonView({ domain }: ComparisonViewProps) {
         <div class="container">
           <div class="header">
             <div>
-              <h1>Relatorio Real vs Previsto (RF32)</h1>
+              <h1>Relatorio Real vs Previsto</h1>
               <div style="font-size: 13px; color: #a1a1aa; margin-top: 5px;">Dominio: <strong>${domainName}</strong></div>
             </div>
             <div class="meta">

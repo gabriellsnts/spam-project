@@ -87,7 +87,7 @@ export const translations = {
     simulate_churn: "Simular cancelamento",
     simulate_credit: "Estressar risco de crédito",
     calibration_desc: "Treinamento & base CSV",
-    comparison_desc: "Acurácia & dados reais (RF32)",
+    comparison_desc: "Acurácia & dados reais",
     model_history: "Histórico do Modelo",
     model_history_desc: "Evolução e versões do modelo",
     expand_menu: "Expandir menu",
@@ -107,7 +107,7 @@ export const translations = {
     system_mode: "Sistema",
     system_mode_desc: "Sincroniza com as cores do seu SO",
     
-    // Scheduling keys (RF42)
+    // Scheduling keys
     scheduling_title: "Agendamento de Previsões Automáticas Periódicas",
     scheduling_desc: "Configure a execução automática periódica de previsões e treinamento para este domínio.",
     frequency: "Frequência",
@@ -214,7 +214,7 @@ export const translations = {
     training_status: "Status de Treinamento",
     model_active_calibrated: "Modelo Ativo e Calibrado",
     calibrated_at: "Calibrado em:",
-    residuals_diagnostic: "Diagnóstico Visual do Modelo: Gráfico de Resíduos (RF13)",
+    residuals_diagnostic: "Diagnóstico Visual do Modelo: Gráfico de Resíduos",
     copied: "Copiado!",
     limit_lifetime_rul: "Limiar de Vida Útil Crítica de Equipamentos (RUL)",
     days: "dias",
@@ -389,10 +389,10 @@ export const translations = {
     sunday: "Domingo",
     day_short: "Dia",
 
-    // Comparison View (RF32)
+    // Comparison View
     model_not_trained: "Modelo Não Treinado",
     model_not_trained_desc: "Nenhum modelo preditivo está ativo para este domínio. O sistema utilizará um baseline analítico para predições demo. Para usar previsões reais do seu dataset, treine o modelo primeiro na aba de Calibração do Modelo.",
-    scatter_curve_title: "Curva de Dispersão: Real vs Previsto (RF32)",
+    scatter_curve_title: "Curva de Dispersão: Real vs Previsto",
     chart_overlap_desc: "Sobreposição das previsões do modelo frente aos resultados reais auditados.",
     export_html_report: "Exportar Relatório HTML",
     clear_btn: "Limpar",
@@ -570,8 +570,8 @@ export const translations = {
       filter_others: "Outros",
       tuning_alerts: "Tuning & Alertas",
       system_backups: "Backups do Sistema",
-      glossary: "Glossário (RF55)",
-      help_center: "Central de Ajuda (RF56)",
+      glossary: "Glossário",
+      help_center: "Central de Ajuda",
       tuning_alerts_desc: "Modelos, Webhooks, Pipeline",
       system_backups_desc: "Gerenciar snapshots e restauração",
       "logs.users.admin": "Administrador do Sistema",
@@ -729,7 +729,7 @@ export const translations = {
     simulate_churn: "Simulate churn scenario",
     simulate_credit: "Stress credit risk",
     calibration_desc: "Training & CSV base",
-    comparison_desc: "Accuracy & real data (RF32)",
+    comparison_desc: "Accuracy & real data",
     model_history: "Model History",
     model_history_desc: "Model evolution and versions",
     expand_menu: "Expand menu",
@@ -749,7 +749,7 @@ export const translations = {
     system_mode: "System",
     system_mode_desc: "Synchronizes with your OS colors",
     
-    // Scheduling keys (RF42)
+    // Scheduling keys
     scheduling_title: "Automatic Forecasts Scheduling",
     scheduling_desc: "Configure periodic automatic execution of forecasts and training for this domain.",
     frequency: "Frequency",
@@ -856,7 +856,7 @@ export const translations = {
     training_status: "Training Status",
     model_active_calibrated: "Model Active and Calibrated",
     calibrated_at: "Calibrated at:",
-    residuals_diagnostic: "Visual Model Diagnosis: Residuals Plot (RF13)",
+    residuals_diagnostic: "Visual Model Diagnosis: Residuals Plot",
     copied: "Copied!",
     limit_lifetime_rul: "Critical Useful Life Threshold (RUL)",
     days: "days",
@@ -1031,10 +1031,10 @@ export const translations = {
     sunday: "Sunday",
     day_short: "Day",
 
-    // Comparison View (RF32)
+    // Comparison View
     model_not_trained: "Model Not Trained",
     model_not_trained_desc: "No predictive model is active for this domain. The system will use an analytical baseline for demo predictions. To use real predictions from your dataset, train the model first in the Model Calibration tab.",
-    scatter_curve_title: "Scatter Curve: Real vs Predicted (RF32)",
+    scatter_curve_title: "Scatter Curve: Real vs Predicted",
     chart_overlap_desc: "Overlay of model predictions against audited real results.",
     export_html_report: "Export HTML Report",
     clear_btn: "Clear",
@@ -1212,8 +1212,8 @@ export const translations = {
       filter_others: "Others",
       tuning_alerts: "Tuning & Alerts",
       system_backups: "System Backups",
-      glossary: "Glossary (RF55)",
-      help_center: "Help Center (RF56)",
+      glossary: "Glossary",
+      help_center: "Help Center",
       tuning_alerts_desc: "Models, Webhooks, Pipeline",
       system_backups_desc: "Manage snapshots and restore",
       "logs.users.admin": "System Administrator",
@@ -1371,7 +1371,7 @@ export const translations = {
     simulate_churn: "Simular cancelación",
     simulate_credit: "Estresar riesgo de crédito",
     calibration_desc: "Entrenamiento & base CSV",
-    comparison_desc: "Precisión & datos reales (RF32)",
+    comparison_desc: "Precisión & datos reales",
     expand_menu: "Expandir menú",
     collapse_menu: "Contraer menú",
     language_selection: "Idioma de la Interfaz",
@@ -1389,7 +1389,7 @@ export const translations = {
     system_mode: "Sistema",
     system_mode_desc: "Sincroniza con los colores de tu SO",
     
-    // Scheduling keys (RF42)
+    // Scheduling keys
     scheduling_title: "Programación de Pronósticos Automáticos",
     scheduling_desc: "Configure la ejecución automática periódica de pronósticos y entrenamiento para este dominio.",
     frequency: "Frecuencia",
@@ -1496,7 +1496,7 @@ export const translations = {
     training_status: "Status de Entrenamiento",
     model_active_calibrated: "Modelo Activo y Calibrado",
     calibrated_at: "Calibrado en:",
-    residuals_diagnostic: "Diagnóstico Visual del Modelo: Gráfico de Residuos (RF13)",
+    residuals_diagnostic: "Diagnóstico Visual del Modelo: Gráfico de Residuos",
     copied: "¡Copiado!",
     limit_lifetime_rul: "Umbral de Vida Útil Crítica de Equipos (RUL)",
     days: "días",
@@ -1671,10 +1671,10 @@ export const translations = {
     sunday: "Domingo",
     day_short: "Día",
 
-    // Comparison View (RF32)
+    // Comparison View
     model_not_trained: "Modelo No Entrenado",
     model_not_trained_desc: "Ningún modelo predictivo está activo para este dominio. El sistema utilizará una línea base analítica para predicciones demo. Para usar predicciones reales, entrene el modelo en la pestaña Calibración del Modelo.",
-    scatter_curve_title: "Curva de Dispersión: Real vs Predicho (RF32)",
+    scatter_curve_title: "Curva de Dispersión: Real vs Predicho",
     chart_overlap_desc: "Superposición de las predicciones del modelo frente a los resultados reales auditados.",
     export_html_report: "Exportar Reporte HTML",
     clear_btn: "Limpiar",
@@ -1852,8 +1852,8 @@ export const translations = {
       filter_others: "Otros",
       tuning_alerts: "Tuning & Alertas",
       system_backups: "Copias de Seguridad",
-      glossary: "Glosario (RF55)",
-      help_center: "Centro de Ayuda (RF56)",
+      glossary: "Glosario",
+      help_center: "Centro de Ayuda",
       tuning_alerts_desc: "Modelos, Webhooks, Pipeline",
       system_backups_desc: "Gestionar snapshots y restauración",
       "logs.users.admin": "Administrador del Sistema",

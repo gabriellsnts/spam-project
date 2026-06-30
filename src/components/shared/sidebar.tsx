@@ -161,7 +161,7 @@ export function Sidebar() {
     {
       id: "analytics",
       name: "Analytics Avançado",
-      desc: "Lift, Gains, SHAP, Drift, Fairness (RF60, RF74, RF75, RF85, RF86, RF90)",
+      desc: "Lift, Gains, SHAP, Drift, Fairness",
       icon: BarChart3
     }
   ];
@@ -357,7 +357,7 @@ export function Sidebar() {
               </button>
             )}
 
-            {/* Backups do Sistema (RF48) */}
+            {/* Backups do Sistema */}
             {isAdmin && (
               <Link
                 href="/admin/backups"

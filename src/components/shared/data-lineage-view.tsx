@@ -19,7 +19,7 @@ export function DataLineageView() {
     },
     {
       id: "cleaning",
-      title: "Limpeza de Outliers (RF88)",
+      title: "Limpeza de Outliers",
       description: "Auto Data Prep",
       icon: <SearchCode className="w-5 h-5" />,
       color: "bg-blue-500",
@@ -27,7 +27,7 @@ export function DataLineageView() {
     },
     {
       id: "feature_selection",
-      title: "Seleção Automática (RF71)",
+      title: "Seleção Automática",
       description: "Redução de Dimensionalidade",
       icon: <Shuffle className="w-5 h-5" />,
       color: "bg-purple-500",
@@ -35,7 +35,7 @@ export function DataLineageView() {
     },
     {
       id: "balancing",
-      title: "Balanceamento de Classes (RF69)",
+      title: "Balanceamento de Classes",
       description: "SMOTE (Oversampling)",
       icon: <Activity className="w-5 h-5" />,
       color: "bg-emerald-500",
