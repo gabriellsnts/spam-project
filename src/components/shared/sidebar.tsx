@@ -75,7 +75,7 @@ export function Sidebar() {
             </div>
             <div className="flex justify-between text-[10px] text-muted-foreground">
               <span>{t("overall_oee")}</span>
-              <span className="text-foreground font-semibold">{t("ui_84_0_302")}</span>
+              <span className="text-foreground font-semibold">84.0%</span>
             </div>
           </div>
         );
@@ -84,11 +84,11 @@ export function Sidebar() {
           <div className="space-y-1.5">
             <div className="flex justify-between text-[10px] text-muted-foreground">
               <span>{t("model")}</span>
-              <span className="text-sky-500 font-semibold font-mono text-[9px]">{t("ui_prophet_ml_13")}</span>
+              <span className="text-sky-500 font-semibold font-mono text-[9px]">Prophet-ML</span>
             </div>
             <div className="flex justify-between text-[10px] text-muted-foreground">
               <span>{t("accuracy")}</span>
-              <span className="text-foreground font-semibold">{t("ui_93_8_994")}</span>
+              <span className="text-foreground font-semibold">93.8%</span>
             </div>
           </div>
         );
@@ -101,7 +101,7 @@ export function Sidebar() {
             </div>
             <div className="flex justify-between text-[10px] text-muted-foreground">
               <span>{t("overall_nps")}</span>
-              <span className="text-foreground font-semibold">{t("ui_78_pt_482")}</span>
+              <span className="text-foreground font-semibold">78 pt</span>
             </div>
           </div>
         );
@@ -110,11 +110,11 @@ export function Sidebar() {
           <div className="space-y-1.5">
             <div className="flex justify-between text-[10px] text-muted-foreground">
               <span>{t("risk_var")}</span>
-              <span className="text-emerald-500 font-semibold">{t("ui_r_1_2m_940")}</span>
+              <span className="text-emerald-500 font-semibold">R$ 1.2M</span>
             </div>
             <div className="flex justify-between text-[10px] text-muted-foreground">
               <span>{t("default_pd")}</span>
-              <span className="text-foreground font-semibold">{t("ui_1_80_132")}</span>
+              <span className="text-foreground font-semibold">1.80%</span>
             </div>
           </div>
         );

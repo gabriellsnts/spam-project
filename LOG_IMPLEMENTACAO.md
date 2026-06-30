@@ -1092,3 +1092,7 @@ pm run build\ para garantir que os hooks inseridos est�o bem formatados e em uso
 ### Ajuste de UI - Remocao de Identificadores de Requisitos
 - Removidos os codigos de requisitos (ex: RF60, RF71) dos textos visiveis na interface (sidebar, relatorios, etc) para manter apenas os nomes das funcionalidades.
 
+
+### Correção de Interface (Formatação de Métricas)
+- Removido o uso inadequado de chaves de tradução (ex: 'ui_84_0_120') que causavam formatação incorreta em métricas hardcoded nas páginas de domínios e sidebar.
+

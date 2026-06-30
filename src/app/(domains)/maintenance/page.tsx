@@ -191,7 +191,7 @@ export default function MaintenancePage() {
                 <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
                   {t("oee_average")}
                 </CardDescription>
-                <CardTitle className="text-2xl font-black text-foreground">{t("ui_84_0_120")}</CardTitle>
+                <CardTitle className="text-2xl font-black text-foreground">84.0%</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-[10px] text-muted-foreground flex items-center gap-1">
@@ -206,7 +206,7 @@ export default function MaintenancePage() {
                 <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
                   {t("availability")}
                 </CardDescription>
-                <CardTitle className="text-2xl font-black text-foreground">{t("ui_92_4_593")}</CardTitle>
+                <CardTitle className="text-2xl font-black text-foreground">92.4%</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-[10px] text-muted-foreground">{t("planned_downtime")}</div>
