@@ -1104,3 +1104,7 @@ pm run build\ para garantir que os hooks inseridos est�o bem formatados e em uso
 ### Correção de Interface (Formatação de Métricas - Retenção)
 - Removido o uso inadequado de chaves de tradução que causavam formatação incorreta em textos descritivos das métricas (ex: 'ui_churn_score_gt_80_719') na página de Retenção de Clientes.
 
+
+### Correção de Interface (Formatação Inferior - Retenção)
+- Removido o uso inadequado de chaves de tradução espalhadas na seção inferior da página de Retenção de Clientes (tabelas, estratégias e alertas).
+
