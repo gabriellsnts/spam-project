@@ -569,3 +569,7 @@ pm run build\ para garantir que os hooks inseridos est�o bem formatados e em uso
 ### Correção de Interface (Header)
 - Corrigido o formato do texto ao lado do logo de 'Ui spam system 831' para 'SPAM System' no componente Header.
 
+
+### Correção de Interface (Sidebar)
+- Corrigida a chave de tradução de 'PROFILE SETTINGS' para exibir corretamente 'PERFIL E CONFIGURAÇÕES' no componente Sidebar.
+

@@ -231,7 +231,7 @@ export function Sidebar() {
 
           {!isCollapsed && (
             <div className="px-3 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest animate-in fade-in duration-300">
-              {t("profile_settings")}
+              {t("profile_and_settings")}
             </div>
           )}
 
