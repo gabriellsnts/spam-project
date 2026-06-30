@@ -137,9 +137,9 @@ export function CorrelationMatrix({ allRows, headers, activeDomain }: Correlatio
           <div>
             <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
               <BarChart3 className="h-4 w-4 text-sky-400" />
-              {t("ui_matriz_de_correla_o_512")}</CardTitle>
+              Matriz de Correlação</CardTitle>
             <CardDescription className="text-[11px] mt-0.5">
-              {t("ui_coeficiente_de_pearson_1_4")}</CardDescription>
+              Coeficiente de Pearson</CardDescription>
           </div>
           <div className="flex flex-wrap gap-1.5">
             {hasData && (
@@ -164,7 +164,7 @@ export function CorrelationMatrix({ allRows, headers, activeDomain }: Correlatio
         {!hasData && !demoMode ? (
           <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
             <BarChart3 className="h-10 w-10 text-muted-foreground/20" />
-            <p className="text-sm text-muted-foreground">{t("ui_importe_um_arquivo_csv_305")}</p>
+            <p className="text-sm text-muted-foreground">Importe um arquivo CSV</p>
             <Button
               variant="outline"
               size="sm"
@@ -172,7 +172,7 @@ export function CorrelationMatrix({ allRows, headers, activeDomain }: Correlatio
               onClick={() => setDemoMode(true)}
             >
               <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-              {t("ui_ver_com_dados_de_907")}</Button>
+              Ver com dados de teste</Button>
           </div>
         ) : (
           <div className="space-y-4">

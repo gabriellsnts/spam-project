@@ -1829,10 +1829,10 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
       <CardHeader className="pb-4">
         <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
           <FileSpreadsheet className="h-4.5 w-4.5 text-muted-foreground/60" />
-          {t("historical_data_ingestion")}
+          Ingestão de dados históricos
         </CardTitle>
         <CardDescription className="text-[11px] text-muted-foreground">
-          {t("import_historical_databases_desc")}
+          Importe bases de dados históricas para calibração
         </CardDescription>
       </CardHeader>
 
@@ -1854,11 +1854,11 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
             : [
                 {
                   name: "Random Forest",
-                  desc: t("rf_desc_regression")
+                  desc: "Random Forest para Regressão"
                 },
                 {
                   name: "Regressão Linear",
-                  desc: t("lr_desc_regression")
+                  desc: "Regressão Linear"
                 }
               ];
           const selectedAlg = selectedAlgorithms[activeDomain] || "Random Forest";
@@ -1868,10 +1868,10 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
               <div className="flex items-center justify-between">
                 <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
                   <span className={cn("h-1.5 w-1.5 rounded-full bg-current", theme.accent)} />
-                  {t("machine_learning_algorithm")}
+                  Algoritmo de Machine Learning
                 </h4>
                 <span className="text-[9px] text-muted-foreground font-mono bg-muted/65 border border-border/40 px-1.5 py-0.5 rounded font-semibold uppercase">
-                  {isClassification ? t("classification") : t("regression")}
+                  {isClassification ? "Classificação" : "Regressão"}
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -2016,7 +2016,7 @@ export function CSVUploader({ onConfirm, onReset }: CSVUploaderProps = {}) {
             <AlertCircle className="h-8 w-8 text-amber-500/80 mb-2" />
             <h5 className="text-xs font-bold text-foreground mb-1">{t("no_model_detected")}</h5>
             <p className="text-[10px] text-muted-foreground max-w-md leading-relaxed">
-              {t("no_model_domain_desc")} <strong>{domainInfo.name}</strong> {t("no_model_domain_desc_suffix")}
+              Não há modelo treinado e ativo para o domínio de <strong>{domainInfo.name}</strong>.
             </p>
           </div>
         )}

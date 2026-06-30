@@ -1121,3 +1121,8 @@ pm run build\ para garantir que os hooks inseridos est�o bem formatados e em uso
 ### Correção de Interface (Formatação Inferior - Manutenção)
 - Substituídos os textos corrompidos de tradução por strings literais na seção inferior da página de Manutenção (lista de equipamentos e insights do modelo RUL).
 
+
+### Correção de Interface (Tradução e Formatação - Calibração)
+- Substituídos textos não traduzidos na matriz de correlação e na interface de uploader de CSV.
+- Ajustadas variáveis de descrição do modelo que não possuíam chave de tradução associada (No model domain desc).
+
