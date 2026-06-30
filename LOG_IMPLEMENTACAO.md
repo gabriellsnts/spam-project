@@ -1108,3 +1108,7 @@ pm run build\ para garantir que os hooks inseridos est�o bem formatados e em uso
 ### Correção de Interface (Formatação Inferior - Retenção)
 - Removido o uso inadequado de chaves de tradução espalhadas na seção inferior da página de Retenção de Clientes (tabelas, estratégias e alertas).
 
+
+### Correção de Interface (Formatação Geral - Risco de Crédito)
+- Substituídos os textos defeituosos baseados em chaves de tradução por strings literais na página de Risco de Crédito (KPIs, painéis laterais e formulário de predição).
+

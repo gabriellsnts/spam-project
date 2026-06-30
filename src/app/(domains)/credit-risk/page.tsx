@@ -458,7 +458,7 @@ export default function CreditRiskPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-[10px] text-muted-foreground">{t("ui_classification_healthy_712")}</div>
+                <div className="text-[10px] text-muted-foreground">Classification healthy</div>
               </CardContent>
             </Card>
 
@@ -472,19 +472,19 @@ export default function CreditRiskPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-[10px] text-muted-foreground">{t("ui_awaiting_model_decision_931")}</div>
+                <div className="text-[10px] text-muted-foreground">Awaiting model decision</div>
               </CardContent>
             </Card>
 
             <Card className="bg-card border-border transition-colors duration-300">
               <CardHeader className="pb-2">
                 <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
-                  {t("total_exposure")} (<GlossaryTooltip termId="3">{t("ui_var_772")}</GlossaryTooltip>)
+                  {t("total_exposure")} (<GlossaryTooltip termId="3">VaR</GlossaryTooltip>)
                 </CardDescription>
                 <CardTitle className="text-2xl font-black text-foreground">{metrics.totalExposure}</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-[10px] text-muted-foreground">{t("ui_value_at_risk_estimated_172")}</div>
+                <div className="text-[10px] text-muted-foreground">Value at risk estimated</div>
               </CardContent>
             </Card>
           </div>
@@ -510,9 +510,9 @@ export default function CreditRiskPage() {
                     <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-full mb-3">
                       <Lock className="h-6 w-6" />
                     </div>
-                    <h4 className="text-xs font-bold text-foreground mb-1">{t("ui_individual_prediction_module_locked_674")}</h4>
+                    <h4 className="text-xs font-bold text-foreground mb-1">Módulo de predição individual bloqueado</h4>
                     <p className="text-[10px] text-muted-foreground max-w-md leading-relaxed">
-                      {t("ui_there_is_no_active_708")}</p>
+                      Não há modelo ativo para rodar predições.</p>
                   </div>
                 ) : (
                   <div className="space-y-6">
@@ -587,10 +587,10 @@ export default function CreditRiskPage() {
                                   ? "bg-orange-500/10 text-orange-450"
                                   : "bg-rose-500/10 text-rose-400"
                               }`}>
-                                {t("ui_verdict_31")}{t(predictionResult.acao.toLowerCase().replace(" ", "_")) || predictionResult.acao}
+                                Veredito: {t(predictionResult.acao.toLowerCase().replace(" ", "_")) || predictionResult.acao}
                               </span>
                               <span className="text-[10px] text-muted-foreground font-mono">
-                                {t("ui_id_620")}{predictionResult.dataInput.propostaId}
+                                ID: {predictionResult.dataInput.propostaId}
                               </span>
                             </div>
 
@@ -618,7 +618,7 @@ export default function CreditRiskPage() {
                                 </span>
                               </div>
                               <div>
-                                <span className="text-muted-foreground block font-semibold">{t("ui_score_informado_452")}</span>
+                                <span className="text-muted-foreground block font-semibold">Score Informado</span>
                                 <span className="text-foreground font-mono font-bold">
                                   {predictionResult.dataInput.score} pts
                                 </span>
@@ -630,7 +630,7 @@ export default function CreditRiskPage() {
                                 </span>
                               </div>
                               <div>
-                                <span className="text-muted-foreground block font-semibold">{t("ui_id_do_modelo_694")}</span>
+                                <span className="text-muted-foreground block font-semibold">ID do Modelo</span>
                                 <span className="text-foreground font-mono font-bold truncate block max-w-[120px]" title={activeModel.modelId}>
                                   {activeModel.modelId.substring(12, 19)}...
                                 </span>
@@ -681,7 +681,7 @@ export default function CreditRiskPage() {
                             className="border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10 text-xs font-bold gap-1.5"
                           >
                             <Printer className="h-4 w-4" />
-                            {t("ui_print_receipt_417")}</Button>
+                            Imprimir Recibo</Button>
                         </div>
                       </div>
                     )}
@@ -695,9 +695,9 @@ export default function CreditRiskPage() {
               <CardHeader>
                 <CardTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
                   <History className="h-4 w-4 text-emerald-500" />
-                  {t("ui_history_167")}</CardTitle>
+                  Histórico de Predições</CardTitle>
                 <CardDescription className="text-[11px] text-muted-foreground">
-                  {t("ui_last_5_individual_predictions_513")}</CardDescription>
+                  Últimas 5 predições individuais</CardDescription>
               </CardHeader>
               <CardContent className="flex-1">
                 {history.length === 0 ? (
@@ -774,7 +774,7 @@ export default function CreditRiskPage() {
                     </CardTitle>
                     <CardDescription className="text-[11px] text-muted-foreground mt-1">
                       {activeModel ? (
-                        <>{t("ui_modelo_ativo_167")}<strong>{activeModel.modelId}</strong> {t("ui_com_acur_cia_de_32")}<strong>{((activeModel.metrics.accuracy || 0) * 100).toFixed(1)}%</strong>.</>
+                        <>Modelo Ativo <strong>{activeModel.modelId}</strong> com acurácia de <strong>{((activeModel.metrics.accuracy || 0) * 100).toFixed(1)}%</strong>.</>
                       ) : (
                         t("proposals_desc")
                       )}
@@ -797,7 +797,7 @@ export default function CreditRiskPage() {
                       size="sm" 
                       onClick={() => setSortOrder(prev => prev === "desc" ? "asc" : "desc")}
                       className="text-[10px] h-8"
-                      title={t("ui_ordenar_por_risco_863")}
+                      title="Ordenar por Risco"
                     >
                       {sortOrder === "asc" ? <ChevronUp className="h-3 w-3 mr-1" /> : <ChevronDown className="h-3 w-3 mr-1" />}
                       {t("risk_level").replace(":", "")}
@@ -821,8 +821,8 @@ export default function CreditRiskPage() {
                 {!activeModel ? (
                    <div className="h-[280px] w-full flex flex-col items-center justify-center text-muted-foreground border-t border-border bg-muted/5">
                      <AlertCircle className="h-8 w-8 mb-2 opacity-50" />
-                     <p className="text-sm">{t("ui_predi_es_n_o_64")}</p>
-                     <p className="text-xs opacity-70">{t("ui_treine_o_modelo_de_114")}</p>
+                     <p className="text-sm">Predições não habilitadas</p>
+                     <p className="text-xs opacity-70">Treine o modelo de crédito para visualizar as propostas</p>
                    </div>
                 ) : (
                   <div className="divide-y divide-border border-t border-border">
@@ -847,14 +847,14 @@ export default function CreditRiskPage() {
                               <div className="text-[10px] text-muted-foreground flex items-center gap-2">
                                 <span className="font-mono">{p.id}</span>
                                 <span>•</span>
-                                <span>{t("ui_valor_584")}<strong className="text-muted-foreground/90">{p.amount}</strong></span>
+                                <span>Valor: <strong className="text-muted-foreground/90">{p.amount}</strong></span>
                               </div>
                             </div>
 
                             <div className="flex items-center gap-6 sm:ml-auto">
                               <div className="grid grid-cols-2 gap-8 text-right sm:max-w-[150px]">
                                 <div>
-                                  <div className="text-[9px] text-muted-foreground font-semibold uppercase">{t("ui_score_88")}</div>
+                                  <div className="text-[9px] text-muted-foreground font-semibold uppercase">Score</div>
                                   <div className={`text-xs font-bold font-mono ${
                                     risk === 'high' ? "text-rose-500" : risk === 'medium' ? "text-amber-500" : "text-emerald-500"
                                   }`}>{p.score}</div>
