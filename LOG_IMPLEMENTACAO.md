@@ -503,3 +503,28 @@
 - [RF81] batch-prediction.tsx: Adicionado widget de Feedback com Analise de Sentimento lexical no final dos resultados.  
 - [RF79] sidebar.tsx, layout.tsx: Revisao responsiva mobile-first escondendo sidebar no mobile e mantendo navegacao via menu unificado (UtilityDrawer).  
  
+
+## 2026-06-29 - Refatoracao de Login e i18n (Protocolo v4.0) - Autor: Antigravity
+### 1. Contexto e Problematica
+- A tela de login (RF54, RF75) necessitava estabilizacao arquitetural, validacao via react-hook-form e Zod, implementacao completa de i18n em todos os textos e persistencia local unificada de idioma.
+### 2. Solucao Proposta e Fundamentacao
+- Refatoracao do state na 'login/page.tsx', criacao de schema Zod. Migracao de todos os literais para uso de 't()' no dicionario do 'domain-context.tsx'.
+- Corrigido o bug que fazia a preferencia de idioma do login ser sobrescrita pelo log-in, reescrevendo o fluxo para atualizar a base de mock em vez do contrario, centralizando na chave localStorage 'spam_lang_pref'.
+### 3. Impacto e Resultados Tecnicos
+- O sistema conta com acessibilidade de teclado perfeita (Tab, Enter) no login. Zero warnings do Eslint, Typescript build estavel e idioma sincronizado globalmente.
+
+
+## 2026-06-29 - Internacionalizacao de Atividades Recentes no Dashboard (RF54) - Autor: Antigravity
+### 1. Contexto e Problematica
+- As Atividades Recentes no dashboard consolidado estavam renderizando descricoes de eventos em strings literais, vindos do mock de backend, falhando ao acompanhar as mudancas globais de idioma.
+### 2. Solucao Proposta e Fundamentacao
+- Substituicao das descricoes hardcoded nos eventos mockados (ex: 'Alerta de vibracao anomala') por chaves de traducao unificadas (ex: 'activity_anomaly_vibration_alert').
+- Mapeamento dessas chaves no dicionario 'translations.ts' para pt-BR, en-US e es.
+- Inclusao do parser dinamico 't(activity.description)' no 'page.tsx'.
+### 3. Impacto e Resultados Tecnicos
+- O dashboard consolida internacionalizacao 100% responsiva para todo o log de eventos simulados e reais que passem pelo padrao de chaveamento. Build sem alteracoes estruturais disruptivas.
+
+
+## Refinamento de UX e Internacionalização da Sidebar (Utility Drawer)
+- **Componentes Afetados:** \src/components/shared/sidebar.tsx\ e \src/components/shared/utility-drawer.tsx\`n- **Modificações (i18n):** Mapeamento 100% de strings estáticas (Alertas, Logs, Estados Vazios, Contadores) para as três línguas usando o dicionário global.
+- **Modificações (UX):** Inserção de micro-interações de hover (\hover:translate-x-1\) na barra lateral, brilho e borda em estados ativos (\shadow-inset\), além de carregamento dinâmico simulado usando Skeleton (500ms) ao trocar de abas (Alertas, Logs e Histórico) do Drawer.

@@ -298,3 +298,11 @@ Dificuldade: O tamanho do arquivo `csv-uploader.tsx` (+3800 linhas) gerava risco
 CorreÃ§Ã£o aplicada: Realizei um parse cuidadoso de lote em lote (100 a 150 linhas) iterativamente atÃ© cobrir o arquivo 100%. Ferramentas como o linter `next lint` foram Ãºteis no final para identificar e limpar pequenos problemas de formataÃ§Ã£o JSX que vazaram.
 Melhoria de UX sugerida pela IA: Ao invÃ©s de traduzir os logs de auditoria interna, optei por deixÃ¡-los fixos em PortuguÃªs para manter a integridade, auditabilidade e compliance na fonte, traduzindo apenas o frontend voltado ao usuÃ¡rio final.  
  
+
+[RF01-04] Internacionalização e Refinamento de UX (Sidebar/Menu)
+
+Prompt usado: Implementar i18n na UtilityDrawer e Skeleton loading/Hover effects na Sidebar
+Funcionou bem: A substituição das strings de estado vazio e do drawer ocorreu conforme planejado via regex e AST manipulations.
+Dificuldade: As traduções dinâmicas exigiram scripts customizados no dicionário pt/en/es para não introduzir duplicatas de chaves.
+Correção aplicada: Criação de script injetável robusto no dicionário e uso de Skeleton Loader no drawer simulando loading de 500ms.
+Melhoria de UX sugerida pela IA: Inclusão de um skeleton de 500ms na transição entre menus do Utility Drawer e hover:translate-x-1 na sidebar.
