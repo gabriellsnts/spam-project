@@ -336,16 +336,16 @@ export default function MaintenancePage() {
                                 </span>
                               )}
                             </div>
-                            <div className="text-[9px] text-muted-foreground font-mono">{t("ui_uuid_707")}{m.id}{t("ui_sensor_437")}</div>
+                            <div className="text-[9px] text-muted-foreground font-mono">UUID: {m.id} | Sensor: 457</div>
                           </div>
                         </div>
 
                         <div className="grid grid-cols-3 gap-4 sm:gap-8 text-right">
                           <div>
-                            <div className="text-[9px] text-muted-foreground uppercase font-semibold">{t("ui_temp_420")}</div>
+                            <div className="text-[9px] text-muted-foreground uppercase font-semibold">Temp.</div>
                             <div className={`text-xs font-bold font-mono ${
                               m.temp > 80 ? "text-rose-500" : m.temp > 70 ? "text-amber-500 animate-pulse" : "text-foreground/80"
-                            }`}>{m.temp} {t("ui_c_611")}</div>
+                            }`}>{m.temp} °C</div>
                           </div>
                           <div>
                             <div className="text-[9px] text-muted-foreground uppercase font-semibold">{t("vibration_label").split(" ")[0]}</div>
@@ -354,7 +354,7 @@ export default function MaintenancePage() {
                             }`}>{m.vibration} mm/s</div>
                           </div>
                           <div>
-                            <div className="text-[9px] text-muted-foreground uppercase font-semibold">{t("ui_oee_187")}</div>
+                            <div className="text-[9px] text-muted-foreground uppercase font-semibold">OEE</div>
                             <div className={`text-xs font-bold font-mono ${
                               m.oee < 80 ? "text-amber-500" : "text-emerald-555 dark:text-emerald-405 font-bold"
                             }`}>{m.oee}%</div>
@@ -426,7 +426,7 @@ export default function MaintenancePage() {
                       <div key={m.id} className="space-y-2">
                         <div className="flex justify-between text-xs">
                           <span className="text-muted-foreground flex items-center gap-1">
-                            {t("machine_" + m.id.toLowerCase())} {t("ui_rul_757")}{simOverride && (
+                            {t("machine_" + m.id.toLowerCase())} - RUL: {simOverride && (
                               <span className="text-[8px] px-1 bg-amber-500/10 text-amber-500 rounded border border-amber-500/20 font-bold">
                                 {t("simulating")}
                               </span>
