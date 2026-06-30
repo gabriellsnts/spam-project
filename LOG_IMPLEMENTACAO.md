@@ -1096,3 +1096,7 @@ pm run build\ para garantir que os hooks inseridos est�o bem formatados e em uso
 ### Correção de Interface (Formatação de Métricas)
 - Removido o uso inadequado de chaves de tradução (ex: 'ui_84_0_120') que causavam formatação incorreta em métricas hardcoded nas páginas de domínios e sidebar.
 
+
+### Correção de Interface (Formatação de Métricas - Demanda)
+- Removido o uso inadequado de chaves de tradução que causavam formatação incorreta em textos fixos ('ui_gera_o_bloqueada_810', etc) na página de Previsão de Demanda.
+

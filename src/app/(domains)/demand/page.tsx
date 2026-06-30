@@ -351,8 +351,8 @@ export default function DemandPage() {
                 {!activeModel ? (
                    <div className="h-[280px] w-full flex flex-col items-center justify-center text-muted-foreground border border-dashed border-border rounded-lg bg-muted/20">
                      <AlertCircle className="h-8 w-8 mb-2 opacity-50" />
-                     <p className="text-sm">{t("ui_gera_o_bloqueada_810")}</p>
-                     <p className="text-xs opacity-70">{t("ui_fa_a_o_upload_570")}</p>
+                     <p className="text-sm">Geração bloqueada</p>
+                     <p className="text-xs opacity-70">Faça o upload</p>
                    </div>
                 ) : (
                   <div className="h-[280px] w-full mt-4">
@@ -425,7 +425,7 @@ export default function DemandPage() {
                     </div>
                     
                     <div className="flex justify-between text-[10px] text-muted-foreground mt-0.5">
-                      <span>{t("stock_short")}: <strong className="text-foreground">{p.stock} {t("ui_un_481")}</strong></span>
+                      <span>{t("stock_short")}: <strong className="text-foreground">{p.stock} un</strong></span>
                       <span>{t("stock_coverage")}: <strong className="text-foreground">{Math.round(p.coverage)} {t("days")}</strong></span>
                     </div>
 
@@ -494,7 +494,7 @@ export default function DemandPage() {
               <div className="p-3 bg-muted/40 border border-border/80 rounded-xl text-xs space-y-2">
                 <div className="font-bold text-foreground">{t("active_algorithm_metrics")}</div>
                 <div className="text-muted-foreground text-[10px]">
-                  {t("ui_status_79")}<strong className={seasonalActive ? "text-sky-500" : "text-emerald-500"}>{seasonalActive ? "SIMULATION ACTIVE" : "NORMAL"}</strong>
+                  Status: <strong className={seasonalActive ? "text-sky-500" : "text-emerald-500"}>{seasonalActive ? "SIMULATION ACTIVE" : "NORMAL"}</strong>
                 </div>
               </div>
             </CardContent>
@@ -513,7 +513,7 @@ export default function DemandPage() {
                     {t("residuals_diagnostic")}
                   </CardTitle>
                   <CardDescription className="text-[11px] text-muted-foreground">
-                    {t("ui_gr_fico_de_res_219")}</CardDescription>
+                    Gráfico de Resíduos</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ResidualsPlotView model={activeModel} />
