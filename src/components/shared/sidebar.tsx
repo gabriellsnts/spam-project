@@ -55,37 +55,13 @@ export function Sidebar() {
   const getViewColorClass = (viewName: string) => {
     const isViewActive = currentView === viewName;
     if (!isViewActive) return "text-muted-foreground hover:text-foreground hover:bg-muted/40 border-transparent";
-
-    switch (activeDomain) {
-      case "maintenance":
-        return "text-amber-500 bg-amber-500/10 border-l-2 border-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.3)]";
-      case "demand":
-        return "text-sky-500 bg-sky-500/10 border-l-2 border-sky-500 shadow-[0_0_12px_rgba(14,165,233,0.3)]";
-      case "churn":
-        return "text-violet-500 bg-violet-500/10 border-l-2 border-violet-500 shadow-[0_0_12px_rgba(139,92,246,0.3)]";
-      case "credit-risk":
-        return "text-emerald-500 bg-emerald-500/10 border-l-2 border-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.3)]";
-      default:
-        return "text-green-500 bg-green-500/10 border-l-2 border-green-500 shadow-[0_0_12px_rgba(34,197,94,0.3)]";
-    }
+    return "text-emerald-500 bg-emerald-500/10 border-l-2 border-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.3)]";
   };
 
   const getActiveDotClass = (viewName: string) => {
     const isViewActive = currentView === viewName;
     if (!isViewActive) return "bg-transparent";
-
-    switch (activeDomain) {
-      case "maintenance":
-        return "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]";
-      case "demand":
-        return "bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.6)]";
-      case "churn":
-        return "bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.6)]";
-      case "credit-risk":
-        return "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]";
-      default:
-        return "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]";
-    }
+    return "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]";
   };
 
   const renderActiveDomainMetric = () => {
