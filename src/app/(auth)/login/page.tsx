@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useDomain } from "@/lib/context/domain-context";
-import { Activity, User, Lock, AlertCircle, ShieldAlert, Key, RefreshCw, CheckCircle2 } from "lucide-react";
+import { Activity, User, Lock, AlertCircle, ShieldAlert, Key, RefreshCw, CheckCircle2, Globe, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,7 +19,7 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-  const { login, isUserLocked, resetAttempts, t } = useDomain();
+  const { login, isUserLocked, resetAttempts, t, language, setLanguage } = useDomain();
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -26,6 +27,7 @@ export default function LoginPage() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [isLocked, setIsLocked] = useState(false);
   const [showInactivityAlert, setShowInactivityAlert] = useState(false);
+  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
 
   const {
     register,
@@ -108,6 +110,74 @@ export default function LoginPage() {
       <div className="absolute inset-0 grid-bg text-zinc-500/[0.03] pointer-events-none z-0" />
       <div className="absolute top-1/4 left-1/4 w-[400px] h-[400px] bg-green-500/5 rounded-full blur-[100px] pointer-events-none z-0" />
       <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-indigo-500/[0.03] rounded-full blur-[100px] pointer-events-none z-0" />
+
+      {/* Language Switcher on Top Right */}
+      <div className="absolute top-4 right-4 z-50">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setLangDropdownOpen(!langDropdownOpen)}
+          className="h-9 gap-1.5 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900 border border-transparent hover:border-zinc-800 transition px-2 py-0.5 rounded-lg flex items-center justify-center align-middle"
+          title={language === "en" ? "Change Language" : language === "es" ? "Cambiar Idioma" : "Alterar Idioma"}
+          type="button"
+        >
+          <Globe className="h-4.5 w-4.5" />
+          <span className="text-[10px] uppercase font-black tracking-wider hidden sm:inline">{language}</span>
+          <ChevronDown className={cn("h-3 w-3 opacity-60 transition-transform duration-200 hidden sm:inline", langDropdownOpen && "rotate-180")} />
+        </Button>
+        {langDropdownOpen && (
+          <>
+            <div 
+              className="fixed inset-0 z-40 bg-transparent" 
+              onClick={() => setLangDropdownOpen(false)}
+            />
+            <div className="absolute right-0 mt-1.5 w-32 bg-background border border-border/80 rounded-xl shadow-xl p-1.5 z-50 flex flex-col gap-0.5 animate-in fade-in slide-in-from-top-2 duration-150">
+              <button
+                type="button"
+                onClick={() => {
+                  setLanguage("pt");
+                  setLangDropdownOpen(false);
+                }}
+                className={cn(
+                  "w-full flex items-center gap-2 px-2.5 py-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer",
+                  language === "pt" ? "bg-emerald-500/10 text-emerald-550" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                )}
+              >
+                <span className="text-sm">🇧🇷</span>
+                <span>Português</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setLanguage("en");
+                  setLangDropdownOpen(false);
+                }}
+                className={cn(
+                  "w-full flex items-center gap-2 px-2.5 py-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer",
+                  language === "en" ? "bg-emerald-500/10 text-emerald-550" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                )}
+              >
+                <span className="text-sm">🇺🇸</span>
+                <span>English</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setLanguage("es");
+                  setLangDropdownOpen(false);
+                }}
+                className={cn(
+                  "w-full flex items-center gap-2 px-2.5 py-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer",
+                  language === "es" ? "bg-emerald-500/10 text-emerald-550" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                )}
+              >
+                <span className="text-sm">🇪🇸</span>
+                <span>Español</span>
+              </button>
+            </div>
+          </>
+        )}
+      </div>
 
       <div className="w-full max-w-md relative z-10 space-y-6 animate-in fade-in duration-500">
         
