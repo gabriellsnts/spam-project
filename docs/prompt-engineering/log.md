@@ -324,3 +324,12 @@ Dificuldade: Entendimento sobre a regra da Single Page vs Tabs; ocorreu uma falh
 Correção aplicada: Revertido o arquivo pelo git para o estado original e aplicada apenas as mudanças precisas no bloco de email usando um script Node.js cirúrgico e replace pontual para os idiomas.
 Melhoria de UX sugerida pela IA: Retorno ao padrão hardcoded dos idiomas (que previne os nomes das línguas de serem traduzidos pelo i18n em tempo de execução, garantindo usabilidade global) e centralização dos canais (email/webhook) em um só lugar.
 
+
+[RF62] UX Refinement: Feedback de Conexão e Status Operacional
+
+Prompt usado: Implementar botão 'Testar Conexão' simulado e badge 'Status do Modelo: Operacional' nas abas de configuração.
+Funcionou bem: Os botões de testar conexão (e-mail e webhook) com seus ícones de 'plug' e spinners rodaram perfeitamente dentro da UI e dos cards do Shadcn, trazendo o feedback fluído solicitado no CA. A badge de 'Status Operacional' foi adicionada de forma animada e elegante no topo do Tuning.
+Dificuldade: Múltiplas abas necessitavam de lógicas de loading isoladas (o webhook listado na table de configurações, por exemplo).
+Correção aplicada: Para resolver, o estado de loading no webhook (isTestingWebhookId) foi setado para receber o ID numérico específico da linha, impedindo que todos os botões de teste entrassem em loading ao mesmo tempo quando o usuário clicar em um.
+Melhoria de UX sugerida pela IA: Utilizar o botão de teste *antes* do botão de salvar para reforçar o flow de validação de integrações do usuário, diminuindo potenciais frustrações com erros na ponta do backend.
+

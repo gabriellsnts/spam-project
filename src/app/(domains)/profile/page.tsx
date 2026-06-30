@@ -9,7 +9,7 @@ import { ThemeCustomizer } from "@/components/shared/theme-customizer";
 import { TuningPanel } from "@/components/shared/tuning-panel";
 import { AlertsWebhookConfig } from "@/components/shared/alerts-webhook-config";
 import { PipelineSettings } from "@/components/shared/pipeline-settings";
-import { Sun, Moon, Laptop, Mail, Settings, Play, Globe, Check } from "lucide-react";
+import { Sun, Moon, Laptop, Mail, Settings, Play, Globe, Check, Plug } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function ProfilePage() {
@@ -47,6 +47,7 @@ export default function ProfilePage() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isTestingEmail, setIsTestingEmail] = useState(false);
   const [toggleLoading, setToggleLoading] = useState<Record<string, boolean>>({});
 
   const hasChanges = !!emailConfig && (
@@ -78,6 +79,26 @@ export default function ProfilePage() {
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 2000);
     }, 600);
+  };
+
+  const handleTestEmailConnection = () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!localEmail || !emailRegex.test(localEmail)) {
+      showPremiumToast(
+        language === "pt" ? "Por favor, insira um e-mail válido para testar." : "Please enter a valid email to test.",
+        "error"
+      );
+      return;
+    }
+    
+    setIsTestingEmail(true);
+    setTimeout(() => {
+      setIsTestingEmail(false);
+      showPremiumToast(
+        language === "pt" ? "Conexão com servidor SMTP testada com sucesso!" : "SMTP server connection tested successfully!",
+        "success"
+      );
+    }, 1200);
   };
 
   const handleToggleDomain = (domain: DomainType, checked: boolean) => {
@@ -349,9 +370,18 @@ export default function ProfilePage() {
       {/* Conteúdo: Tuning, Alertas e Pipeline (RF51, RF61, RF62, RF72, RF78, RF68, RF77) */}
       {activeProfileSection === "tuning" && isAdmin && (
         <div className="max-w-4xl mx-auto animate-in fade-in duration-300 space-y-6">
-          <div className="mb-8">
-            <h2 className="text-xl font-bold mb-2">{t("tuning_title")}</h2>
-            <p className="text-sm text-muted-foreground">{t("tuning_desc")}</p>
+          <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-bold mb-2">{t("tuning_title")}</h2>
+              <p className="text-sm text-muted-foreground">{t("tuning_desc")}</p>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+              </span>
+              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">Status do Modelo: Operacional</span>
+            </div>
           </div>
           {/* Configuração de Notificações por E-mail (RF41) */}
           <Card className="w-full border-zinc-200 dark:border-border/80 bg-white/70 dark:bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-xl overflow-hidden animate-in fade-in duration-300">
@@ -381,24 +411,37 @@ export default function ProfilePage() {
                       className="w-full text-xs bg-zinc-100 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 focus:border-emerald-500/50"
                     />
                   </div>
-                  
-                  <button
-                    onClick={handleSaveEmailConfig}
-                    disabled={!hasChanges || isSaving || saveSuccess}
-                    className={cn(
-                      "w-full py-2.5 rounded-xl text-white font-bold text-xs transition-colors shadow-lg flex items-center justify-center gap-1.5",
-                      !hasChanges && !saveSuccess ? "bg-zinc-400 dark:bg-zinc-700 cursor-not-allowed shadow-none" : "",
-                      hasChanges && !isSaving && !saveSuccess ? "bg-emerald-600 hover:bg-emerald-550 active:scale-[0.98] active:brightness-110 shadow-emerald-600/10 cursor-pointer" : "",
-                      isSaving ? "bg-emerald-500/80 cursor-wait shadow-none" : "",
-                      saveSuccess ? "bg-emerald-500 shadow-emerald-500/20" : ""
-                    )}
-                  >
-                    {isSaving && <div className="h-3.5 w-3.5 rounded-full border-2 border-white/20 border-t-white animate-spin" />}
-                    {saveSuccess && <Check className="h-3.5 w-3.5" />}
-                    {!isSaving && !saveSuccess && t("save_settings")}
-                    {isSaving && (t("saving"))}
-                    {saveSuccess && (t("saved"))}
-                  </button>
+                  <div className="flex flex-col gap-2">
+                    <button
+                      onClick={handleTestEmailConnection}
+                      disabled={!localEmail || isTestingEmail}
+                      className={cn(
+                        "w-full py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-900 text-slate-700 dark:text-zinc-300 font-bold text-xs transition-colors flex items-center justify-center gap-1.5",
+                        isTestingEmail ? "opacity-50 cursor-wait" : ""
+                      )}
+                    >
+                      {isTestingEmail ? <div className="h-3.5 w-3.5 rounded-full border-2 border-emerald-500/20 border-t-emerald-500 animate-spin" /> : <Plug className="h-3.5 w-3.5" />}
+                      Testar Conexão
+                    </button>
+                    
+                    <button
+                      onClick={handleSaveEmailConfig}
+                      disabled={!hasChanges || isSaving || saveSuccess}
+                      className={cn(
+                        "w-full py-2.5 rounded-xl text-white font-bold text-xs transition-colors shadow-lg flex items-center justify-center gap-1.5",
+                        !hasChanges && !saveSuccess ? "bg-zinc-400 dark:bg-zinc-700 cursor-not-allowed shadow-none" : "",
+                        hasChanges && !isSaving && !saveSuccess ? "bg-emerald-600 hover:bg-emerald-550 active:scale-[0.98] active:brightness-110 shadow-emerald-600/10 cursor-pointer" : "",
+                        isSaving ? "bg-emerald-500/80 cursor-wait shadow-none" : "",
+                        saveSuccess ? "bg-emerald-500 shadow-emerald-500/20" : ""
+                      )}
+                    >
+                      {isSaving && <div className="h-3.5 w-3.5 rounded-full border-2 border-white/20 border-t-white animate-spin" />}
+                      {saveSuccess && <Check className="h-3.5 w-3.5" />}
+                      {!isSaving && !saveSuccess && t("save_settings")}
+                      {isSaving && (t("saving"))}
+                      {saveSuccess && (t("saved"))}
+                    </button>
+                  </div>
                 </div>
 
                 {/* Switches de Domínios */}

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BellRing, Webhook, Plus, Trash2, Save, Mail } from "lucide-react";
+import { BellRing, Webhook, Plus, Trash2, Save, Mail, Plug } from "lucide-react";
 import { useDomain } from "@/lib/context/domain-context";
 
 export function AlertsWebhookConfig() {
@@ -23,6 +23,19 @@ export function AlertsWebhookConfig() {
   ]);
 
   const [isSaving, setIsSaving] = useState(false);
+  const [testingWebhookId, setTestingWebhookId] = useState<number | null>(null);
+
+  const testWebhookConnection = (id: number, url: string) => {
+    if (!url) {
+      showPremiumToast("A URL do webhook não pode estar vazia.", "error");
+      return;
+    }
+    setTestingWebhookId(id);
+    setTimeout(() => {
+      setTestingWebhookId(null);
+      showPremiumToast("Conexão do webhook testada com sucesso!", "success");
+    }, 1200);
+  };
 
   const addWebhook = () => {
     const newId = webhooks.length > 0 ? Math.max(...webhooks.map(w => w.id)) + 1 : 1;
@@ -110,7 +123,7 @@ export function AlertsWebhookConfig() {
                     <TableHead className="w-[100px]">{t("ui_status_919")}</TableHead>
                     <TableHead>{t("ui_evento_gatilho_9")}</TableHead>
                     <TableHead>{t("ui_endpoint_url_426")}</TableHead>
-                    <TableHead className="w-[70px]"></TableHead>
+                    <TableHead className="w-[100px]"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -145,12 +158,23 @@ export function AlertsWebhookConfig() {
                           onChange={(e) => updateWebhook(hook.id, "url", e.target.value)}
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="flex gap-1 justify-end">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          disabled={testingWebhookId === hook.id}
+                          className="text-emerald-500 hover:text-emerald-600 hover:bg-emerald-500/10"
+                          onClick={() => testWebhookConnection(hook.id, hook.url)}
+                          title="Testar Conexão"
+                        >
+                          {testingWebhookId === hook.id ? <div className="h-4 w-4 rounded-full border-2 border-emerald-500/20 border-t-emerald-500 animate-spin" /> : <Plug className="h-4 w-4" />}
+                        </Button>
                         <Button 
                           variant="ghost" 
                           size="icon" 
                           className="text-rose-500 hover:text-rose-600 hover:bg-rose-500/10"
                           onClick={() => removeWebhook(hook.id)}
+                          title="Excluir"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
