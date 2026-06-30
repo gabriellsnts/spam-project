@@ -61,7 +61,7 @@ export function BatchPrediction({
   title = "Predição em Lote",
   description = "Carregue um CSV para processar múltiplas entradas simultaneamente.",
 }: BatchPredictionProps) {
-  const { t , t } = useDomain();
+  const { t } = useDomain();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [results, setResults] = useState<BatchRow[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);

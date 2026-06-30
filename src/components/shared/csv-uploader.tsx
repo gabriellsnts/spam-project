@@ -678,6 +678,10 @@ export function ConfusionMatrixView({ model }: { model: TrainedModel }) {
   const activeCell = hoveredCell || selectedCell;
 
   const getCellDetails = (cell: "tp" | "tn" | "fp" | "fn") => {
+      const isChurn = model.domain === "churn";
+      const value = matrix[cell];
+      const percentStr = pct(value) + "%";
+
       switch (cell) {
         case "tn":
           return {
