@@ -270,7 +270,7 @@ export function Sidebar() {
                   setActiveProfileSubSection("");
                 }}
                 className={cn(
-                  "w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 text-left relative overflow-hidden group",
+                  "w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 text-left relative overflow-hidden group hover:translate-x-1 hover:shadow-sm",
                   activeProfileSection === "preferences"
                     ? "text-emerald-500 bg-emerald-500/10 border-emerald-500/30"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border-transparent",
@@ -335,7 +335,7 @@ export function Sidebar() {
                   setActiveProfileSubSection("");
                 }}
                 className={cn(
-                  "w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 text-left relative overflow-hidden group",
+                  "w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 text-left relative overflow-hidden group hover:translate-x-1 hover:shadow-sm",
                   activeProfileSection === "admin"
                     ? "text-emerald-500 bg-emerald-500/10 border-emerald-500/30"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border-transparent",
@@ -366,7 +366,7 @@ export function Sidebar() {
                   setActiveProfileSubSection("");
                 }}
                 className={cn(
-                  "w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 text-left relative overflow-hidden group",
+                  "w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 text-left relative overflow-hidden group hover:translate-x-1 hover:shadow-sm",
                   activeProfileSection === "theme"
                     ? "text-emerald-500 bg-emerald-500/10 border-emerald-500/30"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border-transparent",
@@ -397,7 +397,7 @@ export function Sidebar() {
                   setActiveProfileSubSection("");
                 }}
                 className={cn(
-                  "w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 text-left relative overflow-hidden group",
+                  "w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 text-left relative overflow-hidden group hover:translate-x-1 hover:shadow-sm",
                   activeProfileSection === "tuning"
                     ? "text-emerald-500 bg-emerald-500/10 border-emerald-500/30"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border-transparent",
@@ -425,7 +425,7 @@ export function Sidebar() {
               <Link
                 href="/admin/backups"
                 className={cn(
-                  "w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 text-left relative overflow-hidden group",
+                  "w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 text-left relative overflow-hidden group hover:translate-x-1 hover:shadow-sm",
                   "text-muted-foreground hover:text-foreground hover:bg-muted/40 border-transparent",
                   isCollapsed && "justify-center"
                 )}
