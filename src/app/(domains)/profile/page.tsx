@@ -328,9 +328,9 @@ export default function ProfilePage() {
                     onClick={handleSaveEmailConfig}
                     disabled={!hasChanges || isSaving || saveSuccess}
                     className={cn(
-                      "w-full py-2.5 rounded-xl text-white font-bold text-xs transition-colors shadow-lg cursor-pointer flex items-center justify-center gap-1.5",
+                      "w-full py-2.5 rounded-xl text-white font-bold text-xs transition-colors shadow-lg flex items-center justify-center gap-1.5",
                       !hasChanges && !saveSuccess ? "bg-zinc-400 dark:bg-zinc-700 cursor-not-allowed shadow-none" : "",
-                      hasChanges && !isSaving && !saveSuccess ? "bg-emerald-600 hover:bg-emerald-550 shadow-emerald-600/10" : "",
+                      hasChanges && !isSaving && !saveSuccess ? "bg-emerald-600 hover:bg-emerald-550 active:scale-[0.98] active:brightness-110 shadow-emerald-600/10 cursor-pointer" : "",
                       isSaving ? "bg-emerald-500/80 cursor-wait shadow-none" : "",
                       saveSuccess ? "bg-emerald-500 shadow-emerald-500/20" : ""
                     )}
@@ -366,7 +366,7 @@ export default function ProfilePage() {
                           disabled={toggleLoading["maintenance"]}
                           className="sr-only peer"
                         />
-                        <div className={cn("w-9 h-5 bg-zinc-300 dark:bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500", toggleLoading["maintenance"] && "opacity-50 cursor-wait")}></div>
+                        <div className={cn("w-9 h-5 bg-zinc-300 dark:bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500", toggleLoading["maintenance"] && "opacity-50 cursor-wait animate-pulse ring-2 ring-emerald-500/50 ring-offset-1")}></div>
                       </label>
                     </div>
 
@@ -387,7 +387,7 @@ export default function ProfilePage() {
                           disabled={toggleLoading["demand"]}
                           className="sr-only peer"
                         />
-                        <div className={cn("w-9 h-5 bg-zinc-300 dark:bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500", toggleLoading["demand"] && "opacity-50 cursor-wait")}></div>
+                        <div className={cn("w-9 h-5 bg-zinc-300 dark:bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500", toggleLoading["demand"] && "opacity-50 cursor-wait animate-pulse ring-2 ring-emerald-500/50 ring-offset-1")}></div>
                       </label>
                     </div>
 
@@ -408,7 +408,7 @@ export default function ProfilePage() {
                           disabled={toggleLoading["churn"]}
                           className="sr-only peer"
                         />
-                        <div className={cn("w-9 h-5 bg-zinc-300 dark:bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500", toggleLoading["churn"] && "opacity-50 cursor-wait")}></div>
+                        <div className={cn("w-9 h-5 bg-zinc-300 dark:bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500", toggleLoading["churn"] && "opacity-50 cursor-wait animate-pulse ring-2 ring-emerald-500/50 ring-offset-1")}></div>
                       </label>
                     </div>
 
@@ -429,7 +429,7 @@ export default function ProfilePage() {
                           disabled={toggleLoading["credit-risk"]}
                           className="sr-only peer"
                         />
-                        <div className={cn("w-9 h-5 bg-zinc-300 dark:bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500", toggleLoading["credit-risk"] && "opacity-50 cursor-wait")}></div>
+                        <div className={cn("w-9 h-5 bg-zinc-300 dark:bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500", toggleLoading["credit-risk"] && "opacity-50 cursor-wait animate-pulse ring-2 ring-emerald-500/50 ring-offset-1")}></div>
                       </label>
                     </div>
                   </div>
