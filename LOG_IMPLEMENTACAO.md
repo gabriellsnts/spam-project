@@ -565,3 +565,7 @@
   - Execute \
 pm run build\ para garantir que os hooks inseridos est�o bem formatados e em uso adequado.
 
+
+### Correção de Interface (Header)
+- Corrigido o formato do texto ao lado do logo de 'Ui spam system 831' para 'SPAM System' no componente Header.
+

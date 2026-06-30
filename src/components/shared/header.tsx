@@ -123,7 +123,8 @@ export function Header() {
             </div>
             <div className="flex flex-col">
               <span className="text-foreground font-extrabold text-sm tracking-wider leading-none">
-                {t("ui_spam_system_831")}</span>
+                SPAM System
+              </span>
               <span className="text-[9px] text-zinc-500 font-medium tracking-tight">
                 {t("multi_domain_prediction")}
               </span>
