@@ -573,3 +573,7 @@ pm run build\ para garantir que os hooks inseridos est�o bem formatados e em uso
 ### Correção de Interface (Sidebar)
 - Corrigida a chave de tradução de 'PROFILE SETTINGS' para exibir corretamente 'PERFIL E CONFIGURAÇÕES' no componente Sidebar.
 
+
+### Correção de Interface (Tradução)
+- Adicionadas chaves de tradução ausentes ('model_history' e 'model_history_desc') para exibir corretamente 'Histórico do Modelo' em PT-BR na sidebar.
+
