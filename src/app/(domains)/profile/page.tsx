@@ -25,7 +25,6 @@ export default function ProfilePage() {
     language,
     setLanguage,
     activeProfileSection,
-    activeProfileSubSection,
     startTutorial,
     t
   } = useDomain();
@@ -112,7 +111,6 @@ export default function ProfilePage() {
       {activeProfileSection === "preferences" && (
         <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-300">
           {/* Configurações de Aparência / Tema (RF52) */}
-          {(activeProfileSubSection === "appearance" || !activeProfileSubSection) && (
             <Card className="border-zinc-200 dark:border-border/80 bg-white/70 dark:bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-xl animate-in fade-in duration-300">
               <CardHeader>
                 <CardTitle className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
@@ -212,10 +210,9 @@ export default function ProfilePage() {
                 </div>
               </CardContent>
             </Card>
-          )}
 
           {/* Seletor de Idioma (RF54) */}
-          {(activeProfileSubSection === "language" || !activeProfileSubSection) && (
+          <div className="pt-8 border-t border-slate-700/50 mt-8">
             <Card className="border-zinc-200 dark:border-border/80 bg-white/70 dark:bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-xl animate-in fade-in duration-300">
               <CardHeader>
                 <CardTitle className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
@@ -272,13 +269,13 @@ export default function ProfilePage() {
                 </div>
               </CardContent>
             </Card>
-          )}
+          </div>
         </div>
       )}
 
       {/* Configuração de Notificações por E-mail (RF41) */}
-      {activeProfileSection === "preferences" && !activeProfileSubSection && (
-        <div className="max-w-4xl mx-auto">
+      {activeProfileSection === "preferences" && (
+        <div className="pt-8 border-t border-slate-700/50 mt-8 max-w-4xl mx-auto">
           <Card className="w-full border-zinc-200 dark:border-border/80 bg-white/70 dark:bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-xl overflow-hidden animate-in fade-in duration-300">
             <CardHeader className="border-b border-zinc-200/50 dark:border-zinc-800/50 pb-4">
               <CardTitle className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
@@ -429,8 +426,8 @@ export default function ProfilePage() {
       )}
 
       {/* Tutorial Interativo (RF57 - CA05) */}
-      {activeProfileSection === "preferences" && !activeProfileSubSection && (
-        <div className="max-w-4xl mx-auto mt-6">
+      {activeProfileSection === "preferences" && (
+        <div className="pt-8 border-t border-slate-700/50 mt-8 max-w-4xl mx-auto mt-6">
           <Card className="w-full border-zinc-200 dark:border-border/80 bg-white/70 dark:bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-xl overflow-hidden animate-in fade-in duration-300">
             <CardHeader className="border-b border-zinc-200/50 dark:border-zinc-800/50 pb-4">
               <CardTitle className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
