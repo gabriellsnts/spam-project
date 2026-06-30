@@ -1057,15 +1057,15 @@ export function UtilityDrawer() {
             {/* Indicators Panel */}
             <div className="grid grid-cols-3 gap-2.5 p-3.5 bg-muted/20 border border-border/10 rounded-xl mt-3 mx-1 shrink-0">
               <div className="bg-background border border-border/20 p-2.5 rounded-lg flex flex-col justify-center min-w-0">
-                <span className="text-[8px] font-extrabold text-muted-foreground uppercase tracking-wider truncate">Total Ações</span>
+                <span className="text-[8px] font-extrabold text-muted-foreground uppercase tracking-wider truncate">{t("total_actions")}</span>
                 <span className="text-base font-black text-foreground mt-0.5 font-mono">{logs.length}</span>
               </div>
               <div className="bg-background border border-border/20 p-2.5 rounded-lg flex flex-col justify-center min-w-0">
-                <span className="text-[8px] font-extrabold text-muted-foreground uppercase tracking-wider truncate">Críticas</span>
+                <span className="text-[8px] font-extrabold text-muted-foreground uppercase tracking-wider truncate">{t("critical_actions")}</span>
                 <span className="text-base font-black text-rose-500 mt-0.5 font-mono">{criticalCount}</span>
               </div>
               <div className="bg-background border border-border/20 p-2.5 rounded-lg flex flex-col justify-center min-w-0">
-                <span className="text-[8px] font-extrabold text-muted-foreground uppercase tracking-wider truncate">Usuários At.</span>
+                <span className="text-[8px] font-extrabold text-muted-foreground uppercase tracking-wider truncate">{t("active_users_abbrev")}</span>
                 <span className="text-base font-black text-emerald-500 mt-0.5 font-mono">{activeUsersCount}</span>
               </div>
             </div>
@@ -1083,7 +1083,7 @@ export function UtilityDrawer() {
                     onChange={(e) => setLogUserFilter(e.target.value)}
                     className="bg-background border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer w-full text-ellipsis"
                   >
-                    <option value="all">Todos</option>
+                    <option value="all">{t("filter_all")}</option>
                     {uniqueLogUsers.map((user) => (
                       <option key={user} value={user}>
                         {user}
@@ -1102,11 +1102,11 @@ export function UtilityDrawer() {
                     onChange={(e) => setLogActionType(e.target.value)}
                     className="bg-background border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer w-full"
                   >
-                    <option value="all">Todos</option>
-                    <option value="auth">Autenticação</option>
-                    <option value="models">Modelos/Treino</option>
-                    <option value="alerts">Alertas/Limiares</option>
-                    <option value="others">Outros</option>
+                    <option value="all">{t("filter_all")}</option>
+                    <option value="auth">{t("filter_auth")}</option>
+                    <option value="models">{t("filter_models")}</option>
+                    <option value="alerts">{t("filter_alerts")}</option>
+                    <option value="others">{t("filter_others")}</option>
                   </select>
                 </div>
               </div>

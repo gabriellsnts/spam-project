@@ -387,9 +387,9 @@ export function Sidebar() {
                 <SlidersHorizontal className="h-5 w-5 shrink-0" />
                 {!isCollapsed && (
                   <div className="space-y-0.5">
-                    <div className="text-xs font-bold leading-none">Tuning & Alertas</div>
+                    <div className="text-xs font-bold leading-none">{t("tuning_alerts")}</div>
                     <div className="text-[9px] text-muted-foreground font-normal leading-none mt-1 group-hover:text-foreground/70 transition-colors">
-                      Modelos, Webhooks, Pipeline
+                      {t("tuning_alerts_desc")}
                     </div>
                   </div>
                 )}
@@ -405,14 +405,14 @@ export function Sidebar() {
                   "text-muted-foreground hover:text-foreground hover:bg-muted/40 border-transparent",
                   isCollapsed && "justify-center"
                 )}
-                title="Backups do Sistema"
+                title={t("system_backups")}
               >
                 <DatabaseBackup className="h-5 w-5 shrink-0" />
                 {!isCollapsed && (
                   <div className="space-y-0.5">
-                    <div className="text-xs font-bold leading-none">Backups do Sistema</div>
+                    <div className="text-xs font-bold leading-none">{t("system_backups")}</div>
                     <div className="text-[9px] text-muted-foreground font-normal leading-none mt-1 group-hover:text-foreground/70 transition-colors">
-                      Gerenciar snapshots e restauração
+                      {t("system_backups_desc")}
                     </div>
                   </div>
                 )}
@@ -543,7 +543,7 @@ export function Sidebar() {
             >
               <BookOpen className="h-5 w-5 shrink-0" />
               {!isCollapsed && (
-                <div className="text-xs font-bold leading-none">Glossário (RF55)</div>
+                <div className="text-xs font-bold leading-none">{t("glossary")}</div>
               )}
             </Link>
             
@@ -557,7 +557,7 @@ export function Sidebar() {
             >
               <HelpCircle className="h-5 w-5 shrink-0" />
               {!isCollapsed && (
-                <div className="text-xs font-bold leading-none">Central de Ajuda (RF56)</div>
+                <div className="text-xs font-bold leading-none">{t("help_center")}</div>
               )}
             </Link>
           </nav>
