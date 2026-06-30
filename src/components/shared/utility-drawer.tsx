@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useDomain, DOMAINS, DomainType, AuditLog } from "@/lib/context/domain-context";
 import { Button } from "@/components/ui/button";
@@ -45,6 +45,16 @@ export function UtilityDrawer() {
     language,
     getDomainName
   } = useDomain();
+
+  const [isSimulatingLoad, setIsSimulatingLoad] = useState(false);
+
+  useEffect(() => {
+    if (activeUtilityPanel && activeUtilityPanel !== "menu") {
+      setIsSimulatingLoad(true);
+      const timer = setTimeout(() => setIsSimulatingLoad(false), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [activeUtilityPanel]);
 
   const [filter, setFilter] = useState<"all" | "unrecognized">("unrecognized");
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
@@ -518,7 +528,7 @@ export function UtilityDrawer() {
                     className="w-full text-xs font-bold border-border hover:bg-muted text-foreground"
                   >
                     <Download className="h-3.5 w-3.5 mr-1.5" />
-                    {language === "en" ? "Consolidated Report" : language === "es" ? "Reporte Conso." : "Relatório Consolidado"}
+                    {t('consolidated_report')}
                   </Button>
                 </div>
               </div>
@@ -612,11 +622,11 @@ export function UtilityDrawer() {
                       onChange={(e) => setDomainFilter(e.target.value as DomainType | "all")}
                       className="bg-background border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer"
                     >
-                      <option value="all">{language === "en" ? "All" : language === "es" ? "Todos" : "Todos"}</option>
-                      <option value="maintenance">{language === "en" ? "Maintenance" : language === "es" ? "Mantenimiento" : "Manutenção"}</option>
-                      <option value="demand">{language === "en" ? "Demand" : language === "es" ? "Demanda" : "Demanda"}</option>
-                      <option value="churn">{language === "en" ? "Churn" : language === "es" ? "Retención" : "Retenção"}</option>
-                      <option value="credit-risk">{language === "en" ? "Credit" : language === "es" ? "Crédito" : "Crédito"}</option>
+                      <option value="all">{t('all')}</option>
+                      <option value="maintenance">{t('maintenance')}</option>
+                      <option value="demand">{t('demand')}</option>
+                      <option value="churn">{t('churn')}</option>
+                      <option value="credit-risk">{t('credit-risk')}</option>
                     </select>
                   </div>
 
@@ -630,7 +640,7 @@ export function UtilityDrawer() {
                       onChange={(e) => setPeriodFilter(e.target.value as "all" | "24h" | "7d" | "30d")}
                       className="bg-background border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer"
                     >
-                      <option value="all">{language === "en" ? "All" : language === "es" ? "Todos" : "Todos"}</option>
+                      <option value="all">{t('all')}</option>
                       <option value="24h">{language === "en" ? "Last 24h" : language === "es" ? "Últimas 24h" : "Últimas 24h"}</option>
                       <option value="7d">{language === "en" ? "Last 7 days" : language === "es" ? "Últimos 7 días" : "Últimos 7 dias"}</option>
                       <option value="30d">{language === "en" ? "Last 30 days" : language === "es" ? "Últimos 30 dias" : "Últimos 30 dias"}</option>
@@ -652,7 +662,17 @@ export function UtilityDrawer() {
 
             {/* Alerts List */}
             <div className="flex-1 overflow-y-auto py-5 space-y-4 select-none scrollbar-thin">
-              {displayedAlerts.length === 0 ? (
+              {isSimulatingLoad ? (
+                <div className="space-y-3">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="animate-pulse bg-muted/40 p-4 rounded-xl border border-border/10">
+                      <div className="h-4 bg-muted rounded w-1/3 mb-3"></div>
+                      <div className="h-3 bg-muted rounded w-2/3 mb-2"></div>
+                      <div className="h-3 bg-muted rounded w-1/2"></div>
+                    </div>
+                  ))}
+                </div>
+              ) : displayedAlerts.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-center p-6 text-muted-foreground">
                   <Bell className="h-10 w-10 text-muted-foreground/40 mb-2 stroke-[1.5]" />
                   <p className="text-sm">{t("no_alerts_found")}</p>
@@ -714,7 +734,7 @@ export function UtilityDrawer() {
                             >
                               {alert.recognized 
                                 ? (language === "en" ? "Acknowledged" : language === "es" ? "Reconocido" : "Reconhecido") 
-                                : (language === "en" ? "Pending" : language === "es" ? "Pendiente" : "Pendente")}
+                                : (t('pending_status'))}
                             </span>
                           </div>
                           
@@ -780,7 +800,7 @@ export function UtilityDrawer() {
                               </span>
                             ) : (
                               <span className="text-[9px] text-amber-500/80 font-bold flex items-center gap-0.5 select-none py-0.5 px-1.5 bg-background/20 border border-border/20 rounded">
-                                {language === "en" ? "Pending" : language === "es" ? "Pendiente" : "Pendente"}
+                                {t('pending_status')}
                               </span>
                             )
                           )}
@@ -842,11 +862,11 @@ export function UtilityDrawer() {
                     onChange={(e) => setDomainFilter(e.target.value as DomainType | "all")}
                     className="bg-background border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer"
                   >
-                    <option value="all">{language === "en" ? "All" : language === "es" ? "Todos" : "Todos"}</option>
-                    <option value="maintenance">{language === "en" ? "Maintenance" : language === "es" ? "Mantenimiento" : "Manutenção"}</option>
-                    <option value="demand">{language === "en" ? "Demand" : language === "es" ? "Demanda" : "Demanda"}</option>
-                    <option value="churn">{language === "en" ? "Churn" : language === "es" ? "Retención" : "Retenção"}</option>
-                    <option value="credit-risk">{language === "en" ? "Credit" : language === "es" ? "Crédito" : "Crédito"}</option>
+                    <option value="all">{t('all')}</option>
+                    <option value="maintenance">{t('maintenance')}</option>
+                    <option value="demand">{t('demand')}</option>
+                    <option value="churn">{t('churn')}</option>
+                    <option value="credit-risk">{t('credit-risk')}</option>
                   </select>
                 </div>
 
@@ -860,7 +880,7 @@ export function UtilityDrawer() {
                     onChange={(e) => setPeriodFilter(e.target.value as "all" | "24h" | "7d" | "30d")}
                     className="bg-background border border-border/30 text-[11px] text-foreground px-2 py-1 rounded-md outline-none focus:border-green-550 transition h-8 cursor-pointer"
                   >
-                    <option value="all">{language === "en" ? "All" : language === "es" ? "Todos" : "Todos"}</option>
+                    <option value="all">{t('all')}</option>
                     <option value="24h">{language === "en" ? "Last 24h" : language === "es" ? "Últimas 24h" : "Últimas 24h"}</option>
                     <option value="7d">{language === "en" ? "Last 7 days" : language === "es" ? "Últimos 7 días" : "Últimos 7 dias"}</option>
                     <option value="30d">{language === "en" ? "Last 30 days" : language === "es" ? "Últimos 30 dias" : "Últimos 30 dias"}</option>
@@ -880,7 +900,16 @@ export function UtilityDrawer() {
             </div>
 
             <div className="flex-1 overflow-y-auto py-5 space-y-4 select-none scrollbar-thin">
-              {displayedPredictions.length === 0 ? (
+              {isSimulatingLoad ? (
+                <div className="space-y-3">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="animate-pulse bg-muted/40 p-4 rounded-xl border border-border/10">
+                      <div className="flex justify-between mb-3"><div className="h-4 bg-muted rounded w-1/3"></div><div className="h-4 bg-muted rounded w-1/4"></div></div>
+                      <div className="h-3 bg-muted rounded w-1/2 mb-2"></div>
+                    </div>
+                  ))}
+                </div>
+              ) : displayedPredictions.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-center p-6 text-muted-foreground">
                   <History className="h-10 w-10 text-muted-foreground/40 mb-2 stroke-[1.5]" />
                   <p className="text-sm">{t("no_predictions_found")}</p>
@@ -888,9 +917,9 @@ export function UtilityDrawer() {
               ) : (
                 displayedPredictions.map((pred) => {
                   const detailInfo = pred.details?.probabilidadeRetorno  
-                    ? `${language === "en" ? "Return" : language === "es" ? "Retorno" : "Retorno"}: ${pred.details.probabilidadeRetorno}%` 
+                    ? `${t('return_prob')}: ${pred.details.probabilidadeRetorno}%` 
                     : pred.details?.probabilidadeFalha 
-                      ? `${language === "en" ? "Failure" : language === "es" ? "Fallo" : "Falha"}: ${pred.details.probabilidadeFalha}%` 
+                      ? `${t('failure_prob')}: ${pred.details.probabilidadeFalha}%` 
                       : "";
 
                   return (
@@ -933,7 +962,7 @@ export function UtilityDrawer() {
 
                       {detailInfo && (
                         <div className="flex items-center justify-between bg-background/20 dark:bg-background/50 px-2.5 py-1.5 rounded-lg border border-border/20 text-[10px]">
-                          <span className="text-muted-foreground text-[10px] font-medium">{language === "en" ? "Confidence/Prob." : language === "es" ? "Confianza/Probab." : "Confiança/Probab."}:</span>
+                          <span className="text-muted-foreground text-[10px] font-medium">{t('confidence_prob')}:</span>
                           <span className="font-mono font-bold text-[10px] text-blue-400">
                             {detailInfo}
                           </span>
@@ -977,7 +1006,7 @@ export function UtilityDrawer() {
             {/* Footer Actions */}
             <div className="pt-4 border-t border-border/20 bg-transparent flex items-center justify-between shrink-0">
               <span className="text-xs text-muted-foreground font-mono">
-                {language === "en" ? "Records:" : language === "es" ? "Registros:" : "Registros:"} {displayedPredictions.length}
+                {t('records_count_drawer', { count: displayedPredictions.length.toString() })}
               </span>
               {predictionHistory.length > 0 && (
                 <Button
@@ -1091,7 +1120,7 @@ export function UtilityDrawer() {
                     }}
                     className="text-[9px] font-bold text-rose-500 hover:text-rose-400 transition"
                   >
-                    Limpar Filtros Avançados
+                    {t('clear_filters')} Avançados
                   </button>
                 ) : (
                   <span />
@@ -1114,8 +1143,8 @@ export function UtilityDrawer() {
               {displayedLogs.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-center p-6 text-muted-foreground">
                   <ShieldCheck className="h-10 w-10 text-muted-foreground/40 mb-2 stroke-[1.5]" />
-                  <p className="text-sm font-semibold">Nenhum log encontrado.</p>
-                  <p className="text-xs text-muted-foreground/60 mt-1">Nenhum evento registrado corresponde aos filtros aplicados.</p>
+                  <p className="text-sm font-semibold">{t('no_logs_found')}</p>
+                  <p className="text-xs text-muted-foreground/60 mt-1">{t('no_events_match_filters')}</p>
                   {(logUserFilter !== "all" || logStartDate !== "" || logEndDate !== "" || logActionType !== "all") && (
                     <Button
                       variant="ghost"
@@ -1127,7 +1156,7 @@ export function UtilityDrawer() {
                       }}
                       className="mt-4 h-8 text-[11px] font-bold bg-zinc-900 border border-border/30 text-foreground hover:bg-zinc-800"
                     >
-                      Limpar Filtros
+                      {t('clear_filters')}
                     </Button>
                   )}
                 </div>
@@ -1174,7 +1203,7 @@ export function UtilityDrawer() {
                   <div className="flex items-center justify-between pb-4 border-b border-border/20 mb-4 shrink-0">
                     <h3 className="text-xs font-bold text-foreground flex items-center gap-2">
                       <ShieldCheck className="h-4.5 w-4.5 text-emerald-500" />
-                      {language === "en" ? "Record Details" : language === "es" ? "Detalles del Registro" : "Detalhes do Registro"}
+                      {t('record_details')}
                     </h3>
                     <button
                       onClick={() => setSelectedLog(null)}
@@ -1206,17 +1235,17 @@ export function UtilityDrawer() {
                         <span className="font-bold text-foreground">{selectedLog.username}</span>
                       </div>
                       <div className="flex justify-between items-center border-t border-border/10 pt-2.5">
-                        <span className="text-muted-foreground font-semibold">{language === "en" ? "Access Profile:" : language === "es" ? "Perfil de Acceso:" : "Perfil de Acesso:"}</span>
+                        <span className="text-muted-foreground font-semibold">{t('access_profile_label')}</span>
                         <span className="font-bold text-foreground">{selectedLog.accessProfile}</span>
                       </div>
                       <div className="flex justify-between items-center border-t border-border/10 pt-2.5">
-                        <span className="text-muted-foreground font-semibold">{language === "en" ? "Scope (System/User):" : language === "es" ? "Alcance (Sistema/Usuario):" : "Escopo (Sistema/Usuário):"}</span>
+                        <span className="text-muted-foreground font-semibold">{t('scope_label')}</span>
                         <span className="font-bold text-muted-foreground">{selectedLog.profile}</span>
                       </div>
                     </div>
 
                     <div className="bg-muted/40 border border-border/15 rounded-xl p-3.5 space-y-2">
-                      <span className="text-muted-foreground font-semibold block">{language === "en" ? "Action Description:" : language === "es" ? "Descripción de la Acción:" : "Descrição da Ação:"}</span>
+                      <span className="text-muted-foreground font-semibold block">{t('action_desc_label')}</span>
                       <p className="text-foreground leading-relaxed font-bold bg-background p-3 rounded-lg border border-border/20 break-words whitespace-pre-wrap font-mono text-[10px]">
                         {selectedLog.action}
                       </p>
@@ -1239,7 +1268,7 @@ export function UtilityDrawer() {
             {/* Footer Actions */}
             <div className="pt-4 border-t border-border/20 bg-transparent flex items-center justify-between shrink-0">
               <span className="text-xs text-muted-foreground font-mono">
-                {language === "en" ? "Active records:" : language === "es" ? "Registros activos:" : "Registros ativos:"} {logs.length}
+                {t('active_records_count', { count: logs.length.toString() })}
               </span>
               {logs.length > 0 && (
                 <Button
