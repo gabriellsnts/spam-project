@@ -65,7 +65,34 @@ export function UtilityDrawer() {
       "[Alert Triggered] Novo alerta preditivo (Alto) no domínio 'Retenção de Clientes': Indústrias Metalúrgicas Alfa (C104) - Valor: 87%.": "logs.actions.alert_triggered_churn",
       "[Alert Recognized] Alerta no domínio 'Previsão de Demanda' (Cabos Elétricos de Cobre) marcado como reconhecido.": "logs.actions.alert_recognized_demand",
       "[Model Training Success] Treinamento do modelo para o módulo 'Previsão de Demanda' concluído com sucesso. ID: SPAM-MODEL-REG-DMD3094, Algoritmo: Prophet Time-Series Regressor.": "logs.actions.training_success_demand",
-      "[Model Training Error] Falha de volume de dados no módulo 'Risco de Crédito': apenas 8 registros fornecidos (mínimo de 10 exigido).": "logs.actions.training_error_credit"
+      "[Model Training Error] Falha de volume de dados no módulo 'Risco de Crédito': apenas 8 registros fornecidos (mínimo de 10 exigido).": "logs.actions.training_error_credit",
+      "Administrador do Sistema": "logs.users.admin",
+      "Sistema": "logs.users.system",
+      "Super Admin": "logs.profiles.super_admin",
+      "Motor de Indução B-12 (M01)": "alerts.entities.motor_b12",
+      "Esteira Transportadora (M03)": "alerts.entities.conveyor_m03",
+      "Prensa Hidráulica 04 (M04)": "alerts.entities.press_m04",
+      "Cabos Elétricos de Cobre (P02)": "alerts.entities.copper_cables",
+      "Chapa Metálica 2mm (P03)": "alerts.entities.metal_sheet",
+      "Gabriel Silva Alimentos (C302)": "alerts.entities.gabriel_silva",
+      "Indústrias Metalúrgicas Alfa (C104)": "alerts.entities.alfa_industries",
+      "PROP-905 (Gabriel Silva)": "alerts.entities.prop_905",
+      "PROP-909 (Construções Fortes)": "alerts.entities.prop_909",
+      "Vibração RMS": "alerts.metrics.vibration_rms",
+      "Temperatura Sensor": "alerts.metrics.temperature_sensor",
+      "Eficiência OEE": "alerts.metrics.oee_efficiency",
+      "Risco Ruptura": "alerts.metrics.breakage_risk",
+      "Churn Score": "alerts.metrics.churn_score",
+      "Risco de Crédito": "alerts.metrics.credit_risk",
+      "Vibração: 6.2 mm/s": "alerts.values.vibration_62",
+      "Temperatura: 72°C": "alerts.values.temperature_72",
+      "OEE: 71%": "alerts.values.oee_71",
+      "Estoque: 10 un (Prev: 80 un)": "alerts.values.stock_10",
+      "Estoque: 50 un (Prev: 300 un)": "alerts.values.stock_50",
+      "92%": "alerts.values.val_92",
+      "78%": "alerts.values.val_78",
+      "Score: 490": "alerts.values.score_490",
+      "Score: 590": "alerts.values.score_590"
     };
 
     const key = map[entity] || entity;
@@ -779,9 +806,9 @@ export function UtilityDrawer() {
 
                       {/* Value and Metric Description */}
                       <div className="flex items-center justify-between bg-background/20 dark:bg-background/50 px-2.5 py-1.5 rounded-lg border border-border/20 text-[10px]">
-                        <span className="text-muted-foreground text-[10px] font-medium">{alert.metric}:</span>
+                        <span className="text-muted-foreground text-[10px] font-medium">{translateEntity(alert.metric)}:</span>
                         <span className={cn("font-mono font-bold text-[10px]", isHigh ? "text-rose-400" : "text-amber-400")}>
-                          {alert.value}
+                          {translateEntity(String(alert.value))}
                         </span>
                       </div>
 
@@ -1215,8 +1242,8 @@ export function UtilityDrawer() {
                           >
                             <td className="p-3 text-muted-foreground font-medium whitespace-nowrap">{dateStr}</td>
                             <td className="p-3 text-muted-foreground font-mono whitespace-nowrap">{timeStr}</td>
-                            <td className="p-3 text-foreground font-semibold truncate max-w-[100px]" title={log.username}>{log.username}</td>
-                            <td className="p-3 text-muted-foreground font-medium truncate max-w-[95px]" title={log.accessProfile}>{log.accessProfile}</td>
+                            <td className="p-3 text-foreground font-semibold truncate max-w-[100px]" title={translateEntity(log.username)}>{translateEntity(log.username)}</td>
+                            <td className="p-3 text-muted-foreground font-medium truncate max-w-[95px]" title={translateEntity(log.accessProfile)}>{translateEntity(log.accessProfile)}</td>
                             <td className="p-3 text-foreground/80 font-medium max-w-[200px] truncate group-hover:text-foreground transition-colors" title={translateEntity(log.action)}>{translateEntity(log.action)}</td>
                           </tr>
                         );
@@ -1261,15 +1288,15 @@ export function UtilityDrawer() {
                     <div className="bg-muted/40 border border-border/15 rounded-xl p-3.5 space-y-3">
                       <div className="flex justify-between items-center">
                         <span className="text-muted-foreground font-semibold">{t("user")}:</span>
-                        <span className="font-bold text-foreground">{selectedLog.username}</span>
+                        <span className="font-bold text-foreground">{translateEntity(selectedLog.username)}</span>
                       </div>
                       <div className="flex justify-between items-center border-t border-border/10 pt-2.5">
                         <span className="text-muted-foreground font-semibold">{t('access_profile_label')}</span>
-                        <span className="font-bold text-foreground">{selectedLog.accessProfile}</span>
+                        <span className="font-bold text-foreground">{translateEntity(selectedLog.accessProfile)}</span>
                       </div>
                       <div className="flex justify-between items-center border-t border-border/10 pt-2.5">
                         <span className="text-muted-foreground font-semibold">{t('scope_label')}</span>
-                        <span className="font-bold text-muted-foreground">{selectedLog.profile}</span>
+                        <span className="font-bold text-muted-foreground">{translateEntity(selectedLog.profile)}</span>
                       </div>
                     </div>
 
