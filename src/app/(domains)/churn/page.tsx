@@ -254,7 +254,7 @@ export default function ChurnPage() {
                 <CardTitle className="text-2xl font-black text-foreground">{dynamicAtRisk}</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-[10px] text-muted-foreground">{t("ui_churn_score_gt_80_719")}</div>
+                <div className="text-[10px] text-muted-foreground">Churn score &gt; 80</div>
               </CardContent>
             </Card>
 
@@ -268,7 +268,7 @@ export default function ChurnPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-[10px] text-muted-foreground">{t("ui_email_amp_call_campaigns_107")}</div>
+                <div className="text-[10px] text-muted-foreground">Email &amp; Call Campaigns</div>
               </CardContent>
             </Card>
 
