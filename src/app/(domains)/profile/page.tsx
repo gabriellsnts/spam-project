@@ -45,6 +45,15 @@ export default function ProfilePage() {
     }
   }, [emailConfig]);
 
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [toggleLoading, setToggleLoading] = useState<Record<string, boolean>>({});
+
+  const hasChanges = !!emailConfig && (
+    localEmail !== emailConfig.email ||
+    JSON.stringify(localEnabledDomains) !== JSON.stringify(emailConfig.enabledDomains)
+  );
+
   const handleSaveEmailConfig = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (localEmail && !emailRegex.test(localEmail)) {
@@ -59,17 +68,28 @@ export default function ProfilePage() {
       return;
     }
     
-    updateEmailConfig({
-      email: localEmail,
-      enabledDomains: localEnabledDomains
-    });
+    setIsSaving(true);
+    setTimeout(() => {
+      updateEmailConfig({
+        email: localEmail,
+        enabledDomains: localEnabledDomains
+      });
+      setIsSaving(false);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 2000);
+    }, 600);
   };
 
   const handleToggleDomain = (domain: DomainType, checked: boolean) => {
-    setLocalEnabledDomains(prev => ({
-      ...prev,
-      [domain]: checked
-    }));
+    if (toggleLoading[domain]) return;
+    setToggleLoading(prev => ({ ...prev, [domain]: true }));
+    setTimeout(() => {
+      setLocalEnabledDomains(prev => ({
+        ...prev,
+        [domain]: checked
+      }));
+      setToggleLoading(prev => ({ ...prev, [domain]: false }));
+    }, 300);
   };
 
   // Redireciona se não estiver logado
@@ -306,9 +326,20 @@ export default function ProfilePage() {
                   
                   <button
                     onClick={handleSaveEmailConfig}
-                    className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-550 text-white font-bold text-xs transition-colors shadow-lg shadow-emerald-600/10 cursor-pointer flex items-center justify-center gap-1.5"
+                    disabled={!hasChanges || isSaving || saveSuccess}
+                    className={cn(
+                      "w-full py-2.5 rounded-xl text-white font-bold text-xs transition-colors shadow-lg cursor-pointer flex items-center justify-center gap-1.5",
+                      !hasChanges && !saveSuccess ? "bg-zinc-400 dark:bg-zinc-700 cursor-not-allowed shadow-none" : "",
+                      hasChanges && !isSaving && !saveSuccess ? "bg-emerald-600 hover:bg-emerald-550 shadow-emerald-600/10" : "",
+                      isSaving ? "bg-emerald-500/80 cursor-wait shadow-none" : "",
+                      saveSuccess ? "bg-emerald-500 shadow-emerald-500/20" : ""
+                    )}
                   >
-                    {t("save_settings")}
+                    {isSaving && <div className="h-3.5 w-3.5 rounded-full border-2 border-white/20 border-t-white animate-spin" />}
+                    {saveSuccess && <Check className="h-3.5 w-3.5" />}
+                    {!isSaving && !saveSuccess && t("save_settings")}
+                    {isSaving && (t("saving") || "Salvando...")}
+                    {saveSuccess && (t("saved") || "Salvo!")}
                   </button>
                 </div>
 
@@ -332,9 +363,10 @@ export default function ProfilePage() {
                           type="checkbox"
                           checked={localEnabledDomains.maintenance}
                           onChange={(e) => handleToggleDomain("maintenance", e.target.checked)}
+                          disabled={toggleLoading["maintenance"]}
                           className="sr-only peer"
                         />
-                        <div className="w-9 h-5 bg-zinc-300 dark:bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                        <div className={cn("w-9 h-5 bg-zinc-300 dark:bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500", toggleLoading["maintenance"] && "opacity-50 cursor-wait")}></div>
                       </label>
                     </div>
 
@@ -352,9 +384,10 @@ export default function ProfilePage() {
                           type="checkbox"
                           checked={localEnabledDomains.demand}
                           onChange={(e) => handleToggleDomain("demand", e.target.checked)}
+                          disabled={toggleLoading["demand"]}
                           className="sr-only peer"
                         />
-                        <div className="w-9 h-5 bg-zinc-300 dark:bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                        <div className={cn("w-9 h-5 bg-zinc-300 dark:bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500", toggleLoading["demand"] && "opacity-50 cursor-wait")}></div>
                       </label>
                     </div>
 
@@ -372,9 +405,10 @@ export default function ProfilePage() {
                           type="checkbox"
                           checked={localEnabledDomains.churn}
                           onChange={(e) => handleToggleDomain("churn", e.target.checked)}
+                          disabled={toggleLoading["churn"]}
                           className="sr-only peer"
                         />
-                        <div className="w-9 h-5 bg-zinc-300 dark:bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                        <div className={cn("w-9 h-5 bg-zinc-300 dark:bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500", toggleLoading["churn"] && "opacity-50 cursor-wait")}></div>
                       </label>
                     </div>
 
@@ -392,9 +426,10 @@ export default function ProfilePage() {
                           type="checkbox"
                           checked={localEnabledDomains["credit-risk"]}
                           onChange={(e) => handleToggleDomain("credit-risk", e.target.checked)}
+                          disabled={toggleLoading["credit-risk"]}
                           className="sr-only peer"
                         />
-                        <div className="w-9 h-5 bg-zinc-300 dark:bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                        <div className={cn("w-9 h-5 bg-zinc-300 dark:bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500", toggleLoading["credit-risk"] && "opacity-50 cursor-wait")}></div>
                       </label>
                     </div>
                   </div>
