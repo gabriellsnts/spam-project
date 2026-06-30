@@ -9,7 +9,7 @@ import { ThemeCustomizer } from "@/components/shared/theme-customizer";
 import { TuningPanel } from "@/components/shared/tuning-panel";
 import { AlertsWebhookConfig } from "@/components/shared/alerts-webhook-config";
 import { PipelineSettings } from "@/components/shared/pipeline-settings";
-import { Sun, Moon, Laptop, Mail, Settings, Play, Globe } from "lucide-react";
+import { Sun, Moon, Laptop, Mail, Settings, Play, Globe, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function ProfilePage() {
@@ -467,20 +467,20 @@ export default function ProfilePage() {
             <CardHeader className="border-b border-zinc-200/50 dark:border-zinc-800/50 pb-4">
               <CardTitle className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
                 <Play className="h-4.5 w-4.5 text-emerald-500" />
-                Tutorial Interativo
+                {t("tutorial_title")}
               </CardTitle>
               <CardDescription className="text-xs text-slate-700 dark:text-zinc-500">
-                Reinicie o fluxo guiado de aprendizado do sistema para relembrar as funcionalidades principais.
+                {t("tutorial_desc")}
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-6 pb-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="space-y-0.5">
                   <div className="text-xs font-bold text-slate-900 dark:text-zinc-200">
-                    Reexecutar Onboarding
+                    {t("tutorial_reexecute")}
                   </div>
                   <p className="text-[10px] text-slate-650 dark:text-zinc-550">
-                    Ao confirmar, você será redirecionado para o dashboard e o tutorial interativo começará do zero.
+                    {t("tutorial_reexecute_desc")}
                   </p>
                 </div>
                 <button
@@ -491,7 +491,7 @@ export default function ProfilePage() {
                   className="px-4 py-2.5 rounded-xl border border-dashed border-emerald-500/50 hover:border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer"
                 >
                   <Play className="h-3.5 w-3.5" />
-                  Iniciar Tutorial
+                  {t("tutorial_start_btn")}
                 </button>
               </div>
             </CardContent>
@@ -517,8 +517,8 @@ export default function ProfilePage() {
       {activeProfileSection === "tuning" && isAdmin && (
         <div className="max-w-4xl mx-auto animate-in fade-in duration-300 space-y-6">
           <div className="mb-8">
-            <h2 className="text-xl font-bold mb-2">Ajuste Fino de Modelos e Notificações</h2>
-            <p className="text-sm text-muted-foreground">Configure os parâmetros avançados dos modelos simulados, notificações sistêmicas e políticas de qualidade de dados.</p>
+            <h2 className="text-xl font-bold mb-2">{t("tuning_title")}</h2>
+            <p className="text-sm text-muted-foreground">{t("tuning_desc")}</p>
           </div>
           <TuningPanel />
           <PipelineSettings />
