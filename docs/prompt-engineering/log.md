@@ -315,3 +315,12 @@ Dificuldade: A manipulação de AST com ts-morph causou alguns bugs na inserção de
 Correção aplicada: Script iterado e refinado para usar addBindingElement equivalente correto, extração precisa e tratamento fallback para texto JSX e atributos. Substituições isoladas via replace_file_content no final para fechar pequenos furos de sintaxe.
 Melhoria de UX sugerida pela IA: Consolidar todas as strings diretamente no dicionário de traduções durante o próprio sweep.
 
+
+[RF62] Reestruturação da Página de Perfil e Correção de Idioma
+
+Prompt usado: Consolidar perfil, unificar canais de alerta na aba de tuning (mantendo tabs) e corrigir dropdown de idiomas.
+Funcionou bem: A movimentação do bloco de E-mail para a aba de Tuning funcionou perfeitamente e a correção dos idiomas (Português, English, Español) foi rápida.
+Dificuldade: Entendimento sobre a regra da Single Page vs Tabs; ocorreu uma falha de sintaxe ao reverter o layout com replace de forma muito abrangente.
+Correção aplicada: Revertido o arquivo pelo git para o estado original e aplicada apenas as mudanças precisas no bloco de email usando um script Node.js cirúrgico e replace pontual para os idiomas.
+Melhoria de UX sugerida pela IA: Retorno ao padrão hardcoded dos idiomas (que previne os nomes das línguas de serem traduzidos pelo i18n em tempo de execução, garantindo usabilidade global) e centralização dos canais (email/webhook) em um só lugar.
+

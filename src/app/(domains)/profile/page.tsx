@@ -256,7 +256,7 @@ export default function ProfilePage() {
                     )}
                   >
                     <span className="text-2xl">🇧🇷</span>
-                    <span className="text-xs font-bold">{t("ui_portugu_s_br_117")}</span>
+                    <span className="text-xs font-bold">Português (BR)</span>
                   </button>
 
                   {/* Inglês */}
@@ -270,7 +270,7 @@ export default function ProfilePage() {
                     )}
                   >
                     <span className="text-2xl">🇺🇸</span>
-                    <span className="text-xs font-bold">{t("ui_english_us_555")}</span>
+                    <span className="text-xs font-bold">English (US)</span>
                   </button>
 
                   {/* Espanhol */}
@@ -284,7 +284,7 @@ export default function ProfilePage() {
                     )}
                   >
                     <span className="text-2xl">🇪🇸</span>
-                    <span className="text-xs font-bold">{t("ui_espa_ol_289")}</span>
+                    <span className="text-xs font-bold">Español</span>
                   </button>
                 </div>
               </CardContent>
@@ -293,9 +293,67 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* Configuração de Notificações por E-mail (RF41) */}
+      {/* Tutorial Interativo (RF57 - CA05) */}
       {activeProfileSection === "preferences" && (
-        <div className="pt-8 border-t border-slate-700/50 mt-8 max-w-4xl mx-auto">
+        <div className="pt-8 border-t border-slate-700/50 mt-8 max-w-4xl mx-auto mt-6">
+          <Card className="w-full border-zinc-200 dark:border-border/80 bg-white/70 dark:bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-xl overflow-hidden animate-in fade-in duration-300">
+            <CardHeader className="border-b border-zinc-200/50 dark:border-zinc-800/50 pb-4">
+              <CardTitle className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
+                <Play className="h-4.5 w-4.5 text-emerald-500" />
+                {t("tutorial_title")}
+              </CardTitle>
+              <CardDescription className="text-xs text-slate-700 dark:text-zinc-500">
+                {t("tutorial_desc")}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6 pb-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="space-y-0.5">
+                  <div className="text-xs font-bold text-slate-900 dark:text-zinc-200">
+                    {t("tutorial_reexecute")}
+                  </div>
+                  <p className="text-[10px] text-slate-650 dark:text-zinc-550">
+                    {t("tutorial_reexecute_desc")}
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    startTutorial();
+                    router.push("/");
+                  }}
+                  className="px-4 py-2.5 rounded-xl border border-dashed border-emerald-500/50 hover:border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Play className="h-3.5 w-3.5" />
+                  {t("tutorial_start_btn")}
+                </button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Conteúdo: Gestão Administrativa */}
+      {activeProfileSection === "admin" && isAdmin && (
+        <div className="max-w-4xl mx-auto animate-in fade-in duration-300">
+          <UserManagement />
+        </div>
+      )}
+
+      {/* Conteúdo: Customização de Tema (RF53) */}
+      {activeProfileSection === "theme" && isAdmin && (
+        <div className="max-w-4xl mx-auto animate-in fade-in duration-300">
+          <ThemeCustomizer />
+        </div>
+      )}
+
+      {/* Conteúdo: Tuning, Alertas e Pipeline (RF51, RF61, RF62, RF72, RF78, RF68, RF77) */}
+      {activeProfileSection === "tuning" && isAdmin && (
+        <div className="max-w-4xl mx-auto animate-in fade-in duration-300 space-y-6">
+          <div className="mb-8">
+            <h2 className="text-xl font-bold mb-2">{t("tuning_title")}</h2>
+            <p className="text-sm text-muted-foreground">{t("tuning_desc")}</p>
+          </div>
+          {/* Configuração de Notificações por E-mail (RF41) */}
           <Card className="w-full border-zinc-200 dark:border-border/80 bg-white/70 dark:bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-xl overflow-hidden animate-in fade-in duration-300">
             <CardHeader className="border-b border-zinc-200/50 dark:border-zinc-800/50 pb-4">
               <CardTitle className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
@@ -457,69 +515,7 @@ export default function ProfilePage() {
               </div>
             </CardContent>
           </Card>
-        </div>
-      )}
 
-      {/* Tutorial Interativo (RF57 - CA05) */}
-      {activeProfileSection === "preferences" && (
-        <div className="pt-8 border-t border-slate-700/50 mt-8 max-w-4xl mx-auto mt-6">
-          <Card className="w-full border-zinc-200 dark:border-border/80 bg-white/70 dark:bg-zinc-900/40 backdrop-blur-md rounded-2xl shadow-xl overflow-hidden animate-in fade-in duration-300">
-            <CardHeader className="border-b border-zinc-200/50 dark:border-zinc-800/50 pb-4">
-              <CardTitle className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
-                <Play className="h-4.5 w-4.5 text-emerald-500" />
-                {t("tutorial_title")}
-              </CardTitle>
-              <CardDescription className="text-xs text-slate-700 dark:text-zinc-500">
-                {t("tutorial_desc")}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6 pb-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="space-y-0.5">
-                  <div className="text-xs font-bold text-slate-900 dark:text-zinc-200">
-                    {t("tutorial_reexecute")}
-                  </div>
-                  <p className="text-[10px] text-slate-650 dark:text-zinc-550">
-                    {t("tutorial_reexecute_desc")}
-                  </p>
-                </div>
-                <button
-                  onClick={() => {
-                    startTutorial();
-                    router.push("/");
-                  }}
-                  className="px-4 py-2.5 rounded-xl border border-dashed border-emerald-500/50 hover:border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer"
-                >
-                  <Play className="h-3.5 w-3.5" />
-                  {t("tutorial_start_btn")}
-                </button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Conteúdo: Gestão Administrativa */}
-      {activeProfileSection === "admin" && isAdmin && (
-        <div className="max-w-4xl mx-auto animate-in fade-in duration-300">
-          <UserManagement />
-        </div>
-      )}
-
-      {/* Conteúdo: Customização de Tema (RF53) */}
-      {activeProfileSection === "theme" && isAdmin && (
-        <div className="max-w-4xl mx-auto animate-in fade-in duration-300">
-          <ThemeCustomizer />
-        </div>
-      )}
-
-      {/* Conteúdo: Tuning, Alertas e Pipeline (RF51, RF61, RF62, RF72, RF78, RF68, RF77) */}
-      {activeProfileSection === "tuning" && isAdmin && (
-        <div className="max-w-4xl mx-auto animate-in fade-in duration-300 space-y-6">
-          <div className="mb-8">
-            <h2 className="text-xl font-bold mb-2">{t("tuning_title")}</h2>
-            <p className="text-sm text-muted-foreground">{t("tuning_desc")}</p>
-          </div>
           <TuningPanel />
           <PipelineSettings />
           <AlertsWebhookConfig />

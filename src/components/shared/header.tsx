@@ -215,7 +215,7 @@ export function Header() {
                     )}
                   >
                     <span className="text-sm">🇧🇷</span>
-                    <span>{t("ui_portugu_s_551")}</span>
+                    <span>Português (BR)</span>
                   </button>
                   <button
                     onClick={() => {
@@ -228,7 +228,7 @@ export function Header() {
                     )}
                   >
                     <span className="text-sm">🇺🇸</span>
-                    <span>{t("ui_english_588")}</span>
+                    <span>English (US)</span>
                   </button>
                   <button
                     onClick={() => {
@@ -241,7 +241,7 @@ export function Header() {
                     )}
                   >
                     <span className="text-sm">🇪🇸</span>
-                    <span>{t("ui_espa_ol_35")}</span>
+                    <span>Español</span>
                   </button>
                 </div>
               </>
