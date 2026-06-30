@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { TrainedModel } from "@/lib/context/domain-context";
+import { TrainedModel, useDomain } from "@/lib/context/domain-context";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, CheckCircle2, TrendingDown, Sparkles, Info, ChevronDown, ChevronUp } from "lucide-react";
@@ -153,6 +153,7 @@ function analyze(model: TrainedModel): DiagnosisResult {
 }
 
 export function OverfittingDetector({ model }: OverfittingDetectorProps) {
+  const { t } = useDomain();
   const [showDetails, setShowDetails] = useState(false);
   const [demoMode, setDemoMode] = useState<"none" | "overfitting" | "underfitting">("none");
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { TrainedModel } from "@/lib/context/domain-context";
+import { TrainedModel, useDomain } from "@/lib/context/domain-context";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Info, Download, Sliders, RotateCcw, Target, Sparkles } from "lucide-react";
@@ -64,6 +64,7 @@ const CELLS: CellInfo[] = [
 const DEMO_MATRIX = { tp: 142, tn: 198, fp: 18, fn: 12 };
 
 export function InteractiveConfusionMatrix({ model, domainAccent = "violet" }: InteractiveConfusionMatrixProps) {
+  const { t } = useDomain();
   const originalMatrix = model.confusionMatrix;
   const [matrix, setMatrix] = useState(() => originalMatrix ?? DEMO_MATRIX);
   const [isDemo, setIsDemo] = useState(!originalMatrix);

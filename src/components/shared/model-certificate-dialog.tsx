@@ -8,6 +8,7 @@ import {
   DialogContent,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useDomain } from "@/lib/context/domain-context";
 
 
 interface ModelCertificateProps {
@@ -25,6 +26,7 @@ export function ModelCertificateDialog({
   f1Score, 
   validationDate 
 }: ModelCertificateProps) {
+  const { t } = useDomain();
   
   // CA03: Hash gerado dinamicamente para o certificado (mock)
   const [certHash, setCertHash] = useState("");

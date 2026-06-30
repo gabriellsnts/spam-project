@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { BarChart3, Download, Info, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useDomain } from "@/lib/context/domain-context";
 
 
 interface CorrelationMatrixProps {
@@ -69,6 +70,7 @@ const DEMO_DATA: number[][] = [
 ];
 
 export function CorrelationMatrix({ allRows, headers, activeDomain }: CorrelationMatrixProps) {
+  const { t } = useDomain();
   const [hoveredCell, setHoveredCell] = useState<{ r: number; c: number } | null>(null);
   const [demoMode, setDemoMode] = useState(false);
 

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Download, FileJson, FileText, FileSpreadsheet, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useDomain } from "@/lib/context/domain-context";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +23,7 @@ interface ExportDropdownProps {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function ExportDropdown({ data = [], filenamePrefix = "export" }: ExportDropdownProps) {
+  const { t } = useDomain();
   const [exportingFormat, setExportingFormat] = useState<string | null>(null);
 
   const getTimestamp = () => {
