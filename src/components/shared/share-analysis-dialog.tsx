@@ -68,7 +68,7 @@ export function ShareAnalysisDialog() {
         {/* CA01: Button to open Modal */}
         <Button variant="outline" size="sm" className="gap-2">
           <Share2 className="h-4 w-4 text-sky-500" />
-          <span className="hidden sm:inline">{t("ui_compartilhar_252")}</span>
+          <span className="hidden sm:inline">Compartilhar</span>
         </Button>
       </DialogTrigger>
       
@@ -88,14 +88,14 @@ export function ShareAnalysisDialog() {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Share2 className="h-5 w-5 text-sky-500" />
-            {t("ui_compartilhar_an_lise_547")}</DialogTitle>
+            Compartilhar Análise</DialogTitle>
           <DialogDescription>
-            {t("ui_qualquer_pessoa_com_este_166")}</DialogDescription>
+            Qualquer pessoa com este link poderá ver uma cópia estática deste dashboard.</DialogDescription>
         </DialogHeader>
         
         <div className="space-y-6 py-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">{t("ui_copiar_link_direto_293")}</label>
+            <label className="text-sm font-medium text-foreground">Copiar link direto</label>
             <div className="flex items-center space-x-2">
               <div className="relative flex-1">
                 <LinkIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -119,18 +119,18 @@ export function ShareAnalysisDialog() {
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-background px-2 text-muted-foreground font-semibold tracking-wider">
-                {t("ui_ou_envie_convite_973")}</span>
+                Ou envie convite</span>
             </div>
           </div>
 
           <form onSubmit={handleSendEmail} className="space-y-2">
-            <label className="text-sm font-medium text-foreground">{t("ui_endere_o_de_e_903")}</label>
+            <label className="text-sm font-medium text-foreground">Endereço de e-mail</label>
             <div className="flex items-center space-x-2">
               <div className="relative flex-1">
                 <Mail className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="email"
-                  placeholder={t("ui_nome_exemplo_com_br_822")}
+                  placeholder="nome@exemplo.com.br"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-9 border-border/50"
@@ -149,7 +149,7 @@ export function ShareAnalysisDialog() {
           {/* CA06: Expiration warning */}
           <p className="text-[10px] text-muted-foreground flex items-center gap-1.5 w-full bg-muted/20 p-2 rounded">
             <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-            {t("ui_links_de_compartilhamento_direto_50")}</p>
+            Links de compartilhamento direto expiram em 7 dias.</p>
         </DialogFooter>
       </DialogContent>
     </Dialog>

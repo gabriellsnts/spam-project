@@ -458,7 +458,7 @@ export default function CreditRiskPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-[10px] text-muted-foreground">Classification healthy</div>
+                <div className="text-[10px] text-muted-foreground">Classificação saudável</div>
               </CardContent>
             </Card>
 
@@ -472,7 +472,7 @@ export default function CreditRiskPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-[10px] text-muted-foreground">Awaiting model decision</div>
+                <div className="text-[10px] text-muted-foreground">Aguardando decisão do modelo</div>
               </CardContent>
             </Card>
 
@@ -484,7 +484,7 @@ export default function CreditRiskPage() {
                 <CardTitle className="text-2xl font-black text-foreground">{metrics.totalExposure}</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-[10px] text-muted-foreground">Value at risk estimated</div>
+                <div className="text-[10px] text-muted-foreground">Valor em risco estimado</div>
               </CardContent>
             </Card>
           </div>

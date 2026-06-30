@@ -1112,3 +1112,8 @@ pm run build\ para garantir que os hooks inseridos est�o bem formatados e em uso
 ### Correção de Interface (Formatação Geral - Risco de Crédito)
 - Substituídos os textos defeituosos baseados em chaves de tradução por strings literais na página de Risco de Crédito (KPIs, painéis laterais e formulário de predição).
 
+
+### Correção de Interface (Tradução e Botões de Ação)
+- Traduzidos componentes de Compartilhar e Exportar Dados que estavam com exibição corrompida.
+- Corrigidos descritivos dos KPIs da página de Risco de Crédito que haviam ficado em inglês para o português.
+
