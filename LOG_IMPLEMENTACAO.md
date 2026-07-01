@@ -1126,3 +1126,7 @@ pm run build\ para garantir que os hooks inseridos est�o bem formatados e em uso
 - Substituídos textos não traduzidos na matriz de correlação e na interface de uploader de CSV.
 - Ajustadas variáveis de descrição do modelo que não possuíam chave de tradução associada (No model domain desc).
 
+
+### Correção de Build (Deploy)
+- Removido imports e variáveis não utilizadas (hook de tradução) nos componentes \export-dropdown\ e \share-analysis-dialog\ que causavam falha de validação no ESLint durante o build de produção.
+

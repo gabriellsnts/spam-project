@@ -5,7 +5,6 @@ import { Share2, Link as LinkIcon, Check, Copy, Mail, Send, AlertCircle } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSearchParams, usePathname } from "next/navigation";
-import { useDomain } from "@/lib/context/domain-context";
 import {
   Dialog,
   DialogContent,
@@ -18,7 +17,6 @@ import {
 
 
 export function ShareAnalysisDialog() {
-  const { t } = useDomain();
   const [isOpen, setIsOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [copied, setCopied] = useState(false);
